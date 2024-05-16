@@ -12,6 +12,6 @@ declare class ApplicationStore {
     constructor(initialData: any, gqClient: ApolloClient<NormalizedCacheObject>);
     observeStore(getterKey: string, onChange: Function): import("redux").Unsubscribe;
     executeGraphQL(query: string, slug: string | null, params: {} | null): Promise<string | undefined>;
-    extractJsonKeys(jsonString: string, depth: number): string[] | null;
+    extractJsonKeys(parsedData: any, depth: number): string[] | null;
 }
 export default ApplicationStore;
