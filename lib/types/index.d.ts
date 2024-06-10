@@ -50,3 +50,9 @@ export type CustomAction<T> = {
     type: string;
     payload: T;
 };
+export type SimplPaymentConfig = {
+    env: string;
+    simpl: {
+        key: string;
+    };
+};
