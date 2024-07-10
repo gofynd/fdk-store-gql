@@ -61,4 +61,5 @@ export default class PotleePayment {
         order_id: any;
         amount: any;
     }): Promise<void>;
+    injectScript(): Promise<void>;
 }

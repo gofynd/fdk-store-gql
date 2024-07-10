@@ -1,4 +1,5 @@
 import { CategoriesSlice } from "../../types/categories";
+import { Categories } from "../../types/graphql";
 export declare const fetchCategories: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     extra: {
         gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
@@ -12,3 +13,4 @@ export declare const fetchCategories: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const categoriesReducer: import("redux").Reducer<CategoriesSlice, import("redux").AnyAction>;
+export declare const setCategories: import("@reduxjs/toolkit").ActionCreatorWithPayload<Categories, "categories/setCategories">;
