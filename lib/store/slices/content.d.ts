@@ -1,5 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { ContentSlice } from "../../types/content";
+import { Announcements, Blog, Blogs, DataLoaders, LandingPage, LeagalInformation, Maybe, Navigations, SeoSchema, Support } from "../../types/graphql";
 export declare const fetchNavigation: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     rejectValue: SerializedError;
     state?: unknown;
@@ -161,3 +162,4 @@ export declare const fetchDataLoaders: import("@reduxjs/toolkit").AsyncThunk<any
     rejectedMeta?: unknown;
 }>;
 export declare const contentReducer: import("redux").Reducer<ContentSlice, import("redux").AnyAction>;
+export declare const setnavigations: import("@reduxjs/toolkit").ActionCreatorWithPayload<Navigations, "content/setnavigations">, setseoConfiguration: import("@reduxjs/toolkit").ActionCreatorWithPayload<Maybe<SeoSchema>, "content/setseoConfiguration">, setblogs: import("@reduxjs/toolkit").ActionCreatorWithPayload<Blogs, "content/setblogs">, settags: import("@reduxjs/toolkit").ActionCreatorWithPayload<any, "content/settags">, setsupportInformation: import("@reduxjs/toolkit").ActionCreatorWithPayload<Support, "content/setsupportInformation">, setlandingPage: import("@reduxjs/toolkit").ActionCreatorWithPayload<LandingPage, "content/setlandingPage">, setannouncements: import("@reduxjs/toolkit").ActionCreatorWithPayload<Announcements, "content/setannouncements">, setcustomPage: import("@reduxjs/toolkit").ActionCreatorWithPayload<any, "content/setcustomPage">, setblog: import("@reduxjs/toolkit").ActionCreatorWithPayload<Blog, "content/setblog">, setdataLoaders: import("@reduxjs/toolkit").ActionCreatorWithPayload<DataLoaders, "content/setdataLoaders">, setfaqsByCategory: import("@reduxjs/toolkit").ActionCreatorWithPayload<DataLoaders, "content/setfaqsByCategory">, setlegalInformation: import("@reduxjs/toolkit").ActionCreatorWithPayload<LeagalInformation, "content/setlegalInformation">;

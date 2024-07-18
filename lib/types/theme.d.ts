@@ -3,7 +3,9 @@ export type Theme = Partial<any & CommonAsyncLoadingTypes>;
 export type Page = Partial<any & CommonAsyncLoadingTypes>;
 export type ThemeSlice = {
     theme: Theme;
+    appliedTheme: Theme;
     sectionKeys: any;
+    themePages: Page;
     page: Page;
 };
 export type DragSectionEvent = {
