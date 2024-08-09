@@ -1,4 +1,5 @@
 import { AuthSlice } from "../../types/auth";
+import { AuthSuccess, LoginSuccess, PlatformConfig, ProfileEditSuccess, SendOtpResponse, UserDetail, VerifyOtpSuccess } from "../../types/graphql";
 export declare const fetchPlatformData: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     extra: {
         gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
@@ -312,4 +313,4 @@ export declare const sendEmailVerificationLink: import("@reduxjs/toolkit").Async
     rejectedMeta?: unknown;
 }>;
 export declare const authReducer: import("redux").Reducer<AuthSlice, import("redux").AnyAction>;
-export declare const setUserData: import("@reduxjs/toolkit").ActionCreatorWithPayload<AuthSlice, "auth/setUserData">;
+export declare const setUserData: import("@reduxjs/toolkit").ActionCreatorWithPayload<UserDetail | AuthSuccess | LoginSuccess | SendOtpResponse | ProfileEditSuccess | VerifyOtpSuccess, "auth/setUserData">, setplatformConfig: import("@reduxjs/toolkit").ActionCreatorWithPayload<PlatformConfig, "auth/setplatformConfig">;

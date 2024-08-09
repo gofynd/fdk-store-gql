@@ -1,0 +1,1 @@
+{"version":3,"file":"aggregatorsConfig.handler.js","sourceRoot":"","sources":["../../../src/graphql/query/aggregatorsConfig.handler.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,oBAAoB,EAAE,MAAM,4BAA4B,CAAC;AAElE,MAAM,UAAU,wBAAwB,CAAC,iBAA0C,EAAE,QAAkC;IACnH,IAAI,iBAAiB,EAAE;QACnB,QAAQ,CAAC,oBAAoB,CAAC,iBAAiB,CAAC,CAAC,CAAA;KACpD;AACL,CAAC"}
