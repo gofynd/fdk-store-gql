@@ -1,5 +1,6 @@
 import { AnyAction, Reducer, SerializedError } from "@reduxjs/toolkit";
 import { ProductSlice } from "../../types/product";
+import { BulkDiscountOffers, CompareProductWithFrequentlyCompared, FollowedProducts, FollowerCount, FollowListing, Product, ProductCompareDetails, ProductSellers, ProductSizePrice } from "../../types/graphql";
 export declare const fetchProductDetails: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     extra: {
         gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
@@ -157,3 +158,4 @@ export declare const fetchProductSellerBySlug: import("@reduxjs/toolkit").AsyncT
     rejectedMeta?: unknown;
 }>;
 export declare const pdpReducer: Reducer<ProductSlice, AnyAction>;
+export declare const setProduct: import("@reduxjs/toolkit").ActionCreatorWithPayload<Product, "product/setProduct">, setfollowerCount: import("@reduxjs/toolkit").ActionCreatorWithPayload<FollowerCount, "product/setfollowerCount">, setproductSellers: import("@reduxjs/toolkit").ActionCreatorWithPayload<ProductSellers, "product/setproductSellers">, setproductPrice: import("@reduxjs/toolkit").ActionCreatorWithPayload<ProductSizePrice, "product/setproductPrice">, setcompareWithFrequentlyCompared: import("@reduxjs/toolkit").ActionCreatorWithPayload<CompareProductWithFrequentlyCompared, "product/setcompareWithFrequentlyCompared">, setProductVariants: import("@reduxjs/toolkit").ActionCreatorWithPayload<any, "product/setProductVariants">, setbulkDiscountOffers: import("@reduxjs/toolkit").ActionCreatorWithPayload<BulkDiscountOffers, "product/setbulkDiscountOffers">, setFollowListing: import("@reduxjs/toolkit").ActionCreatorWithPayload<FollowListing, "product/setFollowListing">, setcompareSimilarProduct: import("@reduxjs/toolkit").ActionCreatorWithPayload<ProductCompareDetails, "product/setcompareSimilarProduct">, setfollowedProducts: import("@reduxjs/toolkit").ActionCreatorWithPayload<FollowedProducts, "product/setfollowedProducts">;
