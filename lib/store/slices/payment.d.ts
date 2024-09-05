@@ -1,9 +1,13 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
+import { AggregatorsConfigDetail, PaymentOptionDetails } from "../../types/graphql";
+declare global {
+    interface Window {
+        fpi: any;
+        PaymentGateways: any;
+    }
+}
 export declare const fetchPaymentOptions: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -13,9 +17,7 @@ export declare const fetchPaymentOptions: import("@reduxjs/toolkit").AsyncThunk<
     rejectedMeta?: unknown;
 }>;
 export declare const fetchAggregatorsConfig: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -25,9 +27,7 @@ export declare const fetchAggregatorsConfig: import("@reduxjs/toolkit").AsyncThu
     rejectedMeta?: unknown;
 }>;
 export declare const verifyCustomerForPayment: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -37,9 +37,7 @@ export declare const verifyCustomerForPayment: import("@reduxjs/toolkit").AsyncT
     rejectedMeta?: unknown;
 }>;
 export declare const customerCreditSummary: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -49,9 +47,7 @@ export declare const customerCreditSummary: import("@reduxjs/toolkit").AsyncThun
     rejectedMeta?: unknown;
 }>;
 export declare const redirectToAggregator: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -61,9 +57,7 @@ export declare const redirectToAggregator: import("@reduxjs/toolkit").AsyncThunk
     rejectedMeta?: unknown;
 }>;
 export declare const customerOnboard: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -73,9 +67,7 @@ export declare const customerOnboard: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const getEpaylaterBannerDetails: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -85,9 +77,7 @@ export declare const getEpaylaterBannerDetails: import("@reduxjs/toolkit").Async
     rejectedMeta?: unknown;
 }>;
 export declare const getActiveCardAggregator: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -97,9 +87,7 @@ export declare const getActiveCardAggregator: import("@reduxjs/toolkit").AsyncTh
     rejectedMeta?: unknown;
 }>;
 export declare const checkoutPayment: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -109,9 +97,7 @@ export declare const checkoutPayment: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const confirmPaymentAddress: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -121,9 +107,7 @@ export declare const confirmPaymentAddress: import("@reduxjs/toolkit").AsyncThun
     rejectedMeta?: unknown;
 }>;
 export declare const confirmPayment: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -136,3 +120,4 @@ export declare const paymentReducer: import("redux").Reducer<{
     payment_options: any;
     aggregators_config: any;
 }, import("redux").AnyAction>;
+export declare const setPaymentModeRoutes: import("@reduxjs/toolkit").ActionCreatorWithPayload<PaymentOptionDetails, "payment/setPaymentModeRoutes">, setaggregatorsConfig: import("@reduxjs/toolkit").ActionCreatorWithPayload<AggregatorsConfigDetail, "payment/setaggregatorsConfig">;
