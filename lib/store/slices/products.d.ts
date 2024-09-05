@@ -1,8 +1,7 @@
 import { ProductsSlice } from "../../types/products";
+import { ProductConnection } from "../../types/graphql";
 export declare const fetchProducts: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -12,9 +11,7 @@ export declare const fetchProducts: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const fetchSuggestions: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -24,9 +21,7 @@ export declare const fetchSuggestions: import("@reduxjs/toolkit").AsyncThunk<any
     rejectedMeta?: unknown;
 }>;
 export declare const fetchProductSuggestions: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -36,9 +31,7 @@ export declare const fetchProductSuggestions: import("@reduxjs/toolkit").AsyncTh
     rejectedMeta?: unknown;
 }>;
 export declare const fetchProductListingMeta: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -48,9 +41,7 @@ export declare const fetchProductListingMeta: import("@reduxjs/toolkit").AsyncTh
     rejectedMeta?: unknown;
 }>;
 export declare const fetchCategoryListingMeta: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -60,9 +51,7 @@ export declare const fetchCategoryListingMeta: import("@reduxjs/toolkit").AsyncT
     rejectedMeta?: unknown;
 }>;
 export declare const fetchBrandListingMeta: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -72,9 +61,7 @@ export declare const fetchBrandListingMeta: import("@reduxjs/toolkit").AsyncThun
     rejectedMeta?: unknown;
 }>;
 export declare const fetchCollectionListingMeta: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -84,4 +71,4 @@ export declare const fetchCollectionListingMeta: import("@reduxjs/toolkit").Asyn
     rejectedMeta?: unknown;
 }>;
 export declare const plpReducer: import("redux").Reducer<ProductsSlice, import("redux").AnyAction>;
-export declare const resetProductListingMeta: import("@reduxjs/toolkit").ActionCreatorWithoutPayload<"products/resetProductListingMeta">;
+export declare const resetProductListingMeta: import("@reduxjs/toolkit").ActionCreatorWithoutPayload<"products/resetProductListingMeta">, setProducts: import("@reduxjs/toolkit").ActionCreatorWithPayload<ProductConnection, "products/setProducts">;

@@ -1,8 +1,6 @@
 import { SerializedError } from '@reduxjs/toolkit';
 export declare const getOrders: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -12,9 +10,7 @@ export declare const getOrders: import("@reduxjs/toolkit").AsyncThunk<any, any, 
     rejectedMeta?: unknown;
 }>;
 export declare const getOrderById: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -24,9 +20,7 @@ export declare const getOrderById: import("@reduxjs/toolkit").AsyncThunk<any, an
     rejectedMeta?: unknown;
 }>;
 export declare const getCustomerDetailsByShipmentId: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -36,9 +30,7 @@ export declare const getCustomerDetailsByShipmentId: import("@reduxjs/toolkit").
     rejectedMeta?: unknown;
 }>;
 export declare const getInvoiceByShipmentId: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -48,9 +40,7 @@ export declare const getInvoiceByShipmentId: import("@reduxjs/toolkit").AsyncThu
     rejectedMeta?: unknown;
 }>;
 export declare const getPosOrderById: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -60,9 +50,7 @@ export declare const getPosOrderById: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const getShipmentBagReasons: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -72,9 +60,7 @@ export declare const getShipmentBagReasons: import("@reduxjs/toolkit").AsyncThun
     rejectedMeta?: unknown;
 }>;
 export declare const getShipmentById: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -84,9 +70,7 @@ export declare const getShipmentById: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const getShipmentReasons: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -96,9 +80,7 @@ export declare const getShipmentReasons: import("@reduxjs/toolkit").AsyncThunk<a
     rejectedMeta?: unknown;
 }>;
 export declare const sendOtpToShipmentCustomer: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -108,9 +90,7 @@ export declare const sendOtpToShipmentCustomer: import("@reduxjs/toolkit").Async
     rejectedMeta?: unknown;
 }>;
 export declare const trackShipment: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -120,9 +100,7 @@ export declare const trackShipment: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const updateShipmentStatus: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -132,9 +110,7 @@ export declare const updateShipmentStatus: import("@reduxjs/toolkit").AsyncThunk
     rejectedMeta?: unknown;
 }>;
 export declare const verifyOtpShipmentCustomer: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;

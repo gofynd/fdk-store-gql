@@ -1,8 +1,7 @@
 import { CollectionsSlice } from "../../types/collection";
+import { Collection, CollectionConnection, CollectionItems } from "../../types/graphql";
 export declare const fetchCollection: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -12,9 +11,7 @@ export declare const fetchCollection: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const fetchCollectionItem: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -24,3 +21,4 @@ export declare const fetchCollectionItem: import("@reduxjs/toolkit").AsyncThunk<
     rejectedMeta?: unknown;
 }>;
 export declare const collectionReducer: import("redux").Reducer<CollectionsSlice, import("redux").AnyAction>;
+export declare const setcollection: import("@reduxjs/toolkit").ActionCreatorWithPayload<Collection, "collection/setcollection">, setcollectionItems: import("@reduxjs/toolkit").ActionCreatorWithPayload<CollectionItems, "collection/setcollectionItems">, setcollections: import("@reduxjs/toolkit").ActionCreatorWithPayload<CollectionConnection, "collection/setcollections">;

@@ -1,8 +1,7 @@
 import { AuthSlice } from "../../types/auth";
+import { AuthSuccess, LoginSuccess, PlatformConfig, ProfileEditSuccess, SendOtpResponse, UserDetail, VerifyOtpSuccess } from "../../types/graphql";
 export declare const fetchPlatformData: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -12,9 +11,7 @@ export declare const fetchPlatformData: import("@reduxjs/toolkit").AsyncThunk<an
     rejectedMeta?: unknown;
 }>;
 export declare const loginWithAppleIOS: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -24,9 +21,7 @@ export declare const loginWithAppleIOS: import("@reduxjs/toolkit").AsyncThunk<an
     rejectedMeta?: unknown;
 }>;
 export declare const hasPassword: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -36,9 +31,7 @@ export declare const hasPassword: import("@reduxjs/toolkit").AsyncThunk<any, any
     rejectedMeta?: unknown;
 }>;
 export declare const getListOfActiveSessions: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -48,9 +41,7 @@ export declare const getListOfActiveSessions: import("@reduxjs/toolkit").AsyncTh
     rejectedMeta?: unknown;
 }>;
 export declare const deleteMobileNumber: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -60,9 +51,7 @@ export declare const deleteMobileNumber: import("@reduxjs/toolkit").AsyncThunk<a
     rejectedMeta?: unknown;
 }>;
 export declare const deleteEmail: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -72,9 +61,7 @@ export declare const deleteEmail: import("@reduxjs/toolkit").AsyncThunk<any, any
     rejectedMeta?: unknown;
 }>;
 export declare const addMobileNumber: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -84,9 +71,7 @@ export declare const addMobileNumber: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const addEmail: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -96,9 +81,7 @@ export declare const addEmail: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     rejectedMeta?: unknown;
 }>;
 export declare const fetchUserData: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -108,9 +91,7 @@ export declare const fetchUserData: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const deleteUser: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -120,9 +101,7 @@ export declare const deleteUser: import("@reduxjs/toolkit").AsyncThunk<any, any,
     rejectedMeta?: unknown;
 }>;
 export declare const signOutUser: import("@reduxjs/toolkit").AsyncThunk<any, void, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -132,9 +111,7 @@ export declare const signOutUser: import("@reduxjs/toolkit").AsyncThunk<any, voi
     rejectedMeta?: unknown;
 }>;
 export declare const signUpUser: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -144,9 +121,7 @@ export declare const signUpUser: import("@reduxjs/toolkit").AsyncThunk<any, any,
     rejectedMeta?: unknown;
 }>;
 export declare const signInUserWithPassword: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -156,9 +131,7 @@ export declare const signInUserWithPassword: import("@reduxjs/toolkit").AsyncThu
     rejectedMeta?: unknown;
 }>;
 export declare const signInUserWithOtp: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -168,9 +141,7 @@ export declare const signInUserWithOtp: import("@reduxjs/toolkit").AsyncThunk<an
     rejectedMeta?: unknown;
 }>;
 export declare const sendOtp: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -180,9 +151,7 @@ export declare const sendOtp: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     rejectedMeta?: unknown;
 }>;
 export declare const forgotPassword: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -192,9 +161,7 @@ export declare const forgotPassword: import("@reduxjs/toolkit").AsyncThunk<any, 
     rejectedMeta?: unknown;
 }>;
 export declare const facebookLogin: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -204,9 +171,7 @@ export declare const facebookLogin: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const googleLogin: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -216,9 +181,7 @@ export declare const googleLogin: import("@reduxjs/toolkit").AsyncThunk<any, any
     rejectedMeta?: unknown;
 }>;
 export declare const resetPasswordWithEmail: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -228,9 +191,7 @@ export declare const resetPasswordWithEmail: import("@reduxjs/toolkit").AsyncThu
     rejectedMeta?: unknown;
 }>;
 export declare const resetPasswordWithMobile: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -240,9 +201,7 @@ export declare const resetPasswordWithMobile: import("@reduxjs/toolkit").AsyncTh
     rejectedMeta?: unknown;
 }>;
 export declare const sendOtpMobile: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -252,9 +211,7 @@ export declare const sendOtpMobile: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const sendOtpEmail: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -264,9 +221,7 @@ export declare const sendOtpEmail: import("@reduxjs/toolkit").AsyncThunk<any, an
     rejectedMeta?: unknown;
 }>;
 export declare const verifyMobileOtp: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -276,9 +231,7 @@ export declare const verifyMobileOtp: import("@reduxjs/toolkit").AsyncThunk<any,
     rejectedMeta?: unknown;
 }>;
 export declare const verifyEmailOtp: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -288,9 +241,7 @@ export declare const verifyEmailOtp: import("@reduxjs/toolkit").AsyncThunk<any, 
     rejectedMeta?: unknown;
 }>;
 export declare const updateProfile: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -300,9 +251,7 @@ export declare const updateProfile: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const sendEmailVerificationLink: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -312,4 +261,4 @@ export declare const sendEmailVerificationLink: import("@reduxjs/toolkit").Async
     rejectedMeta?: unknown;
 }>;
 export declare const authReducer: import("redux").Reducer<AuthSlice, import("redux").AnyAction>;
-export declare const setUserData: import("@reduxjs/toolkit").ActionCreatorWithPayload<AuthSlice, "auth/setUserData">;
+export declare const setUserData: import("@reduxjs/toolkit").ActionCreatorWithPayload<UserDetail | AuthSuccess | LoginSuccess | SendOtpResponse | ProfileEditSuccess | VerifyOtpSuccess, "auth/setUserData">, setplatformConfig: import("@reduxjs/toolkit").ActionCreatorWithPayload<PlatformConfig, "auth/setplatformConfig">;

@@ -1,8 +1,7 @@
 import { AddressSlice } from "../../types/address";
+import { Address, Addresses, UpdateAddressResponse } from "../../types/graphql";
 export declare const fetchAddress: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -12,9 +11,7 @@ export declare const fetchAddress: import("@reduxjs/toolkit").AsyncThunk<any, an
     rejectedMeta?: unknown;
 }>;
 export declare const fetchAddressById: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -24,9 +21,7 @@ export declare const fetchAddressById: import("@reduxjs/toolkit").AsyncThunk<any
     rejectedMeta?: unknown;
 }>;
 export declare const deleteAddress: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -36,9 +31,7 @@ export declare const deleteAddress: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const updateAddress: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -48,9 +41,7 @@ export declare const updateAddress: import("@reduxjs/toolkit").AsyncThunk<any, a
     rejectedMeta?: unknown;
 }>;
 export declare const addAddress: import("@reduxjs/toolkit").AsyncThunk<any, any, {
-    extra: {
-        gqClient: import("@apollo/client").ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: import("@reduxjs/toolkit").SerializedError;
     state?: unknown;
     dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
@@ -60,3 +51,4 @@ export declare const addAddress: import("@reduxjs/toolkit").AsyncThunk<any, any,
     rejectedMeta?: unknown;
 }>;
 export declare const addressReducer: import("redux").Reducer<AddressSlice, import("redux").AnyAction>;
+export declare const setAddressItem: import("@reduxjs/toolkit").ActionCreatorWithPayload<Address, "address/setAddressItem">, setAddresses: import("@reduxjs/toolkit").ActionCreatorWithPayload<Addresses, "address/setAddresses">, setupdateAddress: import("@reduxjs/toolkit").ActionCreatorWithPayload<UpdateAddressResponse, "address/setupdateAddress">;
