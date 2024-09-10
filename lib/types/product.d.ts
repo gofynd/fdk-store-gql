@@ -25,4 +25,5 @@ export type ProductSlice = {
     followed_listing: FollowedList;
     fetch_follow_ids: FollowIdsResponseSlug;
     unfollow_by_id: FollowByIdParamSlug;
+    followed_products: any;
 };
