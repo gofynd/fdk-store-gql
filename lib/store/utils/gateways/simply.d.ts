@@ -1,4 +1,4 @@
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
+import { SimplPaymentConfig } from "../../../types";
 interface SelectedPayment {
     aggregator_name: any;
     amount: any;
@@ -12,10 +12,9 @@ declare global {
     }
 }
 export default class SimplypayPayment {
-    private gqClient;
     selectedPayment: SelectedPayment;
     paymentFlow: any;
-    constructor(gqClient: ApolloClient<NormalizedCacheObject>, selectedPayment: SelectedPayment);
+    constructor(selectedPayment: SelectedPayment);
     /**
      * This method is caled while paymentOptions list page only.
      * To verify that this user is allowed to do simple payment or not.
@@ -39,5 +38,6 @@ export default class SimplypayPayment {
         order_id: any;
         amount: any;
     }): Promise<void>;
+    injectScript(payment_config: SimplPaymentConfig): Promise<void>;
 }
 export {};
