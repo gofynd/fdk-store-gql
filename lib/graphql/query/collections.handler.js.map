@@ -1,0 +1,1 @@
+{"version":3,"file":"collections.handler.js","sourceRoot":"","sources":["../../../src/graphql/query/collections.handler.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,MAAM,+BAA+B,CAAC;AAE/D,MAAM,UAAU,kBAAkB,CAChC,WAAiC,EACjC,QAAkC;IAElC,IAAI,WAAW,EAAE;QACf,QAAQ,CAAC,cAAc,CAAC,WAAW,CAAC,CAAC,CAAC;KACvC;AACH,CAAC"}
