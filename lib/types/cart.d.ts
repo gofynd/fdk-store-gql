@@ -10,7 +10,7 @@ export type LadderOffers = Partial<any & CommonAsyncLoadingTypes>;
 export type PromotionOffers = Partial<any & CommonAsyncLoadingTypes>;
 export type Coupons = Partial<any & CommonAsyncLoadingTypes>;
 export type CartShareLink = Partial<any & CommonAsyncLoadingTypes>;
-export type CheckoutModeSlice = Partial<CheckoutMode & CommonAsyncLoadingTypes>;
+export type CheckoutModeSlice = Partial<any & CommonAsyncLoadingTypes>;
 export type CartItemsCount = Partial<any & CommonAsyncLoadingTypes>;
 export type CartSlice = {
     cart_items: CartItems;
