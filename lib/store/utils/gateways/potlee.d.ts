@@ -1,14 +1,12 @@
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 declare global {
     interface Window {
         potlee: any;
     }
 }
 export default class PotleePayment {
-    private gqClient;
     selectedPayment: any;
     paymentFlow: any;
-    constructor(gqClient: ApolloClient<NormalizedCacheObject>, selectedPayment: {
+    constructor(selectedPayment: {
         paymentFlowMeta: any;
     });
     /**
@@ -61,4 +59,5 @@ export default class PotleePayment {
         order_id: any;
         amount: any;
     }): Promise<void>;
+    injectScript(): Promise<void>;
 }

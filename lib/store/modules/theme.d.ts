@@ -1,4 +1,5 @@
 import type { ThunkActionDispatch } from "redux-thunk";
+import { Theme } from "../../types/graphql";
 export declare class ThemeModule {
     private dispatch;
     constructor(dispatch: ThunkActionDispatch<any>);
@@ -11,4 +12,6 @@ export declare class ThemeModule {
     updateSection(params?: any): any;
     setTheme(params: any): any;
     setGlobalConfig(params: any): any;
+    private appliedThemeGraphQLhandler;
+    handleThemeResponse(response: Theme): void;
 }

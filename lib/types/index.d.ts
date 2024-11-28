@@ -1,10 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { AnyAction } from "redux";
 export interface ExtraArguments {
-    extra: {
-        gqClient: ApolloClient<NormalizedCacheObject>;
-    };
+    extra: {};
     rejectValue: SerializedError;
 }
 export type CommonAsyncLoadingTypes = {
@@ -50,3 +47,10 @@ export type CustomAction<T> = {
     type: string;
     payload: T;
 };
+export type SimplPaymentConfig = {
+    env: string;
+    simpl: {
+        key: string;
+    };
+};
+export type EventEmitterFunction = (event: string, payload: any) => void;
