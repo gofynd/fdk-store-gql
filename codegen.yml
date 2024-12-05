@@ -1,0 +1,6 @@
+schema: "https://api.uat.fyndx1.de/service/webhooks/graphql/"
+generates:
+  src/types/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"

@@ -4,5 +4,5 @@ import { CustomPayload } from "../../types/custom";
 export declare class CustomModule {
     private dispatch;
     constructor(dispatch: ThunkActionDispatch<any>);
-    setValue(key: string, value: any): AsyncThunkCompleted<CustomPayload>;
+    setValue(key: string | Symbol, value: any): AsyncThunkCompleted<CustomPayload>;
 }
