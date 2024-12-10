@@ -1,17 +1,25 @@
 import type { ThunkActionDispatch } from "redux-thunk";
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { CustomModule } from "./modules/custom";
 import { ThemeModule } from "./modules/theme";
+import { PaymentModule } from "./modules/payment";
+export declare const locationDetailsKey: unique symbol;
+type ExecuteOptions = {
+    skipStoreUpdate?: boolean;
+};
 declare class ApplicationStore {
-    private gqClient;
     private store;
     getters: any;
     dispatch: ThunkActionDispatch<any>;
     custom: CustomModule;
     theme: ThemeModule;
-    constructor(initialData: any, gqClient: ApolloClient<NormalizedCacheObject>);
+    payment: PaymentModule;
+    PaymentGateways: Record<string, any>;
+    private domain;
+    private authorizationHeader;
+    constructor(initialData: any, authorizationHeader: any, domain: any);
+    private executeFetch;
+    setI18nDetails(cookieValue: any): void;
     observeStore(getterKey: string, onChange: Function): import("redux").Unsubscribe;
-    executeGraphQL(query: string, slug: string | null, params: {} | null): Promise<string | undefined>;
-    extractJsonKeys(jsonString: string, depth: number): string[] | null;
+    executeGQL(query: string, params: any | null, options?: ExecuteOptions): Promise<any>;
 }
 export default ApplicationStore;
