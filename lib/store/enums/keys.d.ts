@@ -30,5 +30,6 @@ export declare enum COOKIE_KEYS {
     ORDERING_STORE = "m_orderingStore",
     DEPLOYMENT_STORE = "m_deploymentStore",
     SELECTED_EMPLOYEE = "m_selectedEmployee",
-    LOCATION_DETAILS = "m_locationDetails"
+    LOCATION_DETAILS = "m_locationDetails",
+    I18N_DETAILS = "app_i18n_details"
 }
