@@ -49,6 +49,23 @@ jobs:
         git tag $(Build.SourceBranchName)
         git push origin $(Build.SourceBranchName)
 
+        # Create GitHub release
+        RELEASE_TITLE="Release $(Build.SourceBranchName)"
+        POST_DATA=$(printf '{
+          "tag_name": "%s",
+          "target_commitish": "main",
+          "name": "%s",
+          "body": "%s",
+          "draft": false,
+          "prerelease": false
+        }' $(Build.SourceBranchName) $RELEASE_TITLE $RELEASE_TITLE)
+        echo $POST_DATA
+        curl -X POST -H "Authorization: token $(GITHUB_PERSONAL_TOKEN)" \
+             -H "Content-Type: application/json" \
+             -d "$POST_DATA" \
+             "https://api.github.com/repos/gofynd/fdk-store-gql/releases"
+
+
       else
         echo "This is not a tag push. Exiting..."
         exit 0
