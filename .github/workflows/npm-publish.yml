@@ -21,7 +21,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - uses: jaywcjlove/github-action-package@main
         with:
-          version: ${{ github.ref_name }}
+          version: "v3.0.38-beta.9"
           rename: "@gofynd/fdk-store-gql"
       - run: npm ci
       - run: npm publish --access public
