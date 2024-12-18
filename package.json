@@ -1,5 +1,5 @@
 {
-  "name": "fdk-store-gql",
+  "name": "@gofynd/fdk-store-gql",
   "version": "3.0.38-beta.10",
   "description": "FPI Store bridging library",
   "main": "./lib/index.js",
