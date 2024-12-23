@@ -24,14 +24,14 @@ jobs:
       if [ "$(Build.SourceBranch)" != "refs/tags/*" ]; then
 
         echo "This is a tag push. Sync starting..."
-        BRANCH_NAME=$(echo $(Build.SourceBranchName) | sed 's/^refs\/tags\///' | sed 's/\./_/g')
+        BRANCH_NAME=main
 
         git config --global user.email "jigar.dafda@gmail.com"
         git config --global user.name "Jigar Dafda"
 
         git clone https://$(GITHUB_USERNAME):$(GITHUB_PERSONAL_TOKEN)@github.com/gofynd/fdk-store-gql.git
         cd fdk-store-gql
-        git checkout -b $BRANCH_NAME
+        git checkout $BRANCH_NAME
         rm -rf ./*
         cd ..
 
@@ -48,6 +48,26 @@ jobs:
 
         git tag $(Build.SourceBranchName)
         git push origin $(Build.SourceBranchName)
+
+        # Create GitHub release
+        RELEASE_TITLE="Release_$(Build.SourceBranchName)"
+        echo $(Build.SourceBranchName)
+        echo $RELEASE_TITLE
+        echo $BRANCH_NAME
+        POST_DATA=$(printf '{
+          "tag_name": "%s",
+          "target_commitish": "%s",
+          "name": "%s",
+          "body": "%s",
+          "draft": false,
+          "prerelease": false
+        }' $(Build.SourceBranchName) $BRANCH_NAME $RELEASE_TITLE "$RELEASE_TITLE")
+        echo $POST_DATA
+        curl -X POST -H "Authorization: token $(GITHUB_PERSONAL_TOKEN)" \
+             -H "Content-Type: application/json" \
+             -d "$POST_DATA" \
+             "https://api.github.com/repos/gofynd/fdk-store-gql/releases"
+
 
       else
         echo "This is not a tag push. Exiting..."
