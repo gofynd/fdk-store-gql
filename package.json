@@ -1,6 +1,6 @@
 {
   "name": "fdk-store",
-  "version": "v3.0.19-beta.2",
+  "version": "v3.0.41",
   "description": "FPI Store bridging library",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
@@ -14,7 +14,8 @@
     "test:coverage": "jest --coverage",
     "doc": "typedoc --plugin typedoc-plugin-missing-exports --plugin typedoc-plugin-markdown",
     "local": "webpack --watch",
-    "generate": "graphql-codegen"
+    "generate": "graphql-codegen",
+    "format": "prettier --write 'src/**/*.ts' '!src/types/**/*.ts'"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.2",
@@ -30,7 +31,8 @@
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
     "webpack": "^5.92.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "prettier": "^3.0.0"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.3",

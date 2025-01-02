@@ -2,10 +2,10 @@ import { CommonAsyncLoadingTypes } from ".";
 export type PlatformDataType = Partial<any & CommonAsyncLoadingTypes>;
 export type UserDataType = Partial<any & CommonAsyncLoadingTypes>;
 export type AuthSlice = {
-    logged_in: boolean;
+    logged_in: null | boolean;
     platform_data: PlatformDataType;
     user_data: UserDataType;
-    user_fetched: boolean;
+    user_fetched: null | boolean;
 };
 export type SignUpUserParam = {
     id: string;
