@@ -24,6 +24,5 @@ export type ProductsSlice = {
     search_results: SearchResults;
     product_search_results: ProductLists;
     category_listing_meta: CategoryDetail;
-    collection_listing_meta: BrandDetail;
     brand_listing_meta: CollectionDetail;
 };
