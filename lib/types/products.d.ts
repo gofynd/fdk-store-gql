@@ -23,6 +23,4 @@ export type ProductsSlice = {
     product_listing_meta: ProductDetail;
     search_results: SearchResults;
     product_search_results: ProductLists;
-    category_listing_meta: CategoryDetail;
-    brand_listing_meta: CollectionDetail;
 };

@@ -3,12 +3,14 @@ declare const rootReducer: import("redux").Reducer<import("redux").CombinedState
     product: import("../types/product").ProductSlice;
     cart: import("../types/cart").CartSlice;
     brands: import("../types/brands").BrandsSlice;
+    brand: import("../types/brand").BrandSlice;
     address: import("../types/address").AddressSlice;
     content: import("../types/content").ContentSlice;
     theme: import("../types/theme").ThemeSlice;
     configuration: import("../types/configuration").ConfigurationSlice;
     logistic: import("../types/logistic").LogisticSlice;
     categories: import("../types/categories").CategoriesSlice;
+    category: import("../types/category").CategorySlice;
     collection: import("../types/collection").CollectionsSlice;
     auth: import("../types/auth").AuthSlice;
     payment: {
@@ -24,12 +26,14 @@ export declare function createStore(initialData: unknown): import("@reduxjs/tool
     product: import("../types/product").ProductSlice;
     cart: import("../types/cart").CartSlice;
     brands: import("../types/brands").BrandsSlice;
+    brand: import("../types/brand").BrandSlice;
     address: import("../types/address").AddressSlice;
     content: import("../types/content").ContentSlice;
     theme: import("../types/theme").ThemeSlice;
     configuration: import("../types/configuration").ConfigurationSlice;
     logistic: import("../types/logistic").LogisticSlice;
     categories: import("../types/categories").CategoriesSlice;
+    category: import("../types/category").CategorySlice;
     collection: import("../types/collection").CollectionsSlice;
     auth: import("../types/auth").AuthSlice;
     payment: {
@@ -44,12 +48,14 @@ export declare function createStore(initialData: unknown): import("@reduxjs/tool
     product: import("../types/product").ProductSlice;
     cart: import("../types/cart").CartSlice;
     brands: import("../types/brands").BrandsSlice;
+    brand: import("../types/brand").BrandSlice;
     address: import("../types/address").AddressSlice;
     content: import("../types/content").ContentSlice;
     theme: import("../types/theme").ThemeSlice;
     configuration: import("../types/configuration").ConfigurationSlice;
     logistic: import("../types/logistic").LogisticSlice;
     categories: import("../types/categories").CategoriesSlice;
+    category: import("../types/category").CategorySlice;
     collection: import("../types/collection").CollectionsSlice;
     auth: import("../types/auth").AuthSlice;
     payment: {

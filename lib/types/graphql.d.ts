@@ -2226,6 +2226,21 @@ export type CategoryItemL4 = {
     /** Unique identifier for the L4 category. */
     uid: Scalars['Int']['output'];
 };
+/** Represents a L1 category. */
+export type CategoryItem5 = {
+    __typename?: 'CategoryItem';
+    /** Banner images associated with the L1  category. */
+    banners: ImageUrls;
+    /** List of categories under the L1  category. */
+    childs?: Maybe<Array<Maybe<CategoryItemL2>>>;
+    /** Name of the L1 category. */
+    name: Scalars['String']['output'];
+    /** Slug or URL-friendly identifier for the L1 category. */
+    slug: Scalars['String']['output'];
+    /** Unique identifier for the L1 category. */
+    uid: Scalars['Int']['output'];
+    logo?: Maybe<CollectionLogo>;
+};
 /** The schema for the all the communication channels that the user has accept to receive communication through. */
 export type Channels = {
     __typename?: 'Channels';
