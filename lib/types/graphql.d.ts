@@ -9502,7 +9502,6 @@ export type SendOtpResponse = {
     __typename?: 'SendOtpResponse';
     /** Country code for the phone number. */
     country_code?: Maybe<Scalars['String']['output']>;
-    isUserLogin: Boolean | null;
     /** Email id of user. */
     email?: Maybe<Scalars['String']['output']>;
     /** Message to specify the OTP send status. Eg. OTP sent, failed to send OTP etc. */
