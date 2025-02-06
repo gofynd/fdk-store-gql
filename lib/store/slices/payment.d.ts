@@ -17,6 +17,16 @@ export declare const getSupportedUpiIntentApps: import("@reduxjs/toolkit").Async
     fulfilledMeta?: unknown;
     rejectedMeta?: unknown;
 }>;
+export declare const validateCardDetails: import("@reduxjs/toolkit").AsyncThunk<any, any, {
+    extra: {};
+    rejectValue: SerializedError;
+    state?: unknown;
+    dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
+    serializedErrorType?: unknown;
+    pendingMeta?: unknown;
+    fulfilledMeta?: unknown;
+    rejectedMeta?: unknown;
+}>;
 export declare const checkoutPayment: import("@reduxjs/toolkit").AsyncThunk<any, any, {
     extra: {};
     rejectValue: SerializedError;

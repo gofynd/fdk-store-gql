@@ -20,7 +20,7 @@ export default class RazorpayPayment {
         card_exp_month: any;
         card_exp_year: any;
     }): {
-        card_token: any;
+        token: any;
         "card[cvv]": any;
         "card[name]"?: undefined;
         "card[number]"?: undefined;
@@ -32,8 +32,9 @@ export default class RazorpayPayment {
         "card[cvv]": any;
         "card[expiry_month]": any;
         "card[expiry_year]": any;
-        card_token?: undefined;
+        token?: undefined;
     };
+    validateCardDetails(inputType: string, options: any, callback: any): void;
     getSupportedUpiIntentApps(): Promise<unknown>;
     transaction(obj: any, consent: {
         checkedBoxValue: any;

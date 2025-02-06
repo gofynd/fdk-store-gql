@@ -9,7 +9,7 @@ resources:
       image: node:18-buster
 
 pool:
-  docker
+  docker-new
 
 variables:
 - group: pipeline

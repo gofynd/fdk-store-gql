@@ -4,4 +4,5 @@ export declare class PaymentModule {
     constructor(dispatch: ThunkActionDispatch<any>);
     checkoutPayment(payload: any): any;
     getSupportedUpiIntentApps(payload: any): any;
+    validateCardDetails(payload: any): any;
 }
