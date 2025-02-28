@@ -1,1 +1,0 @@
-{"version":3,"file":"brand.handler.js","sourceRoot":"","sources":["../../../src/graphql/query/brand.handler.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,QAAQ,EAAE,MAAM,0BAA0B,CAAC;AAEpD,MAAM,QAAQ,GAAG,EAAE,CAAC;AAEpB,MAAM,UAAU,YAAY,CAAC,KAAY,EAAE,QAAkC;IAC3E,IAAI,KAAK,EAAE;QACT,QAAQ,CAAC,QAAQ,CAAC,KAAK,CAAC,CAAC,CAAC;KAC3B;AACH,CAAC"}

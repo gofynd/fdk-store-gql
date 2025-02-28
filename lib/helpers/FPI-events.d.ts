@@ -27,10 +27,8 @@ export declare function collectUnemittedEvents(customData: {
     [x: string]: any;
     hasOwnProperty: (arg0: string) => any;
 }): any[];
-export declare function getPrimaryVerifiedValue(items?: any): any;
-export declare function getEventPayloadWithUtmParams(payload: any, store: any): any;
 export declare function emitAllEvents(events: any, FPI_EVENTS: {
     [x: string]: any;
     hasOwnProperty?: any;
-}, storeInitialData: any): void;
+}, storeInitialData: unknown): void;
 export {};

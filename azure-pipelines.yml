@@ -24,7 +24,7 @@ jobs:
       if [ "$(Build.SourceBranch)" != "refs/tags/*" ]; then
 
         echo "This is a tag push. Sync starting..."
-        BRANCH_NAME=main
+        BRANCH_NAME=v3_0_40-RC1
 
         git config --global user.email "jigar.dafda@gmail.com"
         git config --global user.name "Jigar Dafda"

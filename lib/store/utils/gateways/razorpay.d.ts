@@ -21,21 +21,19 @@ export default class RazorpayPayment {
         card_exp_year: any;
     }): {
         token: any;
-        "card[cvv]": any;
-        "card[name]"?: undefined;
-        "card[number]"?: undefined;
-        "card[expiry_month]"?: undefined;
-        "card[expiry_year]"?: undefined;
+        'card[cvv]': any;
+        'card[name]'?: undefined;
+        'card[number]'?: undefined;
+        'card[expiry_month]'?: undefined;
+        'card[expiry_year]'?: undefined;
     } | {
-        "card[name]": any;
-        "card[number]": any;
-        "card[cvv]": any;
-        "card[expiry_month]": any;
-        "card[expiry_year]": any;
+        'card[name]': any;
+        'card[number]': any;
+        'card[cvv]': any;
+        'card[expiry_month]': any;
+        'card[expiry_year]': any;
         token?: undefined;
     };
-    validateCardDetails(inputType: string, options: any, callback: any): void;
-    getSupportedUpiIntentApps(): Promise<unknown>;
     transaction(obj: any, consent: {
         checkedBoxValue: any;
         paymentdata: {
