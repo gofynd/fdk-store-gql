@@ -16,8 +16,6 @@ declare class ApplicationStore {
     private domain;
     private authorizationHeader;
     private serverCookies;
-    private start_upload_query;
-    private complete_upload_query;
     constructor(initialData: any, authorizationHeader: any, domain: any);
     private executeFetch;
     private getServerCookies;
@@ -25,6 +23,5 @@ declare class ApplicationStore {
     setI18nDetails(cookieValue: any): void;
     observeStore(getter: Function, onChange: Function): void;
     executeGQL(query: string, params: any | null, options?: ExecuteOptions): Promise<any>;
-    uploadFile(file: File, NAMESPACE?: string, START_UPLOAD_QUERY?: string, COMPLETE_UPLOAD_QUERY?: string): Promise<any>;
 }
 export default ApplicationStore;
