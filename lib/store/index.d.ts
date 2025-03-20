@@ -21,6 +21,7 @@ declare class ApplicationStore {
     constructor(initialData: any, authorizationHeader: any, domain: any);
     private executeFetch;
     private getServerCookies;
+    private encodeCookie;
     setServerCookies(cookies?: Record<string, string>): void;
     setI18nDetails(cookieValue: any): void;
     observeStore(getter: Function, onChange: Function): void;
