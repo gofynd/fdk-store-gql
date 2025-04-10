@@ -1,6 +1,6 @@
 {
   "name": "fdk-store",
-  "version": "v3.0.41",
+  "version": "3.0.48-beta.0",
   "description": "FPI Store bridging library",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
