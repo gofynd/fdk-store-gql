@@ -19,6 +19,7 @@ export type ProductSlice = {
     similar_compare_products: SimilarCompareProducts;
     frequently_compared_products: FrequentlyComparedProducts;
     product_price_by_slug: ProductPriceBySlug;
+    product_price_with_fullfillment: any;
     product_seller_by_slug: ProductSellerBySlug;
     follow_by_id: FollowByIdParamSlug;
     follower_count_by_id: FollowerCountByIdSlug;
