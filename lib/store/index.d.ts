@@ -4,6 +4,7 @@ import { ThemeModule } from "./modules/theme";
 import { PaymentModule } from "./modules/payment";
 type ExecuteOptions = {
     skipStoreUpdate?: boolean;
+    skipFpiEvent?: boolean;
 };
 declare class ApplicationStore {
     private store;

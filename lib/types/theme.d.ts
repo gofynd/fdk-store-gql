@@ -18,7 +18,6 @@ export type AddSectionEvent = {
     counter: number;
 };
 export type RemoveSection = {
-    section: object;
     removedIndex: number;
 };
 export type UpdateSection = {
