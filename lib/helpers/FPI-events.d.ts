@@ -21,7 +21,7 @@ export type EventMap = {
     payloadCreator: PayloadCreator;
 };
 export declare const FPI_EVENTS: FPI_EVENTS;
-export declare function emitFPIEvent(event: EventMap | undefined, params: any, result: any, oldStore: any, dispatch?: any, options?: any, eventEmitter?: EventEmitterFunction): true | undefined;
+export declare function emitFPIEvent(event: EventMap | undefined, params: any, result: any, oldStore: any, dispatch?: any, eventEmitter?: EventEmitterFunction): true | undefined;
 export declare function defaultFPIEmit(eventName: string, payload: any): void;
 export declare function collectUnemittedEvents(customData: {
     [x: string]: any;
