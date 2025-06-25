@@ -1,6 +1,6 @@
 {
   "name": "fdk-store",
-  "version": "3.0.48-beta.0",
+  "version": "v3.0.41",
   "description": "FPI Store bridging library",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
@@ -11,6 +11,7 @@
     "build:tsc": "tsc -m es6 --outDir lib",
     "build:watch": "tsc -m es6 --outDir lib --watch",
     "test": "jest --config jest.config.js --json --outputFile='./coverage/coverage.json'",
+    "test:uifunction":  "jest --config jest.config.js --json --outputFile='./coverage/coverage.json' src/__tests__/store/modules/graphqlModifications.test.ts src/__tests__/store/index.test.ts",
     "test:coverage": "jest --coverage",
     "doc": "typedoc --plugin typedoc-plugin-missing-exports --plugin typedoc-plugin-markdown",
     "local": "webpack --watch",

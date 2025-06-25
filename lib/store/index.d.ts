@@ -25,6 +25,11 @@ declare class ApplicationStore {
     setServerCookies(cookies?: Record<string, string>): void;
     setI18nDetails(cookieValue: any): void;
     observeStore(getter: Function, onChange: Function): void;
+    private readonly gqlModifier;
+    mutations: {
+        apply: (operationName: string, payloadModifier: (req: any) => Promise<import("./modules/graphqlModifications").GQLModifierResult>) => void;
+        remove: (operationName: string, callback?: ((req: any) => Promise<import("./modules/graphqlModifications").GQLModifierResult>) | undefined) => void;
+    };
     executeGQL(query: string, params: any | null, options?: ExecuteOptions): Promise<any>;
     uploadFile(file: File, NAMESPACE?: string, START_UPLOAD_QUERY?: string, COMPLETE_UPLOAD_QUERY?: string): Promise<any>;
 }
