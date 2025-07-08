@@ -15,6 +15,7 @@ declare class ApplicationStore {
     PaymentGateways: Record<string, any>;
     private domain;
     private authorizationHeader;
+    private initialData;
     private serverCookies;
     private start_upload_query;
     private complete_upload_query;
