@@ -15,7 +15,6 @@ declare class ApplicationStore {
     PaymentGateways: Record<string, any>;
     private domain;
     private authorizationHeader;
-    private initialData;
     private serverCookies;
     private start_upload_query;
     private complete_upload_query;
@@ -24,6 +23,7 @@ declare class ApplicationStore {
     private getServerCookies;
     private encodeCookie;
     setServerCookies(cookies?: Record<string, string>): void;
+    setLocationDetails(cookieValue: any): void;
     setI18nDetails(cookieValue: any): void;
     observeStore(getter: Function, onChange: Function): void;
     private readonly gqlModifier;
