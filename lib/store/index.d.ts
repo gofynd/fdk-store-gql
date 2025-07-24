@@ -13,14 +13,12 @@ declare class ApplicationStore {
     theme: ThemeModule;
     payment: PaymentModule;
     PaymentGateways: Record<string, any>;
-    private initialData;
     private domain;
     private authorizationHeader;
-    private orderingSource;
     private serverCookies;
     private start_upload_query;
     private complete_upload_query;
-    constructor(initialData: any, authorizationHeader: any, domain: any, orderingSource: string);
+    constructor(initialData: any, authorizationHeader: any, domain: any);
     private executeFetch;
     private getServerCookies;
     private encodeCookie;
