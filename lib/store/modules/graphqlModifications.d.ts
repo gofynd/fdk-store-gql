@@ -1,4 +1,4 @@
-import { DocumentNode } from 'graphql';
+import { DocumentNode } from "graphql";
 export type GQLModifierResult = {
     query?: string;
     requestParam?: Record<string, any>;
@@ -12,6 +12,7 @@ interface UIModifierRegistry {
     remove(operationName: string, callback?: ModifierFn): void;
     getOperationNamesFromAst(ast: DocumentNode): string[];
     mergeQueries(mainAst: DocumentNode, extraAst: DocumentNode): DocumentNode;
+    modifyThemeQuery(ast: DocumentNode): DocumentNode;
 }
 export declare const GraphQLModifierUtils: () => UIModifierRegistry;
 export {};
