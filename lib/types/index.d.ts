@@ -25,6 +25,7 @@ export type FPIClientOptions = {
     applicationToken: string;
     domain: string;
     storeInitialData: unknown;
+    orderingSource?: string;
 };
 export type ProductListingOptions = {
     q?: string;
