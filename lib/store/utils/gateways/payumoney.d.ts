@@ -1,8 +1,13 @@
-export default class PayumoneyPayment {
-    selectedPayment: any;
-    paymentFlow: any;
-    constructor(selectedPayment: {
-        paymentFlowMeta: any;
-    });
-    transaction(): Promise<unknown>;
+interface PaymentFlow {
+    api_link: string;
 }
+interface SelectedPayment {
+    paymentFlowMeta: PaymentFlow;
+}
+export default class PayumoneyPayment {
+    selectedPayment: SelectedPayment;
+    paymentFlow: PaymentFlow;
+    constructor(selectedPayment: SelectedPayment);
+    transaction(obj: any): Promise<boolean>;
+}
+export {};
