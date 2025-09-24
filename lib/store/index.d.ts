@@ -32,6 +32,7 @@ declare class ApplicationStore {
         apply: (operationName: string, payloadModifier: (req: any) => Promise<import("./modules/graphqlModifications").GQLModifierResult>) => void;
         remove: (operationName: string, callback?: ((req: any) => Promise<import("./modules/graphqlModifications").GQLModifierResult>) | undefined) => void;
     };
+    setSliceData: <T = any>(sliceName: string, data: T) => void;
     executeGQL(query: string, params: any | null, options?: ExecuteOptions): Promise<any>;
     uploadFile(file: File, NAMESPACE?: string, START_UPLOAD_QUERY?: string, COMPLETE_UPLOAD_QUERY?: string): Promise<any>;
 }
