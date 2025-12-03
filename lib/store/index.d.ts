@@ -33,6 +33,14 @@ declare class ApplicationStore {
         remove: (operationName: string, callback?: ((req: any) => Promise<import("./modules/graphqlModifications").GQLModifierResult>) | undefined) => void;
     };
     setSliceData: <T = any>(sliceName: string, data: T) => void;
+    /**
+     * Handle GraphQL response data by calling the appropriate response handler
+     * @param responseData - The GraphQL response data
+     * @param params - The query/mutation parameters
+     * @param query - Query string to infer operation type ('query' or 'mutation')
+     * @param options - Optional execution options
+     */
+    handleGQLResponse: (responseData: any, params: any | null, operationType: 'query' | 'mutation', options?: ExecuteOptions) => void;
     executeGQL(query: string, params: any | null, options?: ExecuteOptions): Promise<any>;
     uploadFile(file: File, NAMESPACE?: string, START_UPLOAD_QUERY?: string, COMPLETE_UPLOAD_QUERY?: string): Promise<any>;
 }
