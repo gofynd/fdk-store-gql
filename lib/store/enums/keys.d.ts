@@ -35,3 +35,8 @@ export declare enum COOKIE_KEYS {
     LOCATION_DETAILS = "m_locationDetails",
     I18N_DETAILS = "app_i18n_details"
 }
+export declare const CUSTOM_STORE_KEYS: {
+    readonly I18N_DETAILS: "i18nDetailsKey";
+    readonly LOCATION_DETAILS: "locationDetailsKey";
+    readonly SELLER_DETAILS: "sellerDetailsKey";
+};
