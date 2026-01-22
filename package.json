@@ -2,6 +2,10 @@
   "name": "fdk-store",
   "version": "v3.0.41",
   "description": "FPI Store bridging library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gofynd/fdk-store-gql"
+  },
   "main": "./lib/index.js",
   "module": "./lib/index.js",
   "types": "./lib/index.d.ts",
