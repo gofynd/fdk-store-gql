@@ -26,6 +26,7 @@ declare class ApplicationStore {
     private encodeCookie;
     setServerCookies(cookies?: Record<string, string>): void;
     setI18nDetails(cookieValue: any): void;
+    setOrderingSource(orderingSource: string): void;
     observeStore(getter: Function, onChange: Function): void;
     private readonly gqlModifier;
     mutations: {
