@@ -1,5 +1,12 @@
+/**
+ * Helper function to check if a value is a valid non-empty object
+ */
+export declare function isValidObject(value: any): boolean;
+/**
+ * Helper function to parse cookie value (string or object) into an object
+ */
+export declare function parseCookieValue(cookieValue: any): Record<string, any>;
 export declare function parseFilters(obj: any): string;
-export declare function createJWTToken(jsonObj: any, secret: any): string;
 export declare function isRunningOnClient(): Boolean;
 export declare function getCookie(key: string): any | null;
 export declare function setCookie(key: string, value: any, exp: number, domain?: string, path?: string): void;
