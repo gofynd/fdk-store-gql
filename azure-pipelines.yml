@@ -29,7 +29,17 @@ jobs:
       set -euo pipefail
 
       echo "Tag build: $(Build.SourceBranchName)"
+
+      TAG_NAME="$(Build.SourceBranchName)"
       BRANCH_NAME=main
+
+      if [[ "$TAG_NAME" == *"-"* ]]; then
+        IS_PRERELEASE=true
+      else
+        IS_PRERELEASE=false
+      fi
+
+      echo "Is prerelease: $IS_PRERELEASE"
 
       git config --global user.email "jigar.dafda@gmail.com"
       git config --global user.name "Jigar Dafda"
@@ -113,19 +123,19 @@ jobs:
 
       git -c http.extraheader="$AUTH_HEADER" push origin "$BRANCH_NAME"
 
-      git tag "$(Build.SourceBranchName)" || echo "Tag already exists locally"
-      git -c http.extraheader="$AUTH_HEADER" push origin "$(Build.SourceBranchName)"
+      git tag "$TAG_NAME" || echo "Tag already exists locally"
+      git -c http.extraheader="$AUTH_HEADER" push origin "$TAG_NAME"
 
       # Create GitHub release using installation token
-      RELEASE_TITLE="Release_$(Build.SourceBranchName)"
+      RELEASE_TITLE="Release_${TAG_NAME}"
       POST_DATA=$(printf '{
         "tag_name": "%s",
         "target_commitish": "%s",
         "name": "%s",
         "body": "%s",
         "draft": false,
-        "prerelease": false
-      }' "$(Build.SourceBranchName)" "$BRANCH_NAME" "$RELEASE_TITLE" "$RELEASE_TITLE")
+        "prerelease": %s
+      }' "$TAG_NAME" "$BRANCH_NAME" "$RELEASE_TITLE" "$RELEASE_TITLE" "$IS_PRERELEASE")
 
       curl -sS -X POST \
         -H "Authorization: token ${INSTALL_TOKEN}" \
