@@ -16,9 +16,18 @@ declare class ApplicationStore {
     PaymentGateways: Record<string, any>;
     private domain;
     private authorizationHeader;
-    orderingSource: string;
-    /** orderingSourceType — set to 'storefront' when orderingSource is set. */
-    orderingSourceType: string;
+    /** orderingSource provided via the constructor (initialised by react-starter). */
+    private constructorOrderingSource;
+    /** orderingSource provided at runtime via setOrderingSource (called by skyfire). */
+    private skyfireOrderingSource;
+    /**
+     * Effective ordering source. The value set via setOrderingSource (skyfire)
+     * takes priority; if it is falsy we fall back to the constructor value
+     * (react-starter), and if that is also falsy it stays an empty string.
+     */
+    get orderingSource(): string;
+    /** orderingSourceType — 'storefront' when an ordering source is present. */
+    get orderingSourceType(): string;
     private serverCookies;
     private start_upload_query;
     private complete_upload_query;
