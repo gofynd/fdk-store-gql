@@ -21,9 +21,10 @@ declare class ApplicationStore {
     /** orderingSource provided at runtime via setOrderingSource (called by skyfire). */
     private skyfireOrderingSource;
     /**
-     * Effective ordering source. The value set via setOrderingSource (skyfire)
-     * takes priority; if it is falsy we fall back to the constructor value
-     * (react-starter), and if that is also falsy it stays an empty string.
+     * Effective ordering source. The constructor value (react-starter / theme)
+     * takes priority; if it is falsy we fall back to the value set via
+     * setOrderingSource (skyfire), and if both are falsy we default to
+     * 'storefront'.
      */
     get orderingSource(): string;
     /** orderingSourceType — 'storefront' when an ordering source is present. */
