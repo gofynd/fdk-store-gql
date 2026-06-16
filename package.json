@@ -17,6 +17,8 @@
     "test": "jest --config jest.config.js --json --outputFile='./coverage/coverage.json'",
     "test:uifunction":  "jest --config jest.config.js --json --outputFile='./coverage/coverage.json' src/__tests__/store/modules/graphqlModifications.test.ts src/__tests__/store/index.test.ts src/__tests__/store/slices/payment.test.ts",
     "test:coverage": "jest --coverage",
+    "coverage:output": "node scripts/coverage-output.js",
+    "test:report": "npm run test; npm run coverage:output",
     "doc": "typedoc --plugin typedoc-plugin-missing-exports --plugin typedoc-plugin-markdown",
     "local": "webpack --watch",
     "generate": "graphql-codegen",

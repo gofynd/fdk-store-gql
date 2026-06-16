@@ -15,7 +15,40 @@ variables:
 - group: ado-gh-sync-vg   # contains GITHUB_APP_ID and GITHUB_APP_INSTALLATION_ID
 
 jobs:
+# ---- Gate: run unit tests + enforce 90% coverage BEFORE anything is built/synced ----
+- job: Test
+  displayName: 'Unit tests & 90% coverage gate'
+  container: node18
+  steps:
+  - checkout: self
+
+  - script: |
+      set -euo pipefail
+
+      echo "Installing dependencies (incl. devDependencies for jest/ts-jest)..."
+      NODE_ENV=development npm install
+
+      echo "Running unit tests with enforced 90% coverage threshold..."
+      # 'npm run test' runs jest with coverageThreshold=90 in jest.config.js.
+      # Jest exits non-zero if ANY test fails OR if coverage falls below 90%,
+      # which fails this step -> fails this job -> the GitHubSync job is skipped.
+      npm run test
+
+      echo "Generating coverage summary (coverage/coverage_output.json)..."
+      npm run coverage:output
+    displayName: 'Run tests (fails if any test fails or coverage < 90%)'
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish code coverage report'
+    condition: succeededOrFailed()
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+
+# ---- Build / GitHub sync: only runs if the Test gate above passed ----
 - job: GitHubSync
+  dependsOn: Test
+  condition: succeeded()
   container: node18
   steps:
   - checkout: self

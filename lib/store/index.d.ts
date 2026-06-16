@@ -16,19 +16,9 @@ declare class ApplicationStore {
     PaymentGateways: Record<string, any>;
     private domain;
     private authorizationHeader;
-    /** orderingSource provided via the constructor (initialised by react-starter). */
-    private constructorOrderingSource;
-    /** orderingSource provided at runtime via setOrderingSource (called by skyfire). */
-    private skyfireOrderingSource;
-    /**
-     * Effective ordering source. The constructor value (react-starter / theme)
-     * takes priority; if it is falsy we fall back to the value set via
-     * setOrderingSource (skyfire), and if both are falsy we default to
-     * 'storefront'.
-     */
-    get orderingSource(): string;
-    /** orderingSourceType — 'storefront' when an ordering source is present. */
-    get orderingSourceType(): string;
+    orderingSource: string;
+    /** orderingSourceType — set to 'storefront' when orderingSource is set. */
+    orderingSourceType: string;
     private serverCookies;
     private start_upload_query;
     private complete_upload_query;
@@ -38,7 +28,6 @@ declare class ApplicationStore {
     private encodeCookie;
     setServerCookies(cookies?: Record<string, string>): void;
     setI18nDetails(cookieValue: any): void;
-    setOrderingSource(orderingSource: string): void;
     observeStore(getter: Function, onChange: Function): void;
     private readonly gqlModifier;
     mutations: {
