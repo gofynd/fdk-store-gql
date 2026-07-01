@@ -37,6 +37,26 @@ export declare const checkoutPayment: import("@reduxjs/toolkit").AsyncThunk<any,
     fulfilledMeta?: unknown;
     rejectedMeta?: unknown;
 }>;
+export declare const createSplitOrder: import("@reduxjs/toolkit").AsyncThunk<any, any, {
+    extra: {};
+    rejectValue: SerializedError;
+    state?: unknown;
+    dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
+    serializedErrorType?: unknown;
+    pendingMeta?: unknown;
+    fulfilledMeta?: unknown;
+    rejectedMeta?: unknown;
+}>;
+export declare const paySplit: import("@reduxjs/toolkit").AsyncThunk<any, any, {
+    extra: {};
+    rejectValue: SerializedError;
+    state?: unknown;
+    dispatch?: import("redux").Dispatch<import("redux").AnyAction> | undefined;
+    serializedErrorType?: unknown;
+    pendingMeta?: unknown;
+    fulfilledMeta?: unknown;
+    rejectedMeta?: unknown;
+}>;
 export declare const paymentReducer: import("redux").Reducer<{
     payment_options: any;
     aggregators_config: any;

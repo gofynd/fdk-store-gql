@@ -1,4 +1,4 @@
-schema: "https://api.uat.fyndx1.de/service/webhooks/graphql/"
+schema: "https://api.uat.fyndx1.de/service/application/graphql/"
 generates:
   src/types/graphql.ts:
     plugins:

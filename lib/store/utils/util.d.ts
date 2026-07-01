@@ -22,3 +22,8 @@ export declare const validateSliceUpdate: (state: any, sliceName: string) => boo
  * @param options - Options object that may contain skipStoreUpdate flag
  */
 export declare function conditionalStoreDispatch(dispatch: any, action: any, payload: any, options?: any): void;
+/**
+ * Creates (and charges) a single payment against an existing split order.
+ * Used by the split-payment flow once a SPLIT order has been created.
+ */
+export declare const CREATE_PAYMENT_ORDER = "mutation createPaymentOrder(\n  $paymentOrderInput: PaymentOrderInput\n) {\n  createPaymentOrder(paymentOrderInput: $paymentOrderInput) {\n    success\n    message\n    status_code\n    order_id\n    callback_url\n    payment_confirm_url\n    data\n  }\n}";

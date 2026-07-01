@@ -46,10 +46,18 @@ export type Scalars = {
         output: any;
     };
 };
+/** Status options for user accounts. */
+export declare enum AccountStatusEnum {
+    Active = "ACTIVE",
+    Inactive = "INACTIVE",
+    Unregistered = "UNREGISTERED"
+}
+/** Actions that can be taken on data. */
 export declare enum Action {
     Merge = "merge",
     Replace = "replace"
 }
+/** Actions that can be performed on cart items. */
 export declare enum ActionEnum {
     Merge = "merge",
     Replace = "replace"
@@ -66,20 +74,20 @@ export type ActionPage = {
     /** The URL of action. */
     url?: Maybe<Scalars['String']['output']>;
 };
-/** Represents the page details used to rendering. */
+/** Page routing configuration with navigation parameters and query filters. */
 export type ActionPageDetail = {
     __typename?: 'ActionPageDetail';
-    /** Parameters that should be considered in path. */
+    /** URL path parameters for dynamic routing, e.g. {'slug': 'nike', 'category': 'shoes'}. */
     params?: Maybe<Scalars['JSON']['output']>;
-    /** Query parameter if any to be added to the action. */
+    /** Query parameters for filtering and search, e.g. {'brand': ['mothercare'], 'category': ['baby-products']}. */
     query?: Maybe<Scalars['JSON']['output']>;
-    /** The type of action such as product, products, category, brand. */
+    /** Target page type for navigation, e.g. 'products', 'product', 'category', 'brand', 'collection'. */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** Action query schema which includes list of product slugs. */
 export type ActionQuery = {
     __typename?: 'ActionQuery';
-    /** Contains list of product slug. */
+    /** Contains list of product slugs. Example: ['cotton-tshirt'] */
     product_slug?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** Active payment gateway cards response. */
@@ -114,23 +122,54 @@ export type AddBeneficiaryDetailsOtpRequestInput = {
     details: BankDetailsForOtpInput;
     /** Unique identifier for an order. */
     order_id: Scalars['String']['input'];
+    /** Unique ID of the shipment */
+    shipment_id?: InputMaybe<Scalars['String']['input']>;
 };
-/** Add beneficiary details request object. */
+/** [Deprecated] Request payload for adding a new refund beneficiary. This input type will be removed in future versions. Use `addBeneficiary` mutation with `AddBeneficiaryInput` instead. */
 export type AddBeneficiaryDetailsRequestInput = {
-    /** True if  beneficiary to be added by delights or False if by User. */
+    /** True if beneficiary to be added by delights or False if by User. This field will be removed in future versions. */
     delights: Scalars['Boolean']['input'];
-    /** Beneficiary Mode Details. */
+    /** Nested object containing details of the beneficiary. */
     details: DetailsInput;
-    /** Merchant Order Id. */
+    /** Unique identifier for an order. */
     order_id: Scalars['String']['input'];
     /** OTP received by customer. */
     otp?: InputMaybe<Scalars['String']['input']>;
     /** Request Id for add benificiary request. */
     request_id?: InputMaybe<Scalars['String']['input']>;
-    /** Shipment Id of the respective Merchant Order Id. */
+    /** Unique identifier of the shipment. */
     shipment_id: Scalars['String']['input'];
     /** Transfer Mode of the Beneficiary to be added. */
     transfer_mode: Scalars['String']['input'];
+};
+/** Input object to add a new refund beneficiary for a specific order and shipment. Use this when linking a bank account or UPI ID as the destination for refunds. */
+export type AddBeneficiaryInput = {
+    /** Details of the beneficiary (bank account or UPI). See `BeneficiaryDetailsInput` for required fields. */
+    details: BeneficiaryDetailsInput;
+    /** Unique identifier of the order (returned by checkoutCart mutation) for which the refund is being created.  */
+    order_id: Scalars['String']['input'];
+    /** Unique identifier of the shipment (returned by orders query) linked to the specified order. */
+    shipment_id: Scalars['String']['input'];
+};
+/** Acknowledgement response returned after adding a new refund beneficiary. */
+export type AddBeneficiaryResponseDetails = {
+    __typename?: 'AddBeneficiaryResponseDetails';
+    /** Full name of the bank account holder linked to the beneficiary. */
+    account_holder?: Maybe<Scalars['String']['output']>;
+    /** Masked bank account number of the beneficiary. eg XXXX-XXXX-1234 */
+    account_no?: Maybe<Scalars['String']['output']>;
+    /** Name of the bank. */
+    bank_name?: Maybe<Scalars['String']['output']>;
+    /** UUID assigned internally to this beneficiary. */
+    id: Scalars['String']['output'];
+    /** This flag indicates whether the beneficiary account is verified by the aggregator. */
+    is_verified: Scalars['Boolean']['output'];
+    /** Optional Logo URL of the bank. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** Optional message describing the beneficiary addition status */
+    message?: Maybe<Scalars['String']['output']>;
+    /** UPI id of the beneficiary. eg johnddo@oksbi */
+    upi?: Maybe<Scalars['String']['output']>;
 };
 /** Add Beneficiary Via Otp Verification Request. */
 export type AddBeneficiaryViaOtpVerificationRequestInput = {
@@ -153,20 +192,176 @@ export type AddBeneficiaryViaOtpVerificationResponse = {
 export type AddCartDetailResponse = {
     __typename?: 'AddCartDetailResponse';
     /** Get cart detail API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc. */
-    cart?: Maybe<Cart>;
-    /** Message of add to cart API response. */
+    cart?: Maybe<AddItemToCartResponse>;
+    /**
+     * List of items that needs to be added in cart. Example: [{ item_id: 123, size: 'M', store_id: 1, success: true }]
+     * @deprecated This field is obsolete
+     */
+    items?: Maybe<Array<Maybe<CartItemInfo>>>;
+    /** Message of add to cart API response. Example: '2 items added to cart' */
     message?: Maybe<Scalars['String']['output']>;
-    /** When adding multiple items check if all added. True if only few are added. */
+    /**
+     * When adding multiple items check if all added. True if only few are added. Example: false
+     * @deprecated This field is obsolete
+     */
     partial?: Maybe<Scalars['Boolean']['output']>;
-    /** True if all items are added successfully. False if partially added or not added. */
+    /**
+     * Contains per-article result info. Example: { 'ART123': { success: true, message: 'Added' } }
+     * @deprecated This field is obsolete
+     */
+    result?: Maybe<Scalars['JSON']['output']>;
+    /** True if all items are added successfully. False if partially added or not added. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Items data list to be added in cart which includes item id, article id, item size, meta, parent item identifier, article assignment and custom json. */
+/** Items to add to cart including item id, article id, size, meta, parent identifiers, article assignment, and custom JSON. Example: items=[{ item_id: 123, item_size: 'M', quantity: 2, store_id: 1 }] */
 export type AddCartRequestInput = {
-    /** List of items detail which need to be added to cart like item id, item size, and item quantity. */
+    /** List of items to add to the cart (with item id, size, quantity, etc.). Example: [{ item_id: 123, item_size: 'M', quantity: 2, store_id: 1 }] */
     items?: InputMaybe<Array<InputMaybe<CartItem>>>;
-    /** Field to create to new cart whille user adds item to cart. */
-    new_cart?: InputMaybe<Scalars['Boolean']['input']>;
+};
+/** Select Address response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type AddItemToCartResponse = {
+    __typename?: 'AddItemToCartResponse';
+    /**
+     * List of saved addresses for user cart checkout.
+     * @deprecated This field is obsolete
+     */
+    addresses?: Maybe<Addresses>;
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /**
+     * Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }]
+     * @deprecated This field is obsolete
+     */
+    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
+    /**
+     * Price breakup for coupon, display, loyalty points, etc.
+     * @deprecated This field is obsolete
+     */
+    breakup_values?: Maybe<CartBreakup>;
+    /** Buy Now flag for fast checkout. Example: false */
+    buy_now?: Maybe<Scalars['Boolean']['output']>;
+    /** Numeric cart identifier. Example: 123456 */
+    cart_id?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Checkout mode (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
+    checkout_mode?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cart-level comment. Example: 'Deliver after 6 PM'
+     * @deprecated This field is obsolete
+     */
+    comment?: Maybe<Scalars['String']['output']>;
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
+    common_config?: Maybe<CartCommonConfig>;
+    /**
+     * Cart-level coupon data (applied flag, code, amount, title, message).
+     * @deprecated This field is obsolete , Use breakup_values.coupon instead
+     */
+    coupon?: Maybe<CartDetailCoupon>;
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
+    coupon_text?: Maybe<Scalars['String']['output']>;
+    /**
+     * Currency for prices (e.g., code 'INR', symbol '₹').
+     * @deprecated This field is obsolete
+     */
+    currency?: Maybe<CartCurrency>;
+    /**
+     * Custom cart metadata. Example: { channel: 'web' }
+     * @deprecated This field is obsolete
+     */
+    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery charge informational message. Example: 'Free delivery above ₹999'
+     * @deprecated This field is obsolete
+     */
+    delivery_charge_info?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery promise for the cart.
+     * @deprecated This field is obsolete
+     */
+    delivery_promise?: Maybe<DeliveryPromiseResponse>;
+    /**
+     * Whether promotion free gift selection is available. Example: true
+     * @deprecated This field is obsolete
+     */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * GSTIN associated with the cart. Example: '27AAACI1195H1ZK'
+     * @deprecated This field is obsolete
+     */
+    gstin?: Maybe<Scalars['String']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    id?: Maybe<Scalars['String']['output']>;
+    /** Whether the cart response is valid. Example: true */
+    is_valid?: Maybe<Scalars['Boolean']['output']>;
+    /** List of cart items. When includeCartCalculation is false, only article uid and identifiers are populated per item. */
+    items?: Maybe<Array<Maybe<CartProductInfo>>>;
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
+    last_modified?: Maybe<Scalars['String']['output']>;
+    /** Response message. Example: 'Cart fetched successfully' */
+    message?: Maybe<Scalars['String']['output']>;
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
+    notification?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 }
+     * @deprecated This field is obsolete
+     */
+    pan_config?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * User PAN number. Example: 'ABCDE1234F'
+     * @deprecated This field is obsolete
+     */
+    pan_no?: Maybe<Scalars['String']['output']>;
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
+    payment_selection_lock?: Maybe<PaymentSelectionLock>;
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
+    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
+    staff_user_id?: Maybe<Scalars['String']['output']>;
+    /** Whether the API call was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    uid?: Maybe<Scalars['String']['output']>;
+    /** Number of items in cart. Example: 3 */
+    user_cart_items_count?: Maybe<Scalars['Int']['output']>;
+};
+/** Select Address response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type AddItemToCartResponseAddressesArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+    mobileNo?: InputMaybe<Scalars['String']['input']>;
+    tags?: InputMaybe<Scalars['String']['input']>;
 };
 /** Details required to create a ticket. */
 export type AddTicketPayloadInput = {
@@ -176,134 +371,141 @@ export type AddTicketPayloadInput = {
     category: Scalars['String']['input'];
     /** Content for the ticket. */
     content: TicketContentInput;
-    /** Creator of the ticket. */
-    created_by?: InputMaybe<Scalars['JSON']['input']>;
     /** Describes the priority of the tickets created by the form. */
     priority?: InputMaybe<PriorityEnum>;
-    /** Status of the ticket. */
-    status?: InputMaybe<Scalars['String']['input']>;
-    /** List of emails to be informed for ticket updates. */
-    subscribers?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
-/** Address details, consists of pincode, phone, address id, country code, geo location, country, state, city, landmark, email etc. */
+/** Address details including pincode, phone, id, country code, geolocation, country, state, city, landmark, email, etc. */
 export type Address = {
     __typename?: 'Address';
-    /** Address description for address data. */
+    /** Address line(s). Example: '221B Baker Street' */
     address?: Maybe<Scalars['String']['output']>;
-    /** Address type of address. */
+    /** Type of address. Example: 'home' */
     address_type?: Maybe<Scalars['String']['output']>;
-    /** Area description for address. */
+    /**
+     * Sales channel id.
+     * @deprecated This field is obsolete
+     */
+    app_id?: Maybe<Scalars['String']['output']>;
+    /** Area/locality. Example: 'Andheri East' */
     area?: Maybe<Scalars['String']['output']>;
-    /** Area code of the address. */
+    /** Area code. Example: '400059' */
     area_code?: Maybe<Scalars['String']['output']>;
-    /** Area code slug for address. example pincode is slug for India. */
+    /** Area code slug (e.g., pincode in India). Example: 'pincode' */
     area_code_slug?: Maybe<Scalars['String']['output']>;
-    /** Checkout mode of address on which address to be used for which checkout mode of cart. */
+    /**
+     * Checkout mode associated with this address (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
     checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** City of the address. */
+    /** City of the address (e.g., Mumbai). Example: 'Mumbai' */
     city?: Maybe<Scalars['String']['output']>;
-    /** Country of address. */
+    /** Country of address (e.g., India). Example: 'India' */
     country?: Maybe<Scalars['String']['output']>;
-    /** Country code of address. */
+    /**
+     * Country phone code (e.g., '+91'). Example: '+91'
+     * @deprecated This field is obsolete. Use 'country_phone_code' instead.
+     */
     country_code?: Maybe<Scalars['String']['output']>;
-    /** Country iso code for address. */
+    /** Country ISO code (e.g., IN). Example: 'IN' */
     country_iso_code?: Maybe<Scalars['String']['output']>;
-    /** Country phone code for address. */
+    /** Country phone code (e.g., '+91'). Example: '+91' */
     country_phone_code?: Maybe<Scalars['String']['output']>;
-    /** Created by user id of address. */
+    /** User ID that created the address. Example: 'usr_123' */
     created_by_user_id?: Maybe<Scalars['String']['output']>;
-    /** Custom json of the address. */
+    /**
+     * Custom JSON for address. Example: { instructions: 'Leave at the gate' }
+     * @deprecated This field is obsolete
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Email address for address data. */
+    /** Email address. Example: 'john.doe@example.com' */
     email?: Maybe<Scalars['String']['output']>;
-    /** Geolocation details for address data. */
+    /** Geolocation coordinates. Example: { latitude: 19.076, longitude: 72.8777 } */
     geo_location?: Maybe<GeoLocation>;
-    /** Google map point of the address. */
+    /** Google Maps geometry point. Example: { type: 'Point', coordinates: [72.8777, 19.076] } */
     google_map_point?: Maybe<Scalars['JSON']['output']>;
-    /** Id of the address. */
+    /** Address identifier. Example: 'addr_001' */
     id?: Maybe<Scalars['String']['output']>;
-    /** States whether address is active or not. */
+    /**
+     * Whether the address is active. Example: true
+     * @deprecated This field is obsolete
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** Default address flag if no address selected then this should be the default address selected. */
+    /** Whether address belongs to an anonymous user. Example: false */
+    is_anonymous?: Maybe<Scalars['Boolean']['output']>;
+    /** Whether this is the default address. Example: false */
     is_default_address?: Maybe<Scalars['Boolean']['output']>;
-    /** Landmark of address. */
+    /** Landmark. Example: 'Near City Mall' */
     landmark?: Maybe<Scalars['String']['output']>;
-    /** Metadata of the address. */
+    /** Additional metadata. Example: { floor: '2nd' } */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** Name of person in address data to whom it belongs to. */
+    /** Full name. Example: 'John Doe' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Phone number for address. */
+    /** Phone number. Example: '9876543210' */
     phone?: Maybe<Scalars['String']['output']>;
-    /** Sector of the address. */
+    /** Sector/Block. Example: 'Sector 21' */
     sector?: Maybe<Scalars['String']['output']>;
-    /** State of the address. */
+    /** State. Example: 'Maharashtra' */
     state?: Maybe<Scalars['String']['output']>;
-    /** State code for address. */
+    /** State code. Example: 'MH' */
     state_code?: Maybe<Scalars['String']['output']>;
-    /** Tags of address from which it can be identified. */
+    /** Tags to identify the address. Example: ['home', 'default'] */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** User id of address for which address is created. */
+    /** Numeric UID associated with the address. Example: 101 */
+    uid?: Maybe<Scalars['Int']['output']>;
+    /**
+     * User ID the address belongs to. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
     user_id?: Maybe<Scalars['String']['output']>;
 };
-/** Address details, consists of pincode, phone, address id, country code, geo location, country, state, city, landmark, email etc. */
+/** Address details including pincode, phone, id, country code, geolocation, country, state, city, landmark, email, etc. */
 export type Address2Input = {
-    /** Custom json of the address. */
-    _custom_json?: InputMaybe<Scalars['JSON']['input']>;
-    /** Address description for address data. */
+    /** Address line(s). Example: '221B Baker Street' */
     address?: InputMaybe<Scalars['String']['input']>;
-    /** Address type of address. */
+    /** Type of address. Example: 'home' */
     address_type?: InputMaybe<Scalars['String']['input']>;
-    /** Area description for address. */
+    /** Area/locality. Example: 'Andheri East' */
     area?: InputMaybe<Scalars['String']['input']>;
-    /** Area code of the address. */
+    /** Area code. Example: '400059' */
     area_code?: InputMaybe<Scalars['String']['input']>;
-    /** Area code slug for address. example pincode is slug for India. */
+    /** Area code slug (e.g., pincode in India). Example: 'pincode' */
     area_code_slug?: InputMaybe<Scalars['String']['input']>;
-    /** Checkout mode of address on which address to be used for which checkout mode of cart. */
+    /** Checkout mode associated with this address (e.g., 'self', 'other'). Example: 'self' */
     checkout_mode?: InputMaybe<Scalars['String']['input']>;
-    /** City of the address. */
+    /** City of the address (e.g., Mumbai). Example: 'Mumbai' */
     city?: InputMaybe<Scalars['String']['input']>;
-    /** Country of address. */
+    /** Country of the address (e.g., India). Example: 'India' */
     country?: InputMaybe<Scalars['String']['input']>;
-    /** Country code of address. */
-    country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Country iso code for address. */
+    /** Country ISO code (e.g., IN). Example: 'IN' */
     country_iso_code?: InputMaybe<Scalars['String']['input']>;
-    /** Country phone code for address. */
+    /** Country phone code (e.g., '+91'). Example: '+91' */
     country_phone_code?: InputMaybe<Scalars['String']['input']>;
-    /** Created by user id of address. */
-    created_by_user_id?: InputMaybe<Scalars['String']['input']>;
-    /** Email address for address data. */
+    /** Email address. Example: 'john.doe@example.com' */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** Geo location coordinates data for address. */
+    /** Geolocation coordinates. Example: { latitude: 19.076, longitude: 72.8777 } */
     geo_location?: InputMaybe<GeoLocationInput>;
-    /** Google map point of the address. */
-    google_map_point?: InputMaybe<Scalars['JSON']['input']>;
-    /** Id of the address. */
+    /** Address identifier. Example: 'addr_001' */
     id?: InputMaybe<Scalars['String']['input']>;
-    /** States whether address is active or not. */
-    is_active?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Default address flag if no address selected then this should be the default address selected. */
+    /** Whether this is the default address. Example: false */
     is_default_address?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Landmark of address. */
+    /** Landmark. Example: 'Near City Mall' */
     landmark?: InputMaybe<Scalars['String']['input']>;
-    /** Metadata of the address. */
+    /** Additional metadata. Example: { floor: '2nd' } */
     meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Name of person in address data to whom it belongs to. */
+    /** Full name. Example: 'John Doe' */
     name?: InputMaybe<Scalars['String']['input']>;
-    /** Phone number for address. */
+    /** Phone number. Example: '9876543210' */
     phone?: InputMaybe<Scalars['String']['input']>;
+    /** Postal code or PIN code of the address area. */
     pincode?: InputMaybe<Scalars['String']['input']>;
-    /** Sector of the address. */
+    /** Sector/Block. Example: 'Sector 21' */
     sector?: InputMaybe<Scalars['String']['input']>;
-    /** State of the address. */
+    /** State. Example: 'Maharashtra' */
     state?: InputMaybe<Scalars['String']['input']>;
-    /** State code for address. */
+    /** State code. Example: 'MH' */
     state_code?: InputMaybe<Scalars['String']['input']>;
-    /** Tags of address from which it can be identified. */
+    /** Tags to identify the address. Example: ['home', 'default'] */
     tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-    /** User id of address for which address is created. */
-    user_id?: InputMaybe<Scalars['String']['input']>;
 };
 /** KYC Address Details. */
 export type AddressAsPerIdInput = {
@@ -339,14 +541,21 @@ export type AddressInput = {
     /** State of the KYC address. */
     state: Scalars['String']['input'];
 };
-/** Fetch address response schema which includes pii masking flag and list of addresses. */
+/** Defines the type of address for business locations. */
+export declare enum AddressType {
+    /** Office or business operational address */
+    Office = "office",
+    /** Legal registered address of the company */
+    Registered = "registered"
+}
+/** Address list response including PII masking and validation rules. */
 export type Addresses = {
     __typename?: 'Addresses';
-    /** Address description for address data. */
+    /** List of saved addresses. */
     address?: Maybe<Array<Maybe<Address>>>;
-    /** Personally Identifiable Information masking flag to denote if the user data in address is masked or not. */
+    /** Whether PII masking is enabled for address data. Example: true */
     pii_masking?: Maybe<Scalars['Boolean']['output']>;
-    /** Defines validation rules for user addresses. */
+    /** Validation rules for user addresses. */
     validation_config?: Maybe<ValidationConfig>;
 };
 /** Contains advance payment details */
@@ -393,6 +602,22 @@ export type AdvancePaymentObject = {
     /** Pyament split details */
     split?: Maybe<SplitObject>;
 };
+/** Aggregator Route Details. */
+export type AggregatorRouteDetail = {
+    __typename?: 'AggregatorRouteDetail';
+    /** aggregator key. */
+    aggregator_key: Scalars['String']['output'];
+    /** API link of the aggregator. */
+    api_link?: Maybe<Scalars['String']['output']>;
+    /** Details about aggregator route. */
+    data?: Maybe<Scalars['JSON']['output']>;
+    /** Payment flow. */
+    payment_flow?: Maybe<Scalars['String']['output']>;
+    /** Payment flow data. */
+    payment_flow_data?: Maybe<Scalars['JSON']['output']>;
+    /** Type of the aggregator. */
+    type?: Maybe<Scalars['String']['output']>;
+};
 /** Aggregators Config details. */
 export type AggregatorsConfigDetail = {
     __typename?: 'AggregatorsConfigDetail';
@@ -402,20 +627,56 @@ export type AggregatorsConfigDetail = {
     env: Scalars['String']['output'];
     /** Juspay config detail schema. */
     juspay?: Maybe<JusPayAggregatorConfig>;
-    /** Mswipe config detail schema. */
+    /**
+     * Mswipe config detail schema.
+     * @deprecated Deprecated mswipe aggregator.
+     */
     mswipe?: Maybe<MSwipeAggregatorConfig>;
     /** PayUMoney config detail schema. */
     payumoney?: Maybe<PayuMoneyAggregatorConfig>;
     /** Razorpay config detail schema. */
     razorpay?: Maybe<RazorPayAggregatorConfig>;
-    /** Rupifi config detail schema. */
+    /**
+     * Rupifi config detail schema.
+     * @deprecated Deprecated rupifi aggregator.
+     */
     rupifi?: Maybe<RupifyAggregatorConfig>;
     /** Simpl config detail schema. */
     simpl?: Maybe<SimplAggregatorConfig>;
-    /** Stripe config detail schema. */
+    /**
+     * Stripe config detail schema.
+     * @deprecated Deprecated stripe aggregator.
+     */
     stripe?: Maybe<StripeAggregatorConfig>;
     /** Api response was successful or not. */
     success: Scalars['Boolean']['output'];
+};
+/** Details of an alternate person authorized to pick up the order. */
+export type AlternatePickupPerson = {
+    __typename?: 'AlternatePickupPerson';
+    /** Country phone code (e.g., '+91'). Example: '+91' */
+    country_phone_code?: Maybe<Scalars['String']['output']>;
+    /** Email of the alternate pickup person. Example: 'jane@example.com' */
+    email?: Maybe<Scalars['String']['output']>;
+    /** Whether alternate pickup person is enabled. Example: true */
+    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Name of the alternate pickup person. Example: 'Jane Doe' */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Phone number of the alternate pickup person. Example: '9876543210' */
+    phone?: Maybe<Scalars['String']['output']>;
+};
+/** Alternate person authorized to pick up the order. */
+export type AlternatePickupPersonInput = {
+    /** Country phone code (e.g., '+91'). Example: '+91' */
+    country_phone_code?: InputMaybe<Scalars['String']['input']>;
+    /** Email of the alternate pickup person. Example: 'jane@example.com' */
+    email?: InputMaybe<Scalars['String']['input']>;
+    /** Whether alternate pickup person is enabled. Example: true */
+    enabled?: InputMaybe<Scalars['Boolean']['input']>;
+    /** Name of the alternate pickup person. Example: 'Jane Doe' */
+    name?: InputMaybe<Scalars['String']['input']>;
+    /** Phone number of the alternate pickup person. Example: '9876543210' */
+    phone?: InputMaybe<Scalars['String']['input']>;
 };
 /** Balance Details. */
 export type AmountAvailable = {
@@ -432,271 +693,523 @@ export type Announcements = {
     __typename?: 'Announcements';
     /** Details regarding the announcement bar contents. */
     announcements?: Maybe<Scalars['JSON']['output']>;
-    /** list of page slugs on which announcement should be fetched as soon as they are loaded. */
+    /**
+     * list of page slugs on which announcement should be fetched as soon as they are loaded. For example, ['home', 'products', 'cart'].
+     * @deprecated This field is obsolete.
+     */
     refresh_pages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** number of seconds after which api should hit again to fetch new announcements. */
+    /** number of seconds after which api should hit again to fetch new announcements. For example, 900 or 1200. Default value is 900. */
     refresh_rate?: Maybe<Scalars['Int']['output']>;
 };
 /** Details about the sales channel, including its settings, metadata, and associated resources. */
 export type AppBasicDetails = {
     __typename?: 'AppBasicDetails';
-    /** URL of the banner image for the sales channel. */
+    /**
+     * URL of the banner image for the sales channel.
+     * @deprecated banner is deprecated. Use banner_url instead.
+     */
     banner?: Maybe<SecureUrl>;
-    /** Numeric ID allotted to a business account where the sales channel exists. */
+    /** URL of the banner image for the sales channel. */
+    banner_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * The ID of the company this sales channel belongs to.
+     * @deprecated This field is obsolete.
+     */
     company_id?: Maybe<Scalars['Int']['output']>;
-    /** It gives a detailed information about the sales channel. */
+    /** Detailed description about the sales channel. */
     description?: Maybe<Scalars['String']['output']>;
     /** Primary domain associated with the sales channel. */
-    domain?: Maybe<Domain>;
+    domain: Domain;
     /** List of domains associated with the sales channel. */
-    domains?: Maybe<Array<Maybe<Domain>>>;
-    /** List of domains associated with the sales channel. */
+    domains: Array<Maybe<Domain>>;
+    /**
+     * URL for the favicon image for the sales channel.
+     * @deprecated favicon is deprecated. Use favicon_url instead.
+     */
     favicon?: Maybe<SecureUrl>;
-    /** The unique identifier (24-digit Mongo Object ID) for the sales channel details. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** URL of the logo image for the sales channel. */
+    /** URL for the favicon image for the sales channel. */
+    favicon_url?: Maybe<Scalars['String']['output']>;
+    /** The unique ID for sales channel. */
+    id: Scalars['String']['output'];
+    /**
+     * URL of the logo image for the sales channel.
+     * @deprecated logo is deprecated. Use logo_url instead.
+     */
     logo?: Maybe<SecureUrl>;
-    /** URL of the mobile version of the logo image for the sales channel. */
+    /** URL of the logo image for the sales channel. */
+    logo_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * URL of the mobile version of the logo image for the sales channel.
+     * @deprecated mobile_logo is deprecated. Use mobile_logo_url instead.
+     */
     mobile_logo?: Maybe<SecureUrl>;
-    /** Store name of the ordering store. */
+    /** URL of the mobile version of the logo image for the sales channel. */
+    mobile_logo_url?: Maybe<Scalars['String']['output']>;
+    /** Name of the sales channel, e.g. 'My Fashion Store'. */
     name: Scalars['String']['output'];
-    /** Slug identifier. */
+    /** URL-friendly identifier for the sales channel, e.g. 'my-fashion-store'. */
     slug?: Maybe<Scalars['String']['output']>;
 };
-/** Credentials required for Firebase integration. */
+/** Defines the country level currencies available. */
+export type AppCountryCurrencies = {
+    __typename?: 'AppCountryCurrencies';
+    /** Currencies mapped for country. */
+    currencies?: Maybe<Array<Maybe<CurrencyDetail>>>;
+    /** Whether this is default country for Sales channel */
+    is_default?: Maybe<Scalars['Boolean']['output']>;
+    /** ISO2 code of the country */
+    iso2?: Maybe<Scalars['String']['output']>;
+    /** ISO3 code of the country */
+    iso3?: Maybe<Scalars['String']['output']>;
+    /** Name of the country */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for country entity */
+    uid?: Maybe<Scalars['String']['output']>;
+};
+/** Platform-specific credentials required for Firebase integration. */
 export type AppCredentials = {
     __typename?: 'AppCredentials';
-    /** Secret API key for Google Maps. A unique identifier that authenticates requests made to Google Maps API. */
+    /** Platform-specific API key for Firebase, e.g. 'AIzaSyC1234567890abcdef'. */
     api_key?: Maybe<Scalars['String']['output']>;
-    /** Alphanumeric ID allotted to a sales channel application created within a business account. */
+    /** Platform-specific application ID for the sales channel, e.g. 'com.example.app'. */
     application_id?: Maybe<Scalars['String']['output']>;
 };
 /** Response object containing details about currencies related to an application. */
 export type AppCurrencyInfo = {
     __typename?: 'AppCurrencyInfo';
-    /** The unique identifier of the application. */
+    /**
+     * The unique identifier of the sales channel currency configuration.
+     * @deprecated This field is obsolete.
+     */
     _id?: Maybe<Scalars['String']['output']>;
-    /** Alphanumeric ID allotted to an application (sales channel website) created within a business account. */
+    /**
+     * The ID of the sales channel this currency info belongs to.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of when the application was created. */
+    /**
+     * Timestamp when application sales channel currency was created, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Details of the default currency for the application. */
+    /** Details of the default currency for the sales channel. */
     default_currency?: Maybe<DefaultCurrency>;
-    /** ISO 8601 timestamp of when the application was last modified. */
+    /**
+     * Timestamp when application sales channel currency was updated, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
     modified_at?: Maybe<Scalars['String']['output']>;
-    /** A list of currencies supported by the application. */
+    /** A list of currencies supported by the sales channel. */
     supported_currency?: Maybe<Array<Maybe<Currency>>>;
 };
 /** Details about the sales channel, including its settings, metadata, and associated resources. */
 export type AppDetails = {
     __typename?: 'AppDetails';
-    /** It shows application is live or in development mode. */
+    /**
+     * Shows whether sales channel is live or in development mode.
+     * @deprecated This field is obsolete.
+     */
     app_type?: Maybe<AppType>;
-    /** Authentication settings for the sales channel. */
+    /**
+     * Authentication settings for the sales channel.
+     * @deprecated This field is obsolete.
+     */
     auth?: Maybe<ApplicationAuth>;
-    /** URL of the banner image for the sales channel. */
+    /**
+     * URL of the banner image for the sales channel.
+     * @deprecated banner is deprecated. Use banner_url instead.
+     */
     banner?: Maybe<SecureUrl>;
-    /** An integer value that specifies the number of seconds until the key expires. */
+    /** URL of the banner image for the sales channel. */
+    banner_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cache time-to-live in seconds, e.g. 3600 for 1 hour.
+     * @deprecated This field is obsolete.
+     */
     cache_ttl?: Maybe<Scalars['Int']['output']>;
-    /** It indicates different channel types like store, website-and-mobile-apps. Default value is store. */
+    /** Channel type like 'store', 'website-and-mobile-apps'. Default value is 'store'. */
     channel_type?: Maybe<Scalars['String']['output']>;
-    /** Numeric ID allotted to a business account where the sales channel exists. */
-    company_id?: Maybe<Scalars['Int']['output']>;
-    /** CORS configuration for the sales channel. */
+    /**
+     * The ID of the company this sales channel belongs to.
+     * @deprecated This field is obsolete.
+     */
+    company_id: Scalars['Int']['output'];
+    /**
+     * CORS configuration for the sales channel.
+     * @deprecated This field is obsolete.
+     */
     cors?: Maybe<ApplicationCors>;
-    /** ISO 8601 timestamp of sales channel creation. */
-    created_at?: Maybe<Scalars['String']['output']>;
-    /** It gives a detailed information about the sales channel. */
+    /**
+     * Timestamp when sales channel was created, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    created_at: Scalars['String']['output'];
+    /** Detailed description about the sales channel. */
     description?: Maybe<Scalars['String']['output']>;
     /** Primary domain associated with the sales channel. */
-    domain?: Maybe<Domain>;
+    domain: Domain;
     /** List of domains associated with the sales channel. */
-    domains?: Maybe<Array<Maybe<Domain>>>;
-    /** List of domains associated with the sales channel. */
+    domains: Array<Maybe<Domain>>;
+    /**
+     * URL for the favicon image for the sales channel.
+     * @deprecated favicon is deprecated. Use favicon_url instead.
+     */
     favicon?: Maybe<SecureUrl>;
-    /** The unique identifier (24-digit Mongo Object ID) for the sales channel details. */
+    /** URL for the favicon image for the sales channel. */
+    favicon_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * The unique identifier for sales channel.
+     * @deprecated This field is obsolete.
+     */
     id?: Maybe<Scalars['String']['output']>;
-    /** Indicates sales channel is active or not active. */
-    is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates whether a sales channel is internal or not. */
+    /**
+     * Indicates whether sales channel is active or inactive.
+     * @deprecated This field is obsolete.
+     */
+    is_active: Scalars['Boolean']['output'];
+    /**
+     * Indicates whether a sales channel is internal or external.
+     * @deprecated This field is obsolete.
+     */
     is_internal?: Maybe<Scalars['Boolean']['output']>;
-    /** URL of the logo image for the sales channel. */
+    /**
+     * URL of the logo image for the sales channel.
+     * @deprecated logo is deprecated. Use logo_url instead.
+     */
     logo?: Maybe<SecureUrl>;
-    /** List of meta information for the sales channel. */
+    /** URL of the logo image for the sales channel. */
+    logo_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * List of meta information for the sales channel.
+     * @deprecated This field is obsolete.
+     */
     meta?: Maybe<Array<Maybe<ApplicationMeta>>>;
-    /** URL of the mobile version of the logo image for the sales channel. */
+    /**
+     * URL of the mobile version of the logo image for the sales channel.
+     * @deprecated mobile_logo is deprecated. Use mobile_logo_url instead.
+     */
     mobile_logo?: Maybe<SecureUrl>;
-    /** Application mode. */
-    mode?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of sales channel updation. */
-    modified_at?: Maybe<Scalars['String']['output']>;
-    /** Store name of the ordering store. */
+    /** URL of the mobile version of the logo image for the sales channel. */
+    mobile_logo_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * Shows whether sales channel is in 'live' or 'development' mode.
+     * @deprecated This field is obsolete.
+     */
+    mode: ApplicationMode;
+    /**
+     * Timestamp when sales channel was updated, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    modified_at: Scalars['String']['output'];
+    /** Name of the sales channel, e.g. 'My Fashion Store'. */
     name: Scalars['String']['output'];
-    /** The unique identifier (24-digit Mongo Object ID) of owner who owns the application. */
+    /**
+     * The unique ID of the owner who owns the sales channel.
+     * @deprecated This field is obsolete.
+     */
     owner?: Maybe<Scalars['String']['output']>;
-    /** List of redirections for the sales channel. */
+    /**
+     * List of redirections for the sales channel.
+     * @deprecated This field is obsolete.
+     */
     redirections?: Maybe<Array<Maybe<ApplicationRedirections>>>;
-    /** Slug identifier. */
-    slug?: Maybe<Scalars['String']['output']>;
-    /** Current status of the application. */
-    status?: Maybe<Scalars['String']['output']>;
-    /** Random generated fix length string for sales channel. It is required and auto-generated. */
+    /** A short URL-friendly identifier of a sales channel, e.g. 'my-fashion-store'. */
+    slug: Scalars['String']['output'];
+    /**
+     * Current status of the sales channel, e.g. 'active', 'blocked'.
+     * @deprecated This field is obsolete.
+     */
+    status: ApplicationStatus;
+    /**
+     * Randomly generated fixed length string for sales channel. It is required and auto-generated.
+     * @deprecated This field is obsolete.
+     */
     token?: Maybe<Scalars['String']['output']>;
-    /** List of tokens associated with the sales channel. */
+    /**
+     * List of tokens associated with the sales channel.
+     * @deprecated This field is obsolete.
+     */
     tokens?: Maybe<Array<Maybe<TokenSchema>>>;
-    /** ISO 8601 timestamp of sales channel updation. */
+    /**
+     * Timestamp when sales channel was updated, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** Version key for tracking revisions. Default value is zero. */
+    /**
+     * Version key for tracking revisions. Default value is zero.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['Float']['output']>;
-    /** Sales channel website details. */
+    /**
+     * Sales channel website details.
+     * @deprecated This field is obsolete.
+     */
     website?: Maybe<ApplicationWebsite>;
 };
 /** Configuration for various features of the application. */
 export type AppFeature = {
     __typename?: 'AppFeature';
-    /** Application ID of the sales channel. */
+    /**
+     * Application ID of the sales channel.
+     * @deprecated This field is obsolete.
+     */
     app?: Maybe<Scalars['String']['output']>;
+    /** Configuration options for the buybox feature. */
+    buybox: BuyboxFeature;
     /** Configuration options for features related to the shopping cart, including GST input, staff selection, and coupon usage. */
-    cart?: Maybe<CartFeature>;
-    /** Configuration for common features across the application. */
-    common?: Maybe<CommonFeature>;
-    /** ISO 8601 timestamp showing the date when the features were configured. */
+    cart: CartFeature;
+    /** Configuration for common features across the sales channel. */
+    common: CommonFeature;
+    /**
+     * Timestamp when sales channel features configuration was created, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Configuration for the home page of the application. */
-    home_page?: Maybe<HomePageFeature>;
-    /** Application ID of the sales channel. */
+    /**
+     * Configuration for worldwide shipping and restricted shipping to specific stores and products within defined delivery areas.
+     * @deprecated This field is obsolete.
+     */
+    delivery_strategy?: Maybe<DeliveryStrategy>;
+    /** Fulfillment options define the different ways an order can be delivered or collected, such as standard delivery, express delivery, or store pickup. */
+    fulfillment_option?: Maybe<FulfillmentOptionCount>;
+    /** Configuration for the home page of the sales channel. */
+    home_page: HomePageFeature;
+    /**
+     * Unique identifier for the sales channel features configuration.
+     * @deprecated This field is obsolete.
+     */
     id?: Maybe<Scalars['String']['output']>;
-    /** Configuration for the landing page of the application. */
-    landing_page?: Maybe<LandingPageFeature>;
-    /** ISO 8601 timestamp of last known modifications to the sales channel feature configuration. */
+    /** Indicates whether international price factory enabled or not in sales channel. */
+    international: Scalars['Boolean']['output'];
+    /** Configuration for the landing page of the sales channel. */
+    landing_page: LandingPageFeature;
+    /**
+     * Timestamp when sales channel features configuration was updated.
+     * @deprecated This field is obsolete.
+     */
     modified_at?: Maybe<Scalars['String']['output']>;
     /** Configuration options for order-related features, such as enabling the 'buy again' option. */
-    order?: Maybe<OrderFeature>;
-    /** Configuration for the PCR feature. */
-    pcr?: Maybe<PcrFeature>;
-    /** Configuration for product detail features in the application. */
+    order: OrderFeature;
+    /**
+     * Represents an ordering source that can be associated with a sales channel.
+     * Ordering sources define the origin or platform from which orders are placed,
+     * enabling tracking and differentiation of orders based on their source.
+     */
+    ordering_sources?: Maybe<Array<Maybe<OrderingSources>>>;
+    /** Configuration for the Product Change Request feature. */
+    pcr?: Maybe<ProductChangeRequestFeatureConfiguration>;
+    /** Indicates the current price strategy for products: store_prices (default) applies store-level pricing, while price_factory applies prices set in the price factory */
+    price_strategy: PriceStrategy;
+    /**
+     * Configuration for product detail features in the sales channel.
+     * @deprecated This field is obsolete.
+     */
     product_detail?: Maybe<ProductDetailFeature>;
     /** Configuration for the QR feature. */
-    qr?: Maybe<QrFeature>;
-    /** Configuration for the registration page of the application. */
-    registration_page?: Maybe<RegistrationPageFeature>;
-    /** ISO 8601 timestamp of last known modifications to the sales channel feature configuration. */
+    qr: QrFeature;
+    /** Configuration for the registration page of the sales channel. */
+    registration_page: RegistrationPageFeature;
+    /** Configuration for security-related features of the sales channel. */
+    security?: Maybe<SecurityFeature>;
+    /**
+     * Timestamp when sales channel features configuration was updated, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** Version key for tracking revisions. Default value is zero. */
+    /**
+     * Version key for tracking revisions. Default value is zero.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['Float']['output']>;
 };
-/** Response object containing token information for the application. */
+/** Response object containing token information for the sales channel. */
 export type AppIntegrationTokens = {
     __typename?: 'AppIntegrationTokens';
-    /** Alphanumeric ID allotted to an application (sales channel website) created within a business account. */
-    application?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of token creation. */
-    created_at?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier (24-digit Mongo Object ID) of the token. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of token updation. */
-    modified_at?: Maybe<Scalars['String']['output']>;
-    /** Tokens associated with the application. */
-    tokens?: Maybe<TokenDetails>;
-    /** ISO 8601 timestamp of token updation. */
+    /**
+     * Alphanumeric ID of the sales channel created within a business account.
+     * @deprecated This field is obsolete.
+     */
+    application: Scalars['String']['output'];
+    /**
+     * ISO 8601 timestamp of token creation, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    created_at: Scalars['String']['output'];
+    /** The unique identifier of the token configuration. */
+    id: Scalars['String']['output'];
+    /**
+     * ISO 8601 timestamp of token modification.
+     * @deprecated This field is obsolete.
+     */
+    modified_at: Scalars['String']['output'];
+    /** Integration tokens associated with the sales channel. */
+    tokens: TokenDetails;
+    /**
+     * ISO 8601 timestamp of token update, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** Version key for tracking revisions. Default value is zero. */
+    /**
+     * Version key for tracking revisions. Default value is zero.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['Float']['output']>;
 };
-/** Represents a language supported by the application. */
+/** Represents a language supported by the sales channel. */
 export type AppLanguages = {
     __typename?: 'AppLanguages';
-    /** Code of the ordering store (usually same as Store Code). */
-    code?: Maybe<Scalars['String']['output']>;
-    /** Store name of the ordering store. */
-    name?: Maybe<Scalars['String']['output']>;
+    /** Language code, e.g. 'hi-IN', 'en-IN', 'ar-AE'. */
+    code: Scalars['String']['output'];
+    /** Language name, e.g. 'English', 'हिन्दी', 'عربى'. */
+    name: Scalars['String']['output'];
 };
-/** Details about application owner. */
+/** Details about sales channel owner and configuration. */
 export type AppOwnerInfo = {
     __typename?: 'AppOwnerInfo';
-    /** URL for the banner image of the application. */
+    /**
+     * URL for the banner image of the sales channel.
+     * @deprecated banner is deprecated. Use banner_url instead.
+     */
     banner?: Maybe<SecureUrl>;
-    /** Company Information. */
-    company_info?: Maybe<CompanyInfo>;
-    /** CORS settings for the application. */
+    /** URL for the banner image of the sales channel. */
+    banner_url?: Maybe<Scalars['String']['output']>;
+    /** Company information associated with the sales channel. */
+    company_info: CompanyInfo;
+    /**
+     * CORS settings for the sales channel.
+     * @deprecated This field is obsolete.
+     */
     cors?: Maybe<ApplicationCors>;
-    /** ISO 8601 timestamp of sales channel information creation. */
+    /**
+     * ISO 8601 timestamp of sales channel information creation, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** It gives a detailed information about the sales channel. It is required. */
+    /** Detailed information about the sales channel. */
     description?: Maybe<Scalars['String']['output']>;
-    /** The domain information associated with the application. */
-    domain?: Maybe<Domain>;
-    /** List of domains associated with the application. */
-    domains?: Maybe<Array<Maybe<Domain>>>;
-    /** URL for the favicon image of the application. */
+    /** The primary domain information associated with the sales channel. */
+    domain: Domain;
+    /** List of domains associated with the sales channel. */
+    domains: Array<Maybe<Domain>>;
+    /** URL for the favicon image of the sales channel. */
     favicon?: Maybe<SecureUrl>;
-    /** The unique identifier (24-digit Mongo Object ID) of owner info. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** Indicates sales channel is active or not active. */
-    is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** URL for the logo image of the application. */
+    /** The unique identifier of owner info. */
+    id: Scalars['String']['output'];
+    /** Indicates whether sales channel is active or inactive. */
+    is_active: Scalars['Boolean']['output'];
+    /**
+     * URL for the logo image of the sales channel.
+     * @deprecated logo is deprecated. Use logo_url instead.
+     */
     logo?: Maybe<SecureUrl>;
-    /** Metadata related to the application. */
+    /** URL for the logo image of the sales channel. */
+    logo_url?: Maybe<Scalars['String']['output']>;
+    /** Metadata related to the sales channel. */
     meta?: Maybe<Array<Maybe<ApplicationMeta>>>;
-    /** URL for the mobile logo of the application. */
+    /**
+     * URL for the mobile logo of the sales channel.
+     * @deprecated mobile_logo is deprecated. Use mobile_logo_url instead.
+     */
     mobile_logo?: Maybe<SecureUrl>;
-    /** Mode of the application. */
-    mode?: Maybe<Scalars['String']['output']>;
-    /** Store name of the ordering store. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** Information about the owner of the application. */
-    owner_info?: Maybe<OwnerInfo>;
-    /** Random generated fix length string for sales channel. It is required and auto-generated. */
+    /** URL for the mobile logo of the sales channel. */
+    mobile_logo_url?: Maybe<Scalars['String']['output']>;
+    /**
+     * Mode of the sales channel, e.g. 'live', 'development'.
+     * @deprecated This field is obsolete.
+     */
+    mode?: Maybe<ApplicationMode>;
+    /** Name of the sales channel, e.g. 'My Fashion Store'. */
+    name: Scalars['String']['output'];
+    /**
+     * Information about the owner of the sales channel.
+     * @deprecated This field is obsolete.
+     */
+    owner_info: OwnerInfo;
+    /** Randomly generated fixed length secret string for sales channel. */
     secret?: Maybe<Scalars['String']['output']>;
-    /** Slug identifier for the application. */
-    slug?: Maybe<Scalars['String']['output']>;
-    /** Random generated fix length string for sales channel. It is required and auto-generated. */
-    token?: Maybe<Scalars['String']['output']>;
-    /** List of tokens associated with the application. */
+    /** URL-friendly identifier for the sales channel, e.g. 'my-fashion-store'. */
+    slug: Scalars['String']['output'];
+    /**
+     * Current status of the sales channel, e.g. 'active', 'inactive'.
+     * @deprecated This field is obsolete.
+     */
+    status: ApplicationStatus;
+    /** Randomly generated fixed length token string for sales channel. */
+    token: Scalars['String']['output'];
+    /**
+     * List of tokens associated with the sales channel.
+     * @deprecated This field is obsolete.
+     */
     tokens?: Maybe<Array<Maybe<TokenSchema>>>;
-    /** The website URL of the application. */
-    website?: Maybe<ApplicationWebsite>;
+    /** The website configuration of the sales channel. */
+    website: ApplicationWebsite;
 };
+/** Types of applications supported. */
 export declare enum AppType {
     Development = "development",
     Live = "live"
 }
+/** Structure of credentials of Apple social login. */
+export type AppleSocialAccount = {
+    __typename?: 'AppleSocialAccount';
+    /** App ID (Client ID) of the Apple social login credentials. */
+    app_id?: Maybe<Scalars['String']['output']>;
+    /** Redirect URI of the Apple social login credentials. */
+    redirect_uri?: Maybe<Scalars['String']['output']>;
+};
 /** Configuration indicating whether authentication is enabled for the sales channel. */
 export type ApplicationAuth = {
     __typename?: 'ApplicationAuth';
-    /** Shows sales channel auth is enabled or not enabled. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether sales channel authentication is enabled or disabled. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Get details of the current sales channel. */
 export type ApplicationConfiguration = {
     __typename?: 'ApplicationConfiguration';
-    /** Details about the currency supported by the sales channel, including its ID, name, code, and other attributes. */
+    /**
+     * Details about the currency supported by the sales channel, including its ID, name, code, and other attributes.
+     * @deprecated This Query is obsolete and will be removed in a future release
+     */
     app_currencies?: Maybe<AppCurrencyInfo>;
     /** Details about the sales channel, including its settings, metadata, and associated resources. */
     app_details?: Maybe<AppDetails>;
-    /** Details of a specific sales channel including its branding, domain, and associated information. */
+    /**
+     * Details of a specific sales channel including its branding, domain, and associated information.
+     * @deprecated basic_details will be removed in future. Use app_details instead.
+     */
     basic_details?: Maybe<AppBasicDetails>;
     /** Get contact details of the sales channel. */
     contact_info?: Maybe<ContactInfo>;
-    /** Response schema containing the application feature details. */
+    /** Details about country and mapped currencies on which sales channel is selling. This can be configured in 'Price Factory' feature */
+    country_currencies?: Maybe<Array<Maybe<AppCountryCurrencies>>>;
+    /** Response schema containing the sales channel feature details. */
     features?: Maybe<AppFeature>;
-    /** Response object containing token information for the application. */
+    /** Response object containing token information for the sales channel. */
     integration_tokens?: Maybe<AppIntegrationTokens>;
     /** Object containing a list of supported languages. */
     languages?: Maybe<Array<Maybe<AppLanguages>>>;
-    /** Details about the application, including its company, owner, domain, and other relevant properties. */
+    /**
+     * Details about the sales channel, including its company, owner, domain, and other relevant properties.
+     * @deprecated This Query is obsolete and will be removed in a future release
+     */
     owner_info?: Maybe<AppOwnerInfo>;
 };
 /** Schema represents application content details like faqs, data loaders, navigations etc. */
 export type ApplicationContent = {
     __typename?: 'ApplicationContent';
-    /** List all current announcements in the application. */
+    /**
+     * List all current announcements in the application.
+     * @deprecated This field is obsolete.
+     */
     announcements?: Maybe<Announcements>;
     /** List all the blogs against an application. */
     blogs?: Maybe<Blogs>;
-    /** List custom fields attached to a particular resource by using the resource. */
+    /** List custom fields attached to a particular resource by using the resource. For example, resource: 'product', resourceId: '123456'. */
     custom_fields?: Maybe<CustomFields>;
-    /** List all the data loaders that are enabled for an application. */
+    /**
+     * List all the data loaders that are enabled for an application.
+     * @deprecated This field is obsolete.
+     */
     data_loaders?: Maybe<DataLoaders>;
     /** List categories for organizing FAQs. */
     faq_categories?: Maybe<FaqCategories>;
@@ -705,15 +1218,13 @@ export type ApplicationContent = {
     /** Get content of the application's landing page. */
     landing_page?: Maybe<LandingPage>;
     /** Get legal policies for an application which includes Terms and conditions, return policy, shipping policy and privacy policy. */
-    legal_information?: Maybe<LeagalInformation>;
+    legal_information?: Maybe<LegalInformation>;
     /** Get the navigation link items which can be powered to generate menus on application's website or equivalent mobile apps. */
     navigations?: Maybe<Navigations>;
     /** Lists all Custom Pages. */
     pages?: Maybe<Pages>;
     /** Get search engine optimization configurations of an application. Details include the title, description and an image. */
     seo_configuration?: Maybe<SeoSchema>;
-    /** List slideshows along with their details. */
-    slideshows?: Maybe<Slideshows>;
     /** Get customer support contact details. Contact Details can be either a phone number or an email-id or both. */
     support_information?: Maybe<SupportInformation>;
     /** Lists HTML tags to power additional functionalities within an application. */
@@ -741,15 +1252,10 @@ export type ApplicationContentPagesArgs = {
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
 };
-/** Schema represents application content details like faqs, data loaders, navigations etc. */
-export type ApplicationContentSlideshowsArgs = {
-    pageNo?: InputMaybe<Scalars['Int']['input']>;
-    pageSize?: InputMaybe<Scalars['Int']['input']>;
-};
 /** Configuration for Cross-Origin Resource Sharing, listing domains allowed to access the sales channel. */
 export type ApplicationCors = {
     __typename?: 'ApplicationCors';
-    /** List of domains added to the sales channel. */
+    /** List of domains allowed for CORS, e.g. ['https://example.com', 'https://admin.example.com']. */
     domains?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** Represents the SEO metadata for an application item. */
@@ -763,147 +1269,353 @@ export type ApplicationItemSeo = {
 /** Object containing contents related to a FAQ. */
 export type ApplicationLegalFaq = {
     __typename?: 'ApplicationLegalFAQ';
-    /** The contents of a answer of a FAQ. */
+    /** The contents of a answer of a FAQ. For example, 'You can return items within 30 days of purchase'. */
     answer?: Maybe<Scalars['String']['output']>;
-    /** The contents of a question of a FAQ. */
+    /** The contents of a question of a FAQ. For example, 'What is your return policy?'. */
     question?: Maybe<Scalars['String']['output']>;
 };
-/** Metadata related to the application, including name-value pairs for additional information about the sales channel. */
+/** Metadata related to the sales channel, including name-value pairs for additional information about the sales channel. */
 export type ApplicationMeta = {
     __typename?: 'ApplicationMeta';
-    /** Indicates to name of application meta. */
+    /** Name of the metadata field, e.g. 'theme_color', 'analytics_id'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Value related to application meta name. */
+    /** Value of the metadata field, e.g. '#FF5722', 'GA-123456789'. */
     value?: Maybe<Scalars['String']['output']>;
 };
+/** Defines the operational mode of the sales channel. */
+export declare enum ApplicationMode {
+    /** Sales channel is in development mode for testing */
+    Development = "development",
+    /** Sales channel is live and accessible to customers */
+    Live = "live"
+}
 /** Details about domain redirections, including the old and new URLs and the type of redirection (permanent or temporary). */
 export type ApplicationRedirections = {
     __typename?: 'ApplicationRedirections';
-    /** Old domain url of the sales channel. */
+    /** Old domain URL of the sales channel, e.g. 'old.example.com'. */
     redirect_from?: Maybe<Scalars['String']['output']>;
-    /** New domain URL of the sales channel. Users will be automatically redirected from old domain to new domain. */
-    redirect_to?: Maybe<Scalars['String']['output']>;
-    /** It shows domain redirection type. Permanent redirection is for long time period redirection, and temporary redirection for a short time period. */
-    type?: Maybe<Type>;
+    /** New domain URL of the sales channel, e.g. 'new.example.com'. Users will be automatically redirected from old domain to new domain. */
+    redirect_to: Scalars['String']['output'];
+    /** Domain redirection type. 'permanent' for long-term redirections, 'temporary' for short-term redirections. */
+    type: Type;
+};
+/** Defines the current status of the sales channel. */
+export declare enum ApplicationStatus {
+    /** Sales channel is active and operational */
+    Active = "active",
+    /** Sales channel is blocked and not accessible */
+    Blocked = "blocked"
+}
+/** Application store filter listing. */
+export type ApplicationStoreFilterListing = {
+    __typename?: 'ApplicationStoreFilterListing';
+    /** Whether the filter is active. */
+    is_active?: Maybe<Scalars['Boolean']['output']>;
+    /** Filter logo URL. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** User who modified the filter. */
+    modified_by?: Maybe<ModifiedBy>;
+    /** Filter modification date and time. */
+    modified_on?: Maybe<Scalars['String']['output']>;
+    /** Filter name. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Filter priority order. */
+    priority_order?: Maybe<Scalars['Int']['output']>;
+    /** Filter slug. */
+    slug?: Maybe<Scalars['String']['output']>;
+    /** Unique filter identifier. */
+    uid?: Maybe<Scalars['Int']['output']>;
 };
 /** Configuration for the sales channel's website, including whether it's enabled and its base path. */
 export type ApplicationWebsite = {
     __typename?: 'ApplicationWebsite';
-    /** Base path for the current sales channel website. */
+    /** Base path of the sales channel website, e.g. '/shop', '/store'. */
     basepath?: Maybe<Scalars['String']['output']>;
-    /** Shows whether sales channel website URL is enabled or not. */
+    /** Indicates whether sales channel website is enabled or disabled. */
     enabled?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Fields to determine the free gift items to be received from the promotion applied. */
 export type AppliedFreeArticles = {
     __typename?: 'AppliedFreeArticles';
-    /** IDs of free articles. */
+    /** ID of the free article. Example: '5fdc737e3c05146138192f79' */
     article_id?: Maybe<Scalars['String']['output']>;
-    /** Free gift items details. */
+    /** Free gift item details. Example: { item_id: 987654, size: 'M' } */
     free_gift_item_details?: Maybe<FreeGiftItemDetails>;
-    /** Parent item identifier for free article. */
+    /** Parent item identifier for free article. Example: 'line_parent_01' */
     parent_item_identifier?: Maybe<Scalars['String']['output']>;
-    /** Quantity of free articles. */
+    /** Quantity of free articles. Example: 1 */
     quantity?: Maybe<Scalars['Int']['output']>;
 };
 /** Applied Promotion details. */
 export type AppliedPromos = {
     __typename?: 'AppliedPromos';
-    /** The discount amount provided by the promotion. */
+    /** The discount amount provided by the promotion. For example, `amount` can be set to 1000.0. */
     amount?: Maybe<Scalars['Float']['output']>;
-    /** An array containing details of free articles applied under the promotion. */
+    /** An array containing details of free articles applied under the promotion. For example, `applied_free_articles` can be set to [a OrderAppliedFreeArticles object]. */
     applied_free_articles?: Maybe<Array<Maybe<OrderAppliedFreeArticles>>>;
-    /** The quantity of articles required to qualify for the promotion. */
+    /** The quantity of articles required to qualify for the promotion. For example, `article_quantity` can be set to 99.99. */
     article_quantity?: Maybe<Scalars['Float']['output']>;
-    /** Indicates if the promotion is applied to the MRP. */
+    /** Indicates if the promotion is applied to the MRP. For example, `mrp_promotion` can be set to true. */
     mrp_promotion?: Maybe<Scalars['Boolean']['output']>;
-    /** The unique identifier for the promotion. */
+    /** The unique identifier for the promotion. For example, `promo_id` can be set to '507f1f77bcf86cd799439011'. */
     promo_id?: Maybe<Scalars['String']['output']>;
-    /** The name of the promotion . */
+    /** The name of the promotion . For example, `promotion_name` can be set to 'Sample Name'. */
     promotion_name?: Maybe<Scalars['String']['output']>;
-    /** The type of promotion. */
+    /** The type of promotion. For example, `promotion_type` can be set to 'value'. */
     promotion_type?: Maybe<Scalars['String']['output']>;
 };
 /** Fields to determine the applied promotions details on a product. */
 export type AppliedPromotion = {
     __typename?: 'AppliedPromotion';
-    /** Per unit discount amount applied with current promotion. */
+    /** Per unit discount amount applied with current promotion. Example: 50.0 */
     amount?: Maybe<Scalars['Float']['output']>;
-    /** Applied free article for free gift item promotions. */
+    /** Applied free articles for free gift promotions. Example: [{ article_id: '5fdc737e3c05146138192f79', quantity: 1 }] */
     applied_free_articles?: Maybe<Array<Maybe<AppliedFreeArticles>>>;
-    /** Quantity of article on which promotion is applicable. */
+    /** Quantity of article on which promotion is applicable. Example: 2 */
     article_quantity?: Maybe<Scalars['Int']['output']>;
-    /** Buy rules for promotions. */
+    /** Buy rules for promotions. Example: [{ item_criteria: { brands: [123] } }] */
     buy_rules?: Maybe<Array<Maybe<BuyRules>>>;
-    /** Promotion code. */
+    /** Whether cancellation is allowed for orders with this coupon. Example: true */
+    cancellation_allowed?: Maybe<Scalars['Boolean']['output']>;
+    /** Promotion code. Example: 'DIWALI10' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Discount rules for promotions. */
+    /** Currency of the price for the cart. Example: { code: 'INR', symbol: '₹' } */
+    currency?: Maybe<CartCurrency>;
+    /** Additional custom attributes associated with the applied promotion for extended functionality and tracking */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Discount rules for promotions. Example: [{ offer: { percentage: 10 } }] */
     discount_rules?: Maybe<Array<Maybe<DiscountRulesApp>>>;
-    /** Meta object for extra data. */
+    /** Meta object for extra data. Example: { stackable: true } */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** If applied promotion is applied on product MRP or ESP. */
+    /** Whether promotion applies on product MRP or ESP. Example: true */
     mrp_promotion?: Maybe<Scalars['Boolean']['output']>;
-    /** Offer text of current promotion. */
+    /** Offer label for display. Example: 'Festive Offer' */
+    offer_label?: Maybe<Scalars['String']['output']>;
+    /** Offer text of current promotion. Example: '10% OFF' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Ownership of promotion. */
+    /** Ownership of promotion. Example: { payable_by: 'merchant', payable_category: 'marketing' } */
     ownership?: Maybe<Ownership>;
-    /** Promotion id. */
+    /** Promotion id. Example: 'PROMO123' */
     promo_id?: Maybe<Scalars['String']['output']>;
-    /** Promotion group for the promotion. */
+    /** Promotion group. Example: 'payment' */
     promotion_group?: Maybe<Scalars['String']['output']>;
-    /** Promotion name of current promotion. */
+    /** Promotion name. Example: 'Diwali Sale' */
     promotion_name?: Maybe<Scalars['String']['output']>;
-    /** Promotion type of current promotion. */
+    /** Promotion type. Example: 'percentage' */
     promotion_type?: Maybe<Scalars['String']['output']>;
 };
-/** Apply coupon request schema used to apply the coupon that includes cart id and coupon to be applied. */
+/** Fields to determine the applied promotions details on a product. */
+export type AppliedPromotionCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+/** Request to apply a coupon on the cart. */
 export type ApplyCouponRequestInput = {
-    /** Coupon code to be applied. */
+    /** Coupon code. Example: 'SAVE10' */
     coupon_code: Scalars['String']['input'];
+};
+/** Apply loyalty points response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type ApplyLoyaltyPointsResponse = {
+    __typename?: 'ApplyLoyaltyPointsResponse';
+    /**
+     * List of saved addresses for user cart checkout.
+     * @deprecated This field is obsolete
+     */
+    addresses?: Maybe<Addresses>;
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /**
+     * Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }]
+     * @deprecated This field is obsolete
+     */
+    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
+    /** Price breakup for coupon, display, loyalty points, etc. */
+    breakup_values?: Maybe<CartBreakup>;
+    /**
+     * Buy Now flag for fast checkout. Example: false
+     * @deprecated This field is obsolete
+     */
+    buy_now?: Maybe<Scalars['Boolean']['output']>;
+    /** Numeric cart identifier. Example: 123456 */
+    cart_id?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Checkout mode (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
+    checkout_mode?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cart-level comment. Example: 'Deliver after 6 PM'
+     * @deprecated This field is obsolete
+     */
+    comment?: Maybe<Scalars['String']['output']>;
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
+    common_config?: Maybe<CartCommonConfig>;
+    /**
+     * Cart-level coupon data (applied flag, code, amount, title, message).
+     * @deprecated This field is obsolete , Use breakup_values.coupon instead
+     */
+    coupon?: Maybe<CartDetailCoupon>;
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
+    coupon_text?: Maybe<Scalars['String']['output']>;
+    /**
+     * Currency for prices (e.g., code 'INR', symbol '₹').
+     * @deprecated This field is obsolete
+     */
+    currency?: Maybe<CartCurrency>;
+    /**
+     * Custom cart metadata. Example: { channel: 'web' }
+     * @deprecated This field is obsolete
+     */
+    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery charge informational message. Example: 'Free delivery above ₹999'
+     * @deprecated This field is obsolete
+     */
+    delivery_charge_info?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery promise for the cart.
+     * @deprecated This field is obsolete
+     */
+    delivery_promise?: Maybe<DeliveryPromiseResponse>;
+    /**
+     * Whether promotion free gift selection is available. Example: true
+     * @deprecated This field is obsolete
+     */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * GSTIN associated with the cart. Example: '27AAACI1195H1ZK'
+     * @deprecated This field is obsolete
+     */
+    gstin?: Maybe<Scalars['String']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Whether the cart response is valid. Example: true
+     * @deprecated This field is obsolete
+     */
+    is_valid?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * List of cart items including item id, size, store, pricing, etc.
+     * @deprecated This field is obsolete
+     */
+    items?: Maybe<Array<Maybe<CartProductInfo>>>;
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
+    last_modified?: Maybe<Scalars['String']['output']>;
+    /** Response message. Example: 'Cart fetched successfully' */
+    message?: Maybe<Scalars['String']['output']>;
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
+    notification?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 }
+     * @deprecated This field is obsolete
+     */
+    pan_config?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * User PAN number. Example: 'ABCDE1234F'
+     * @deprecated This field is obsolete
+     */
+    pan_no?: Maybe<Scalars['String']['output']>;
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
+    payment_selection_lock?: Maybe<PaymentSelectionLock>;
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
+    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
+    staff_user_id?: Maybe<Scalars['String']['output']>;
+    /** Whether the API call was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Number of items in cart. Example: 3
+     * @deprecated This field is obsolete
+     */
+    user_cart_items_count?: Maybe<Scalars['Int']['output']>;
+};
+/** Apply loyalty points response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type ApplyLoyaltyPointsResponseAddressesArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+    mobileNo?: InputMaybe<Scalars['String']['input']>;
+    tags?: InputMaybe<Scalars['String']['input']>;
 };
 /** Contains array of tags associated with the article. */
 export type Article = {
     __typename?: 'Article';
-    /** An array of tags associated with the article. */
+    /** An array of tags associated with the article. For example, `tags` can be set to ['value']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
-/** Defines how articles are assigned based on strategic and operational criteria. */
+/**
+ * Article assignment strategy configuration for fulfillment optimization.
+ * This object has been deprecated and will be removed in future release.
+ */
 export type ArticleAssignment = {
     __typename?: 'ArticleAssignment';
-    /** Scope of assignment, which can be multi-companies, single-company, or single-store. */
+    /** Assignment scope level: 'multi-companies', 'single-company', or 'single-store'. */
     level?: Maybe<Scalars['String']['output']>;
-    /** Method used for article assignment, such as optimal, fast-delivery, low-price, or manual. */
+    /** Assignment strategy method: 'optimal', 'fast-delivery', 'low-price', or 'manual'. */
     strategy?: Maybe<Scalars['String']['output']>;
 };
-/** Article level gift details which includes article id. */
-export type ArticleGiftDetailInput = {
-    /** Gift details which includes flag for gift applied or not and gift message added by user. */
-    article_id?: InputMaybe<GiftDetailInput>;
+/** Article assignment rules (level/strategy). Example: { level: 'item', strategy: 'fast-delivery/optimal/low-price/manual' } */
+export type ArticleAssignmentInput = {
+    /** Article assignment level. Example: 'item' */
+    level?: InputMaybe<Scalars['String']['input']>;
+    /** Article assignment strategy. Example: 'fast-delivery/optimal/low-price/manual' */
+    strategy?: InputMaybe<Scalars['String']['input']>;
 };
 /** Pricing information for the free gift article, including both the initial marked price and the final effective price after applying the product discount. */
 export type ArticlePriceDetails = {
     __typename?: 'ArticlePriceDetails';
-    /** effective price of article added in cart. */
+    /** Effective price after discounts. Example: 599.0 */
     effective?: Maybe<Scalars['Float']['output']>;
-    /** marked price of article added in cart. */
+    /** Marked price of the article. Example: 799.0 */
     marked?: Maybe<Scalars['Float']['output']>;
 };
 /** Article level price details which includes base and converted prices of article. */
 export type ArticlePriceInfo = {
     __typename?: 'ArticlePriceInfo';
-    /** Base price information like currency code, currncy symbol, effctive and marked, selling prices. */
+    /** Base price information (currency code/symbol, effective, marked, selling). Example: { currency_code: 'INR', effective: 499 } */
     base?: Maybe<BasePrice>;
-    /** Base price information like currency code, currncy symbol, effctive and marked, selling prices. */
+    /** Converted price information (currency code/symbol, effective, marked, selling). Example: { currency_code: 'INR', effective: 499 } */
     converted?: Maybe<BasePrice>;
 };
 /** Data related to image. */
 export type Asset = {
     __typename?: 'Asset';
-    /** Aspect ratio of the image. */
+    /** Aspect ratio of the image. For example, '16:9' or '1:1'. */
     aspect_ratio?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for an entry. */
+    /** Unique identifier for an entry. For example, 'img_123456' or '67890abcdef'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** URL of the image. */
+    /** URL of the image. For example, 'https://cdn.example.com/images/blog-image.jpg'. */
     secure_url?: Maybe<Scalars['String']['output']>;
 };
 /** An object containing information about assets, such as images, files, or other resources used in the application. */
@@ -937,26 +1649,87 @@ export type AttachCardsResponse = {
     /** Response is successful or not. */
     success: Scalars['Boolean']['output'];
 };
-/** Represents an individual attribute of a product. */
+/** Product attribute group containing related specifications. */
 export type Attribute = {
     __typename?: 'Attribute';
-    /** A list of product attributes within this group. */
+    /** List of specific attributes within this group like color options, technical specs, or dimensions. */
     details?: Maybe<Array<Maybe<AttributeDetail>>>;
-    /** The title or name of the attribute group. */
+    /** The id of the attribute group. */
+    id?: Maybe<Scalars['String']['output']>;
+    /** Name of the attribute group, e.g. 'Display', 'Performance', 'Design', 'Connectivity'. */
     title?: Maybe<Scalars['String']['output']>;
 };
-/** Represents the details of an attribute used for comparison or metadata. */
+/** Detailed information about a specific product attribute. */
 export type AttributeDetail = {
     __typename?: 'AttributeDetail';
-    /** A description of the attribute. */
+    /** Detailed description explaining the attribute and its significance. */
     description?: Maybe<Scalars['String']['output']>;
-    /** Display name or label for the attribute. */
+    /** User-friendly display name, e.g. 'Screen Size', 'RAM', 'Storage Capacity'. */
     display?: Maybe<Scalars['String']['output']>;
-    /** Unique key or identifier for the attribute. */
+    /** Unique identifier key for the attribute, e.g. 'screen_size', 'ram', 'storage'. */
     key?: Maybe<Scalars['String']['output']>;
-    /** URL or path to the logo associated with the attribute. */
+    /** URL to icon or logo representing the attribute, e.g. 'https://cdn.example.com/icons/display.png'. */
     logo?: Maybe<Scalars['String']['output']>;
 };
+/** Schema representing masking properties */
+export type AttributeMaskingProperties = {
+    __typename?: 'AttributeMaskingProperties';
+    /** Whether masking is enabled for this attribute. */
+    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Type of masking applied. */
+    type?: Maybe<Scalars['String']['output']>;
+};
+/** Schema representing registration option details */
+export type AttributeRegistrationProperties = {
+    __typename?: 'AttributeRegistrationProperties';
+    /** Whether this attribute is used during customer registration. */
+    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Defines if the attribute is mandatory or optional at registration. */
+    type?: Maybe<RegistrationType>;
+};
+/** Defines supported types of user attribute values. */
+export declare enum AttributeType {
+    /** Boolean value (true/false). */
+    Boolean = "boolean",
+    /** Date value (e.g., YYYY-MM-DD). */
+    Date = "date",
+    /** Date and time value (e.g., 2024-01-01T12:00:00Z). */
+    DateTime = "date_time",
+    /** Dropdown with predefined options. */
+    Dropdown = "dropdown",
+    /** Encrypted boolean value. */
+    EncryptedBoolean = "encrypted_boolean",
+    /** Encrypted date value. */
+    EncryptedDate = "encrypted_date",
+    /** Encrypted date and time value. */
+    EncryptedDateTime = "encrypted_date_time",
+    /** Encrypted dropdown with predefined options. */
+    EncryptedDropdown = "encrypted_dropdown",
+    /** Encrypted numeric value. */
+    EncryptedNumber = "encrypted_number",
+    /** Encrypted array of numeric values. */
+    EncryptedNumberArray = "encrypted_number_array",
+    /** Encrypted plain text value. */
+    EncryptedString = "encrypted_string",
+    /** Encrypted array of plain text values. */
+    EncryptedStringArray = "encrypted_string_array",
+    /** HTML-formatted string content. */
+    HtmlString = "html_string",
+    /** URL pointing to a resource. */
+    ImageUrl = "image_url",
+    /** Numeric value (single). */
+    Number = "number",
+    /** Array of numeric values. */
+    NumberArray = "number_array",
+    /** Array of platform user IDs (e.g., for relationships). */
+    PlatformUserArray = "platform_user_array",
+    /** Array of store IDs associated with the user. */
+    StoreUidArray = "store_uid_array",
+    /** Plain text value (single). */
+    String = "string",
+    /** Array of plain text values. */
+    StringArray = "string_array"
+}
 /** Schema for expiration attributes of shortlink campaign. */
 export type Attribution = {
     __typename?: 'Attribution';
@@ -971,7 +1744,7 @@ export type AttributionInput = {
 /** Describes the authentication success structure. */
 export type AuthSuccess = {
     __typename?: 'AuthSuccess';
-    /** Unique registration token for user. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** Describes the user details structure. */
     user?: Maybe<UserDetail>;
@@ -981,16 +1754,18 @@ export type AuthSuccess = {
 /** Data related to author of blog. */
 export type Author = {
     __typename?: 'Author';
-    /** Description of the author of blog. */
+    /** Description of the author of blog. For example, 'Fashion Editor' or 'Content Writer'. */
     designation?: Maybe<Scalars['String']['output']>;
-    /** Unique Identifier of the author of blog. */
+    /** Unique Identifier of the author of blog. For example, 'author_123456' or '67890abcdef'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of the author of blog. */
+    /** Name of the author of blog. For example, 'John Doe' or 'Jane Smith'. */
     name?: Maybe<Scalars['String']['output']>;
 };
 /** An object representing theme page detail. */
 export type AvailablePage = {
     __typename?: 'AvailablePage';
+    /** ISO 8601 timestamp of creation of the application information. */
+    created_at?: Maybe<Scalars['String']['output']>;
     /** The unique identifier for the object. */
     id?: Maybe<Scalars['String']['output']>;
     /** The url path for the page. For example, 'about-us'. */
@@ -1009,6 +1784,8 @@ export type AvailablePage = {
     theme?: Maybe<Scalars['String']['output']>;
     /** The type of the page, which can be 'system', 'custom', or 'sections'. */
     type?: Maybe<PageTypes>;
+    /** ISO 8601 timestamp of updation of the application information. */
+    updated_at?: Maybe<Scalars['String']['output']>;
     /** The name of the page. For example, 'about-us'. */
     value?: Maybe<Scalars['String']['output']>;
 };
@@ -1041,8 +1818,16 @@ export type AvailablePageRoutePredicate = {
 /** An object representing a section of the page. Each section can contain various attributes and elements that contribute to the page's content. */
 export type AvailablePageSchemaSections = {
     __typename?: 'AvailablePageSchemaSections';
+    /** Asset urls for the section. e.g. js, css */
+    assets?: Maybe<SectionAssets>;
     /** An array of blocks within the section, where each block is represented as an object. */
-    blocks?: Maybe<Array<Maybe<Block>>>;
+    blocks?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
+    /** The name of the canvas. */
+    canvas?: Maybe<Scalars['String']['output']>;
+    /** Custom css of the section. */
+    custom_css?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the section. */
+    id?: Maybe<Scalars['String']['output']>;
     /** A label for the section, which can be used for display purposes. */
     label?: Maybe<Scalars['String']['output']>;
     /** The name of the section. */
@@ -1054,7 +1839,7 @@ export type AvailablePageSchemaSections = {
     /** An object containing various properties associated with the section. */
     props?: Maybe<Scalars['JSON']['output']>;
     /** The source of the section, for example, 'themebundle'. */
-    source?: Maybe<Scalars['String']['output']>;
+    source?: Maybe<SectionSource>;
 };
 /** An object representing a section item. */
 export type AvailableSection = {
@@ -1065,18 +1850,45 @@ export type AvailableSection = {
     label?: Maybe<Scalars['String']['output']>;
     /** The name of the block. */
     name?: Maybe<Scalars['String']['output']>;
+    /** An object containing preset configurations for the section. */
+    preset?: Maybe<SectionPreset>;
     /** An array of objects representing properties or attributes of the section item. */
     props?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
 };
 /** Identifier or name of the store where the product is available. It helps in identifying the specific location or online store offering the product. */
 export type AvailableStore = {
     __typename?: 'AvailableStore';
-    /** The count associated with the store. */
+    /**
+     * The address details of the store.
+     * @deprecated This field is obsolete.
+     */
+    address?: Maybe<StoreAddress>;
+    /**
+     * A unique code or identifier for the store, often used for internal reference.
+     * @deprecated This field is obsolete.
+     */
+    code?: Maybe<Scalars['String']['output']>;
+    /**
+     * The count associated with the store.
+     * @deprecated This field is obsolete.
+     */
     count?: Maybe<Scalars['Int']['output']>;
+    /** Additional custom attributes associated with the store for extended store configuration and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /**
+     * Longitude and latitude coordinates, possibly indicating the location of the store or warehouse where the product is stocked.
+     * @deprecated This field is obsolete.
+     */
+    long_lat?: Maybe<Array<Maybe<Scalars['Float']['output']>>>;
     /** The name of the store. */
     name?: Maybe<Scalars['String']['output']>;
     /** Unique identifier for the store. */
     uid?: Maybe<Scalars['Int']['output']>;
+};
+/** Identifier or name of the store where the product is available. It helps in identifying the specific location or online store offering the product. */
+export type AvailableStoreCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Badge information associated with the collection. */
 export type Badge = {
@@ -1089,87 +1901,115 @@ export type Badge = {
 /** Schema for bag reason meta. */
 export type BagReasonMeta = {
     __typename?: 'BagReasonMeta';
-    /** Indicates whether to display a text box on the front end. */
+    /** Indicates whether the text box added for remarks is optional or mandatory. For example, `remark_required` can be set to true. */
+    remark_required?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether to display a text box on the front end. For example, `show_text_area` can be set to true. */
     show_text_area?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Schema for individual bag reason. */
 export type BagReasons = {
     __typename?: 'BagReasons';
-    /** The text displayed. */
+    /** The text displayed. For example, `display_name` can be set to 'Sample Name'. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier. */
+    /** The unique identifier. For example, `id` can be set to 1. */
     id?: Maybe<Scalars['Int']['output']>;
-    /** Schema for bag reason meta. */
+    /** Schema for bag reason meta. For example, `meta` can be set to a BagReasonMeta object. */
     meta?: Maybe<BagReasonMeta>;
-    /** A list of quality check types. */
+    /** A list of quality check types. For example, `qc_type` can be ['pre_qc', 'doorstep_qc']. */
     qc_type?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** A list of questions for delivery partner. */
+    /** A list of questions for delivery partner. For example, `question_set` can be set to [a QuestionSet object]. */
     question_set?: Maybe<Array<Maybe<QuestionSet>>>;
-    /** A list of reasons. */
+    /** A list of reasons. For example, `reasons` can be set to [a BagReasons object]. */
     reasons?: Maybe<Array<Maybe<BagReasons>>>;
 };
-/** Schema for bags reorder. */
+/** Schema for bags available for reorder, can be used to create a new order from a previous purchase. */
 export type BagsForReorder = {
     __typename?: 'BagsForReorder';
-    /** Schema for article assignment. */
+    /** Schema for article assignment describing how reorder inventory is sourced. For example, { level: 'single-company', strategy: 'optimal' }. */
     article_assignment?: Maybe<BagsForReorderArticleAssignment>;
-    /** The unique identifier for the item. */
+    /** The unique identifier of the item to be reordered. For example, 95988. */
     item_id?: Maybe<Scalars['Int']['output']>;
-    /** The size of the item. */
+    /** The size of the item. For example, 'M'. */
     item_size?: Maybe<Scalars['String']['output']>;
-    /** The quantity of the item. */
+    /** The quantity of the item. For example, 1. */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** The identifier for the seller. */
+    /** The identifier for the seller providing the inventory. For example, 85. */
     seller_id?: Maybe<Scalars['Int']['output']>;
-    /** The identifier for the store. */
+    /** The identifier for the store fulfilling the order. For example, 616. */
     store_id?: Maybe<Scalars['Int']['output']>;
 };
-/** Schema for article assignment. */
+/** Schema for article assignment describing how reorder inventory is sourced, used to determine the source of the inventory for the reordered item. */
 export type BagsForReorderArticleAssignment = {
     __typename?: 'BagsForReorderArticleAssignment';
-    /** The level at which the article assignment is made. */
+    /** The level at which the article assignment is made. Can be single-company or multi-companies. Default: multi-companies. For example, 'single-company' for a single company or 'multi-companies' for multiple companies. */
     level?: Maybe<Scalars['String']['output']>;
-    /** The strategy used for article assignment. */
+    /** The strategy used for article assignment. Can be optimal or fast-delivery. For example, 'optimal' for the optimal strategy or 'fast-delivery' for the fast-delivery strategy. */
     strategy?: Maybe<Scalars['String']['output']>;
+};
+/** Represents a beneficiary registered with bank account details in the system. */
+export type BankBeneficiary = {
+    __typename?: 'BankBeneficiary';
+    /** Full name of the bank account holder linked to the beneficiary. */
+    account_holder: Scalars['String']['output'];
+    /** Masked bank account number of the beneficiary. */
+    account_no: Scalars['String']['output'];
+    /** Human-readable display name for this bank account type. */
+    display_name: Scalars['String']['output'];
+    /** Unique ID assigned to the beneficiary. */
+    id: Scalars['String']['output'];
+    /** IFSC code of the beneficiary’s bank branch. */
+    ifsc_code: Scalars['String']['output'];
+    /** Whether the beneficiary’s bank account is active. */
+    is_active: Scalars['Boolean']['output'];
+    /** Whether the beneficiary’s bank account has been verified. */
+    is_verified: Scalars['Boolean']['output'];
+    /** Optional logo URL of the beneficiary’s bank. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** Transfer mode associated with the beneficiary. Typically 'bank'. */
+    transfer_mode: Scalars['String']['output'];
 };
 /** Bank Details For OTP. */
 export type BankDetailsForOtpInput = {
     /** Name of the account holder. */
-    account_holder: Scalars['String']['input'];
+    account_holder?: InputMaybe<Scalars['String']['input']>;
     /** Account number of the holder. */
-    account_no: Scalars['String']['input'];
+    account_no?: InputMaybe<Scalars['String']['input']>;
     /** Name of the bank. */
-    bank_name: Scalars['String']['input'];
+    bank_name?: InputMaybe<Scalars['String']['input']>;
     /** Branch name of the bank. */
-    branch_name: Scalars['String']['input'];
+    branch_name?: InputMaybe<Scalars['String']['input']>;
     /** IFSC code of the bank. */
-    ifsc_code: Scalars['String']['input'];
+    ifsc_code?: InputMaybe<Scalars['String']['input']>;
+    /** UPI ID. */
+    upi?: InputMaybe<Scalars['String']['input']>;
 };
 /** Basic information which provides basic info like uid of any entity like brand or seller and name of the entity. */
 export type BaseInfo = {
     __typename?: 'BaseInfo';
-    /** Name of entities like brand or seller. */
+    /** Name of the entity (brand or seller). Example: 'Fynd Retail' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of entities like brand or seller. */
+    /** Unique identifier of the entity. Example: 2001 */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** Base price information like currency code, currncy symbol, effctive and marked, selling prices. */
+/** Base price information like currency code, currency symbol, effective and marked, selling prices. */
 export type BasePrice = {
     __typename?: 'BasePrice';
-    /** Currency code for all amounts. */
+    /** Currency code for all amounts (ISO 4217), e.g., 'INR'. Example: 'INR' */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol of the currncy used for price. */
+    /** Currency symbol, e.g., '₹'. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** Current per unit price of product after existing deductions. */
+    /** Per-unit effective price after deductions. Example: 499.0 */
     effective?: Maybe<Scalars['Float']['output']>;
-    /** Original price of product. */
+    /** Original (marked) price. Example: 799.0 */
     marked?: Maybe<Scalars['Float']['output']>;
+    /** Selling price of the product. Example: 549.0 */
+    selling?: Maybe<Scalars['Float']['output']>;
 };
 /** Order Beneficiary Details. */
 export type BeneficiaryDetails = {
     __typename?: 'BeneficiaryDetails';
     /** Account Holder Name. */
-    account_holder: Scalars['String']['output'];
+    account_holder?: Maybe<Scalars['String']['output']>;
     /** Account Number. */
     account_no: Scalars['String']['output'];
     /** Address of User. */
@@ -1207,54 +2047,74 @@ export type BeneficiaryDetails = {
     /** TransferMode. */
     transfer_mode: Scalars['String']['output'];
 };
-/** Billing Address data in shipment */
+/** Input object for beneficiary details like account holder name, number, IFSC for bank details and upi for UPI details */
+export type BeneficiaryDetailsInput = {
+    /** Full name of the bank account holder (required for BANK). */
+    account_holder?: InputMaybe<Scalars['String']['input']>;
+    /** Bank account number of the beneficiary (required for BANK). */
+    account_no?: InputMaybe<Scalars['String']['input']>;
+    /** IFSC code of the bank account (required for BANK). */
+    ifsc_code?: InputMaybe<Scalars['String']['input']>;
+    /** UPI ID (Virtual Payment Address) of the beneficiary (required for UPI). */
+    upi?: InputMaybe<Scalars['String']['input']>;
+};
+/** Billing address data in shipment. */
 export type BillingAddress = {
     __typename?: 'BillingAddress';
-    /** The full address. */
+    /** The full address. For example, '123 Main Street, Downtown, Panjim'. */
     address?: Maybe<Scalars['String']['output']>;
-    /** The primary line of the address. */
+    /** The primary line of the address. For example, '123 Main Street, Downtown'. */
     address1?: Maybe<Scalars['String']['output']>;
-    /** The secondary line of the address. */
+    /** The secondary line of the address. For example, 'Apartment 2B'. */
     address2?: Maybe<Scalars['String']['output']>;
-    /** The category of the address. */
+    /** The category of the address. For example, 'delivery'. */
     address_category?: Maybe<Scalars['String']['output']>;
-    /** The type of address. */
+    /** The type of address. For example, 'home'. */
     address_type?: Maybe<Scalars['String']['output']>;
-    /** The area or locality. */
+    /** The area or locality. For example, '203'. */
     area?: Maybe<Scalars['String']['output']>;
-    /** The city of the address. */
+    /** The city of the address. For example, 'Panjim'. */
     city?: Maybe<Scalars['String']['output']>;
-    /** The name of the contact person. */
+    /** The name of the contact person. For example, 'Anil Joshi'. */
     contact_person?: Maybe<Scalars['String']['output']>;
-    /** The country of the address. */
+    /** The country of the address. For example, 'India'. */
     country?: Maybe<Scalars['String']['output']>;
-    /** The ISO code for the country. */
+    /** The ISO code for the country. For example, 'IN'. */
     country_iso_code?: Maybe<Scalars['String']['output']>;
-    /** The country phone code. */
+    /** The country phone code. For example, '+91'. */
     country_phone_code?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the address was created. */
+    /**
+     * The date and time when the address was created. For example, '2023-01-14T06:17:37Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** The formatted display address, typically used for printing or displaying in user interfaces. */
+    /** The formatted display address, typically used for printing or displaying in user interfaces. For example, '123 Main Street, Downtown, Panjim, Goa 403521'. */
     display_address?: Maybe<Scalars['String']['output']>;
-    /** The email address. */
+    /** The email address. For example, 'user@example.com'. */
     email?: Maybe<Scalars['String']['output']>;
-    /** A nearby landmark. */
+    /** A nearby landmark. For example, 'Gujarat'. */
     landmark?: Maybe<Scalars['String']['output']>;
-    /** The latitude coordinate. */
+    /** The latitude coordinate. For example, 19.0760. */
     latitude?: Maybe<Scalars['Float']['output']>;
-    /** The longitude coordinate. */
+    /** The longitude coordinate. For example, 73.8286. */
     longitude?: Maybe<Scalars['Float']['output']>;
-    /** The name of the person associated with the address. */
+    /** The name of the person associated with the address. For example, 'John Doe'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The phone number of the person associated with the address. */
+    /** The phone number of the person associated with the address. For example, '9876543210'. */
     phone?: Maybe<Scalars['String']['output']>;
-    /** The postal code of the address. */
+    /** The postal code of the address. For example, '400001'. */
     pincode?: Maybe<Scalars['String']['output']>;
-    /** The state of the address. */
+    /** The state of the address. For example, 'Goa'. */
     state?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the address was last updated . */
+    /**
+     * The date and time when the address was last updated. For example, '2024-10-05T09:00:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** The version of the address format. */
+    /**
+     * The version of the address format. For example, 'v2'.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['String']['output']>;
 };
 /** An array of blocks included in the section, each represented by an object conforming to the block schema. */
@@ -1263,85 +2123,68 @@ export type Block = {
     /** The name of the block. */
     name?: Maybe<Scalars['String']['output']>;
     /** The props of the block. */
-    props?: Maybe<BlockProps>;
+    props?: Maybe<Scalars['JSON']['output']>;
     /** The type of the block. */
     type?: Maybe<Scalars['String']['output']>;
-};
-/** Properties of a block. */
-export type BlockProps = {
-    __typename?: 'BlockProps';
-    /** The image details of the block. */
-    image?: Maybe<ImagePickerProp>;
-    /** The slide_link details of the block. */
-    slide_link?: Maybe<ImagePickerProp>;
 };
 /** All relevant data related to a blog. */
 export type Blog = {
     __typename?: 'Blog';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Boolean flag denoting whether blog is archived or not. */
+    /**
+     * Boolean flag denoting whether blog is archived or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     archived?: Maybe<Scalars['Boolean']['output']>;
     /** Data related to author of blog. */
     author?: Maybe<Author>;
     /** Contents of blog. */
     content?: Maybe<Array<Maybe<ResourceContent>>>;
-    /** Custom JSON object for specific use cases. */
+    /**
+     * Custom JSON object for specific use cases.
+     * @deprecated This field is obsolete.
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
     /** Details related to resource creation and updation. */
     date_meta?: Maybe<DateMeta>;
     /** Data related to image. */
     feature_image?: Maybe<Asset>;
-    /** Unique identifier for an entry. */
+    /** Unique identifier for an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Timestamp denoting when the blog was published. */
+    /** Timestamp denoting when the blog was published. For example, '2020-03-14T09:25:17.628+0000'. */
     publish_date?: Maybe<Scalars['String']['output']>;
-    /** Boolean flag denoting whether blog is published or not. */
+    /**
+     * Boolean flag denoting whether blog is published or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     published?: Maybe<Scalars['Boolean']['output']>;
-    /** Estimated time required to read the blog. */
+    /** Estimated time required to read the blog. For example, '5 min' or '10 minutes'. */
     reading_time?: Maybe<Scalars['String']['output']>;
     /** Details related to SEO of an entry. */
-    seo?: Maybe<BlogSeo>;
-    /** A short, human-readable, URL-friendly identifier. */
+    seo?: Maybe<SeoDetails>;
+    /** A short, human-readable, URL-friendly identifier. For example, 'summer-collection-2024' or 'how-to-style-your-wardrobe'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** A brief description of blog. */
+    /**
+     * Status of the blog. For example, 'published', 'draft', or 'archived'.
+     * @deprecated This field is obsolete.
+     */
+    status?: Maybe<Scalars['String']['output']>;
+    /** A brief description of blog. For example, 'Discover the latest summer fashion trends and styles'. */
     summary?: Maybe<Scalars['String']['output']>;
-    /** Tags under a blog. */
+    /** Tags under a blog. For example, ['fashion', 'lifestyle', 'trends']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Title of the Blog. */
+    /** Title of the Blog. For example, 'Summer Fashion Trends 2024'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Filters available for blogs. */
 export type BlogFilters = {
     __typename?: 'BlogFilters';
-    /** All tags present under blogs. */
+    /** All tags present under blogs. For example, ['fashion', 'lifestyle', 'trends']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-};
-/** Details related to SEO of an entry. */
-export type BlogSeo = {
-    __typename?: 'BlogSEO';
-    /** List of action objects which can power breadcrumbs on website. */
-    breadcrumb?: Maybe<Array<Maybe<SeObreadcrumb>>>;
-    /** List of action objects which can power breadcrumbs on website. */
-    canonical_url?: Maybe<Scalars['String']['output']>;
-    /** The contents of og:description. */
-    description?: Maybe<Scalars['String']['output']>;
-    /** The image url of the og:image. */
-    image?: Maybe<SeoImage>;
-    /** List of meta tags. */
-    meta_tags?: Maybe<Array<Maybe<SeoMetaItem>>>;
-    /** Data containing priority and frequency of sitemap. */
-    sitemap?: Maybe<BlogSitemap>;
-    /** The contents of og:title. */
-    title?: Maybe<Scalars['String']['output']>;
-};
-/** Data containing priority and frequency of sitemap. */
-export type BlogSitemap = {
-    __typename?: 'BlogSitemap';
-    /** Value of sitemap frequency change denoting how frequently the content changes. */
-    frequency?: Maybe<Scalars['String']['output']>;
-    /** Value of sitemap priority randing from 0.0 to 1.0. */
-    priority?: Maybe<Scalars['Float']['output']>;
 };
 /** Blogs live on a sales channel. */
 export type Blogs = {
@@ -1356,36 +2199,43 @@ export type Blogs = {
 /** Response containing a list of brand items along with pagination information. */
 export type Brand = {
     __typename?: 'Brand';
-    /** Schema to define the Action Object. */
+    /** Navigation action configuration for brand page routing and deep linking functionality. */
     action?: Maybe<PageActionDetail>;
-    /** Banner URLs associated with the brand. */
+    /** Collection of banner images for brand promotion and visual identity, including desktop and mobile variants. */
     banners?: Maybe<ImageUrls>;
-    /** Lists the departments or categories under which the brand's products are listed. */
+    /** Additional configuration and metadata for customizing brand presentation and behavior. */
+    custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** List of departments where brand products are categorized, e.g. ['fashion', 'sports', 'electronics']. */
     departments?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Detailed description of the brand, including its history, values, product offerings, and other relevant information. */
+    /** Comprehensive brand description including history, values, product range, and brand story, e.g. 'Premium athletic wear brand focusing on innovation and performance'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** Details about any discounts currently available on the brand's products. */
+    /**
+     * Details about any discounts currently available on the brand's products.
+     * @deprecated This field is obsolete.
+     */
     discount?: Maybe<Scalars['String']['output']>;
-    /** URL or file path to the brand's logo, used in various parts of the platform for branding purposes. */
+    /** Brand logo media object containing URLs for different sizes and formats for consistent branding across the platform. */
     logo?: Maybe<Media>;
-    /** Name of the brand. */
+    /** Official brand name as displayed to customers, e.g. 'Nike', 'Adidas', 'Apple', 'Samsung'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** URL-friendly version of the brand's name, used in the web address to access the brand's page on the platform. */
+    /** URL-friendly brand identifier used in web addresses and routing, e.g. 'nike', 'adidas', 'apple'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the brand. */
+    /** Unique numeric identifier for the brand used for internal references and API calls, e.g. 123, 456, 789. */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** List of brand items included in the response. */
+/** Response object containing a paginated list of brands with metadata and pagination information. */
 export type BrandConnection = {
     __typename?: 'BrandConnection';
-    /** List of brand items included in the response. */
+    /** Array of brand objects, each containing brand metadata like name, logo, banner, and slug information. */
     items?: Maybe<Array<Maybe<Brand>>>;
-    /** An object representing a page with pagination details. */
+    /** Pagination details including current page, total pages, and navigation information for the brand listing. */
     page: PageInfo;
 };
 /** Response containing a list of brand items along with pagination information. */
 export type BrandDetail = {
     __typename?: 'BrandDetail';
+    /** Metadata or settings related to the brand at application level. */
+    _app?: Maybe<Scalars['JSON']['output']>;
     /** Banner URLs associated with the brand. */
     banners?: Maybe<ImageUrls>;
     /** Custom JSON data related to the brand, allowing for additional metadata. */
@@ -1396,25 +2246,158 @@ export type BrandDetail = {
     logo?: Maybe<Media>;
     /** Name of the brand. */
     name?: Maybe<Scalars['String']['output']>;
+    /** URL-friendly version of the brand's name, used in the web address to access the brand's page on the platform. */
+    slug?: Maybe<Scalars['String']['output']>;
     /** The unique identifier for the brand. */
     uid?: Maybe<Scalars['Int']['output']>;
 };
 /** Bulk price response schema details consists of offers from multiple seller. */
 export type BulkDiscountOffers = {
     __typename?: 'BulkDiscountOffers';
-    /** Actual data to be in response consist of offers from multiple seller. */
+    /** Offers from multiple sellers. Example: [{ offers: [{ margin: 10, quantity: 2 }], seller: { uid: 2001, name: 'Acme' } }] */
     data?: Maybe<Array<Maybe<DiscountOfferDetails>>>;
+};
+/** Schema representing an individual parent bundle for a child product. */
+export type Bundle = {
+    __typename?: 'Bundle';
+    /** Action object for the bundle. */
+    action?: Maybe<Scalars['JSON']['output']>;
+    /** Brand details of the bundle. */
+    brand?: Maybe<NavigationAction>;
+    /** Currency code (e.g., INR, USD). */
+    currency?: Maybe<Scalars['String']['output']>;
+    /** Media assets such as images or videos. */
+    media?: Maybe<Array<Maybe<Media>>>;
+    /** Name of the bundle. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Quantity of product units in this bundle. */
+    net_quantity?: Maybe<BundleNetQuantity>;
+    /** Original price of the bundle before discount. */
+    price?: Maybe<Scalars['Float']['output']>;
+    /** Effective price after applying discounts or offers. */
+    price_effective?: Maybe<Scalars['Float']['output']>;
+    /** Seller identifiers for individual items within the bundle. */
+    seller_identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Selected size of the bundle. */
+    size?: Maybe<Scalars['String']['output']>;
+    /** Slug of the bundle. */
+    slug?: Maybe<Scalars['String']['output']>;
+};
+/** Schema for bundle details. */
+export type BundleDetails = {
+    __typename?: 'BundleDetails';
+    /** Unique identifier for the article bundle. For example, `article_bundle_id` can be set to '507f1f77bcf86cd799439011'. */
+    article_bundle_id?: Maybe<Scalars['String']['output']>;
+    /** Brand name of the bundle Item. For example, `brand_name` can be set to 'Sample Name'. */
+    brand_name?: Maybe<Scalars['String']['output']>;
+    /** Article net_quantity in bundle Product. For example, `bundle_article_quantity` can be set to 2. */
+    bundle_article_quantity?: Maybe<Scalars['Int']['output']>;
+    /** Indicates bundle count of the bag. For example, `bundle_count` can be set to 2. */
+    bundle_count?: Maybe<Scalars['Int']['output']>;
+    /** The unique identifier for the bundle group. For example, `bundle_group_id` can be set to '507f1f77bcf86cd799439011'. */
+    bundle_group_id?: Maybe<Scalars['String']['output']>;
+    /** An array of image URLs for the bundle. For example, `images` can be set to ['value']. */
+    images?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Indicates if the item is a base item. For example, `is_base` can be set to true. */
+    is_base?: Maybe<Scalars['Boolean']['output']>;
+    /** The unique identifier for the bundle item. For example, `item_id` can be set to 1. */
+    item_id?: Maybe<Scalars['Int']['output']>;
+    /** The type of the bundle item. For example, `item_type` can be set to a BundleTypeEnum object. */
+    item_type?: Maybe<BundleTypeEnum>;
+    /** The name of the bundle. For example, `name` can be set to 'Sample Name'. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** The effective price of the bundle. For example, `price_effective` can be set to 2499.5. */
+    price_effective?: Maybe<Scalars['Float']['output']>;
+    /** The marked price of the bundle. For example, `price_marked` can be set to 2499.5. */
+    price_marked?: Maybe<Scalars['Float']['output']>;
+    /** Return Config for bundle product. For example, `return_config` can be set to a BundleReturnConfig object. */
+    return_config?: Maybe<BundleReturnConfig>;
+    /** The seller identifier for the bundle. For example, `seller_identifier` can be set to '507f1f77bcf86cd799439011'. */
+    seller_identifier?: Maybe<Scalars['String']['output']>;
+    /** Size associated with the bundle item. For example, `size` can be set to 'value'. */
+    size?: Maybe<Scalars['String']['output']>;
+    /** The slug identifier for the bundle. For example, `slug` can be set to 'value'. */
+    slug?: Maybe<Scalars['String']['output']>;
+};
+/** Schema representing an individual bundle item. */
+export type BundleItem = {
+    __typename?: 'BundleItem';
+    /** Action object for the bundled product. */
+    action?: Maybe<Scalars['JSON']['output']>;
+    /** Brand details of the product. */
+    brand?: Maybe<NavigationAction>;
+    /** Currency code (e.g., INR, USD). */
+    currency?: Maybe<Scalars['String']['output']>;
+    /** Indicates if this is the base product of the bundle. */
+    is_base?: Maybe<Scalars['Boolean']['output']>;
+    /** Media assets such as images or videos. */
+    media?: Maybe<Array<Maybe<Media>>>;
+    /** Name of the product. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Quantity of product units in this bundle. */
+    net_quantity?: Maybe<BundleNetQuantity>;
+    /** Original price of the bundle before discount. */
+    price?: Maybe<Scalars['Float']['output']>;
+    /** Effective price after applying discounts or offers. */
+    price_effective?: Maybe<Scalars['Float']['output']>;
+    /** Seller identifiers for individual items within the bundle. */
+    seller_identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Selected size of the bundled product. */
+    size?: Maybe<Scalars['String']['output']>;
+    /** Slug of the product. */
+    slug?: Maybe<Scalars['String']['output']>;
+};
+/** Response schema for bundled product items. */
+export type BundleItems = {
+    __typename?: 'BundleItems';
+    /** A list of bundled products with associated media, brand, pricing, and seller details. */
+    items?: Maybe<Array<Maybe<BundleItem>>>;
+    /** Pagination information for the bundled items. */
+    page?: Maybe<PageInfo>;
+};
+/** Response schema for bundled product items net quantity. */
+export type BundleNetQuantity = {
+    __typename?: 'BundleNetQuantity';
+    /** The unit of measurement for the net quantity. */
+    unit?: Maybe<Scalars['String']['output']>;
+    /** The value of the net quantity. */
+    value?: Maybe<Scalars['Float']['output']>;
+};
+/** Schema for bundle article refund config. */
+export type BundleReturnConfig = {
+    __typename?: 'BundleReturnConfig';
+    /** Indicates if the bundle article can be partially returned. For example, `allow_partial_return` can be set to true. */
+    allow_partial_return?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates if the bundle article is returnable. For example, `returnable` can be set to true. */
+    returnable?: Maybe<Scalars['Boolean']['output']>;
+    /** Bundle article return unit value. For example, `time` can be set to 3. */
+    time?: Maybe<Scalars['Int']['output']>;
+    /** Bundle article return window unit type e.g (days, weeks). For example, `unit` can be set to 'value'. */
+    unit?: Maybe<Scalars['String']['output']>;
+};
+/** Types of bundles available. */
+export declare enum BundleTypeEnum {
+    PhysicalBundle = "physical_bundle",
+    VirtualBundle = "virtual_bundle"
+}
+/** Response schema for bundled parent product items for child products. */
+export type BundlesByChild = {
+    __typename?: 'BundlesByChild';
+    /** A list of bundled products with associated media, brand, pricing, and seller details. */
+    items?: Maybe<Array<Maybe<Bundle>>>;
+    /** Pagination information for the bundled items. */
+    page?: Maybe<PageInfo>;
 };
 /** Contains information about key features or highlights of a business. */
 export type BusinessHighlights = {
     __typename?: 'BusinessHighlights';
-    /** Hosted URL of icon image representing the business highlight. */
+    /** Hosted URL of icon image representing the business highlight, e.g. 'https://cdn.example.com/icons/delivery.png'. */
     icon?: Maybe<Scalars['String']['output']>;
-    /** Contains information about key features or highlights of a business. */
+    /** Unique identifier for the business highlight. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Detailed information about the highlight. */
+    /** Detailed description of the highlight, e.g. 'Get your orders delivered within 24 hours'. */
     sub_title?: Maybe<Scalars['String']['output']>;
-    /** Title of the business highlight, e.g. Superfast Delivery. */
+    /** Title of the business highlight, e.g. 'Superfast Delivery'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Business Details Schema. */
@@ -1442,13 +2425,23 @@ export type BusinessInfoInput = {
     /** Age or duration of the business. */
     vintage?: InputMaybe<Scalars['String']['input']>;
 };
-/** Rules of promotion which suffies then only the promotion is applied. */
+/** Rules of promotion which must be satisfied then only the promotion is applied. */
 export type BuyRules = {
     __typename?: 'BuyRules';
-    /** Cart conditions details for promotion. */
+    /** Cart conditions such as cart_total and cart_quantity for promotion. */
     cart_conditions?: Maybe<Scalars['JSON']['output']>;
-    /** Item criteria of promotion. */
+    /** Item criteria like item IDs, brand IDs, category IDs, store IDs, SKUs, tags, and exclusions that determine which items qualify for the buy rule. */
     item_criteria?: Maybe<Scalars['JSON']['output']>;
+};
+/** Configuration for buybox features on product detail pages. */
+export type BuyboxFeature = {
+    __typename?: 'BuyboxFeature';
+    /** Allow selection of sellers/stores on PDP (product detail page). */
+    enable_selection: Scalars['Boolean']['output'];
+    /** Toggle buybox listing between sellers and stores. True indicates seller listing, False indicates store listing. */
+    is_seller_buybox_enabled: Scalars['Boolean']['output'];
+    /** Allow users to see seller/store names on PDP (product detail page). */
+    show_name: Scalars['Boolean']['output'];
 };
 /** CCAvenue config detail schema. */
 export type CcAvenueAggregatorConfig = {
@@ -1467,16 +2460,31 @@ export type CcAvenueAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
-    secret: Scalars['String']['output'];
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
+    secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
     /** Payment gateway verify payment api endpoint. */
     verify_api?: Maybe<Scalars['String']['output']>;
 };
+/** CDN configuration for the uploaded file. */
+export type Cdn = {
+    __typename?: 'CDN';
+    /** The absolute CDN URL (same as 'url'). This is the full URL including protocol and domain. Can be used to access the file from anywhere on the web or in applications. Example: "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/user-profile-pic/free/original/abc123-profile.jpg". */
+    absolute_url?: Maybe<Scalars['String']['output']>;
+    /** The relative CDN URL path. This is the path portion without the base domain. Format: {base_zone}/{bucket_prefix}/{file_path} (if multi_zone) or {bucket_prefix}/{file_path} (if not multi_zone). Example: "fyndnp/wrkr/user-profile-pic/free/original/abc123-profile.jpg". */
+    relative_url?: Maybe<Scalars['String']['output']>;
+    /** The complete CDN URL (absolute URL) where the file can be accessed. This is the primary URL to reference the file in applications. Format: {base_path}/{base_zone}/{bucket_prefix}/{file_path} or {base_path}/{bucket_prefix}/{file_path} depending on multi_zone configuration. Example: "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/user-profile-pic/free/original/abc123-profile.jpg". */
+    url?: Maybe<Scalars['String']['output']>;
+};
 /** An object representing css assets. */
 export type Css = {
     __typename?: 'CSS';
+    /** A string representing the url or link to the CSS module. */
+    link?: Maybe<Scalars['String']['output']>;
     /** An array of strings representing urls for css assets. */
     links?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
@@ -1497,7 +2505,7 @@ export type CampaignShortLinkInput = {
 };
 /** Cancel Or Resend Payment Link Request. */
 export type CancelOrResendPaymentLinkRequestInput = {
-    /** Unique id of payment link. */
+    /** Unique id of payment link. Returned by createPaymentLink mutation. */
     payment_link_id: Scalars['String']['input'];
 };
 /** Cancel Payment Link Response. */
@@ -1505,10 +2513,21 @@ export type CancelPaymentLinkResponse = {
     __typename?: 'CancelPaymentLinkResponse';
     /** Detailed message. */
     message: Scalars['String']['output'];
-    /** HTTP status code. */
-    status_code: Scalars['Int']['output'];
+    /**
+     * HTTP status code.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    status_code?: Maybe<Scalars['Int']['output']>;
     /** Successful or failure. */
     success: Scalars['Boolean']['output'];
+};
+/** A key-value pair object containing canvas attributes for the section. */
+export type CanvasItem = {
+    __typename?: 'CanvasItem';
+    /** Display text of a canvas. */
+    label?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier of a canvas. */
+    value?: Maybe<Scalars['String']['output']>;
 };
 /** Card response. */
 export type Card = {
@@ -1529,7 +2548,7 @@ export type Card = {
     card_issuer?: Maybe<Scalars['String']['output']>;
     /** Name mentioned on the card. */
     card_name?: Maybe<Scalars['String']['output']>;
-    /** Card number mentioned on the card. */
+    /** Card number displayed in its masked format. */
     card_number?: Maybe<Scalars['String']['output']>;
     /** Card reference. */
     card_reference?: Maybe<Scalars['String']['output']>;
@@ -1548,6 +2567,17 @@ export type Card = {
     /** User-defined name for the card. */
     nickname?: Maybe<Scalars['String']['output']>;
 };
+/** Enum representing the brands of payment cards. */
+export declare enum CardBrand {
+    Amex = "AMEX",
+    Diners = "DINERS",
+    Discover = "DISCOVER",
+    Jcb = "JCB",
+    Maestro = "MAESTRO",
+    Mastercard = "MASTERCARD",
+    Rupay = "RUPAY",
+    Visa = "VISA"
+}
 /** List card response. */
 export type CardConnection = {
     __typename?: 'CardConnection';
@@ -1587,12 +2617,20 @@ export type CardDetail = {
     card_token?: Maybe<Scalars['String']['output']>;
     /** Country where the card was issued. */
     country: Scalars['String']['output'];
+    /** Length of the CVV code for the card (e.g., 3 or 4 digits). */
+    cvv_length?: Maybe<Scalars['Int']['output']>;
     /** Extended Card Type. */
     extended_card_type: Scalars['String']['output'];
     /** Unique identifier for the record. */
     id: Scalars['String']['output'];
+    /** Indicates if the provided card information is valid. */
+    is_card_valid?: Maybe<Scalars['Boolean']['output']>;
     /** Indicates whether the card is domestic. */
     is_domestic_card: Scalars['Boolean']['output'];
+    /** Indicates if the merchant has enabled the card network (e.g., VISA, MASTERCARD). */
+    is_enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** URL of the card logo representing the card type, such as VISA or MASTERCARD. */
+    logo?: Maybe<Scalars['String']['output']>;
     /** Name of the cardholder. */
     name_on_card?: Maybe<Scalars['String']['output']>;
     /** Current status of the card. */
@@ -1602,69 +2640,102 @@ export type CardDetail = {
     /** User associated with the card. */
     user?: Maybe<Scalars['String']['output']>;
 };
-/** Get cart detail API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc. */
+/** Get cart detail response including applied promos, breakup values, buy_now flag, cart id, checkout mode, comments, coupon info, GSTIN, etc. */
 export type Cart = {
     __typename?: 'Cart';
     /** List of saved addresses for user cart checkout. */
     addresses?: Maybe<Addresses>;
-    /** List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type. */
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /** Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }] */
     applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
-    /** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
+    /** Price breakup for coupon, display, loyalty points, etc. */
     breakup_values?: Maybe<CartBreakup>;
-    /** Buy now flag for the cart which denotes user is doing fast checkout for the cart using buy now. */
+    /** Buy Now flag for fast checkout. Example: false */
     buy_now?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique identifier of the user cart. */
+    /** Numeric cart identifier. Example: 123456 */
     cart_id?: Maybe<Scalars['Int']['output']>;
-    /** Checkout mode of user cart. */
+    /** Checkout mode (e.g., 'self', 'other'). Example: 'self' */
     checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** Comment message to be added in user cart. */
+    /** Cart-level comment. Example: 'Deliver after 6 PM' */
     comment?: Maybe<Scalars['String']['output']>;
-    /** Common config at sales channel which includes delivery charge config. */
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
     common_config?: Maybe<CartCommonConfig>;
-    /** Coupon data of user cart which denotes if coupon is applied, coupon code, coupon amount, coupon title and coupon message. */
+    /** Cart-level coupon data (applied flag, code, amount, title, message). */
     coupon?: Maybe<CartDetailCoupon>;
-    /** Coupon text of coupon applied on cart. */
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
     coupon_text?: Maybe<Scalars['String']['output']>;
-    /** Currency of the price for the cart. */
+    /** Currency for prices (e.g., code 'INR', symbol '₹'). */
     currency?: Maybe<CartCurrency>;
-    /** Custom meta details added cart checkout API payload. */
+    /** Custom cart metadata. Example: { channel: 'web' } */
     custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Delivery charge in information message on shipment. */
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /** Delivery charge informational message. Example: 'Free delivery above ₹999' */
     delivery_charge_info?: Maybe<Scalars['String']['output']>;
-    /** Delivery promise of user cart. */
+    /** Delivery promise for the cart. */
     delivery_promise?: Maybe<DeliveryPromiseResponse>;
-    /** GSTIN added in user cart. */
+    /** Whether promotion free gift selection is available. Example: true */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /** GSTIN associated with the cart. Example: '27AAACI1195H1ZK' */
     gstin?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the user cart. */
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Cart validity flag determines the if the response is valid or not. */
+    /** Whether the cart response is valid. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Items data list in user cart that includes item id, item size, store id, available sizes and rest of the item related data. */
+    /** List of cart items including item id, size, store, pricing, etc. */
     items?: Maybe<Array<Maybe<CartProductInfo>>>;
-    /** Last modified timestamp of cart. */
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
     last_modified?: Maybe<Scalars['String']['output']>;
-    /** Message of the get cart detail API response. */
+    /** Response message. Example: 'Cart fetched successfully' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Notification object which denotes notification data for user cart. */
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
     notification?: Maybe<Scalars['JSON']['output']>;
-    /** Pan card config states at what condition user should enter the pan card. */
+    /** PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 } */
     pan_config?: Maybe<Scalars['JSON']['output']>;
-    /** Permanent Account Number of the user. */
+    /** User PAN number. Example: 'ABCDE1234F' */
     pan_no?: Maybe<Scalars['String']['output']>;
-    /** Payment selection lock config for the user cart. */
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
     payment_selection_lock?: Maybe<PaymentSelectionLock>;
-    /** Restrict checkout flag to restrict the checkout process. */
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
     restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
-    /** Staff employee user id if cart is created by staff employee for the customer. */
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
     staff_user_id?: Maybe<Scalars['String']['output']>;
-    /** Success flag of get cart detail API response. */
+    /** Whether the API call was successful. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique identifier of the user cart. */
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
     uid?: Maybe<Scalars['String']['output']>;
-    /** Count of items present in user cart. */
+    /** Number of items in cart. Example: 3 */
     user_cart_items_count?: Maybe<Scalars['Int']['output']>;
 };
-/** Get cart detail API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc. */
+/** Get cart detail response including applied promos, breakup values, buy_now flag, cart id, checkout mode, comments, coupon info, GSTIN, etc. */
 export type CartAddressesArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     checkoutMode?: InputMaybe<Scalars['String']['input']>;
@@ -1672,414 +2743,397 @@ export type CartAddressesArgs = {
     mobileNo?: InputMaybe<Scalars['String']['input']>;
     tags?: InputMaybe<Scalars['String']['input']>;
 };
-/** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
+/** Price breakup of cart across coupon, display, loyalty points, and raw values. */
 export type CartBreakup = {
     __typename?: 'CartBreakup';
-    /** Coupon price breakup details which includes coupon code, coupon type, coupon value, coupon description, coupn message etc. */
+    /** Coupon price breakup details which includes coupon code, coupon type, coupon value, coupon description, coupon message etc. */
     coupon?: Maybe<CouponBreakup>;
-    /** List of breakup data which is used to display the breakup to the customer like MRP total, Discount, Sub total, coupon value, promotion value and final total. */
+    /** Display breakup entries like MRP total, discount, subtotal, coupon value, promotion value, and total. */
     display?: Maybe<Array<Maybe<DisplayBreakup>>>;
-    /** Loyalty points data for the user cart. */
+    /** Loyalty points details for the cart. */
     loyalty_points?: Maybe<LoyaltyPoints>;
-    /** Price raw breakup of the cart which denotes cod charge, convinience fee, coupon amount, delivery charge, discount, loyalty points, gift card, gst charge, etc. */
+    /** Raw breakup: COD charge, convenience fee, coupon, delivery charge, discount, loyalty, gift card, GST, totals, etc. */
     raw?: Maybe<RawBreakup>;
 };
-/** Checkout request schema which includes custom meta, merchant code, cart id, payment methods, address id, callback url, order type, billing address and card details. */
+/** Checkout request including cart/payment details, addresses, callbacks, order type, and metadata. Use either address_id/billing_address_id or pass delivery_address/billing_address. */
 export type CartCheckoutDetailRequestInput = {
-    /** Address id of the user where the order to be delivered. */
+    /** Delivery address ID. Example: 'addr_001' */
     address_id?: InputMaybe<Scalars['String']['input']>;
-    /** Aggregator of payment mode to do the payment. */
+    /** Payment aggregator (e.g., Fynd, Razorpay, Juspay). Example: 'Razorpay' */
     aggregator?: InputMaybe<Scalars['String']['input']>;
-    /** Billing address json which includes customer address, customer phone, customer email, customer pincode, customer landmark and customer name. */
+    /** Billing address JSON (address, phone, email, pincode, landmark, name). Example: { address: '221B Baker St', phone: '9876543210' } */
     billing_address?: InputMaybe<Scalars['JSON']['input']>;
-    /** Billing address id selected by user on which shipment bill to be generated. */
-    billing_address_id?: InputMaybe<Scalars['String']['input']>;
-    /** Callback url after payment received/failed. */
-    callback_url?: InputMaybe<Scalars['String']['input']>;
-    /** Cart id of the user cart. */
+    /** Cart ID. Example: '5bb521cfdc83215e1889b346' */
     cart_id?: InputMaybe<Scalars['String']['input']>;
-    /** Custom meta data to be added in order. */
+    /** Custom order metadata. Example: { source: 'app' } */
     custom_meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Customer details to be added in order. */
+    /** Customer details. */
     customer_details?: InputMaybe<CustomerDetailsInput>;
-    /** Delivery address data which includes customer address, customer phone, customer email, customer pincode, customer landmark and customer name. */
+    /** Delivery address JSON (address, phone, email, pincode, landmark, name). Example: { address: '221B Baker St', phone: '9876543210' } */
     delivery_address?: InputMaybe<Scalars['JSON']['input']>;
-    /** Extra meta to be added while checkout in order. */
+    /** Extra metadata for checkout. Example: { campaign: 'SUMMER' } */
     extra_meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Cart id of the user cart. */
+    /** Failure callback URL. Example: 'https://example.com/pay/failure' */
+    failure_callback_url?: InputMaybe<Scalars['String']['input']>;
+    /** Cart ID (alias). Example: '5bb521cfdc83215e1889b346' */
     id?: InputMaybe<Scalars['String']['input']>;
-    /** Issuer Identification Number' number of card if payment mode is card to do the payment. */
+    /** Card IIN (first six digits) for card payments (e.g., 123456). Example: '411111' */
     iin?: InputMaybe<Scalars['String']['input']>;
-    /** Merchant code of the payment mode selected to do the payment. */
+    /** Merchant code (e.g., ICICI, AXIS). Example: 'ICICI' */
     merchant_code?: InputMaybe<Scalars['String']['input']>;
-    /** Meta data sent while checkout. */
+    /** Checkout metadata. Example: { experiment: 'A' } */
     meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Network of card if payment mode is card to do the payment. */
+    /** Card network (e.g., VISA, MASTERCARD, RUPAY). Example: 'VISA' */
     network?: InputMaybe<Scalars['String']['input']>;
-    /** Order type of the order being placed like pickAtStore or HomeDelivery. */
+    /** List of order tags used to classify and visually enhance order cards. */
+    order_tags?: InputMaybe<Array<InputMaybe<OrderTagInput>>>;
+    /** Order type of the shipment (e.g., 'PickAtStore', 'HomeDelivery','Digital). Example: 'HomeDelivery' */
     order_type?: InputMaybe<Scalars['String']['input']>;
-    /** Ordering store id of the store from which the order is getting placed. */
+    /** Ordering store ID. Example: 1234 */
     ordering_store?: InputMaybe<Scalars['Int']['input']>;
-    /** Payment auto confirm flag if payment need not to be collected from user. */
+    /** Auto-confirm payment without user action. Example: false */
     payment_auto_confirm?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Payment identifier of the payment mode selected to do the payment. */
+    /** Payment identifier. Example: 'pay_abc123' */
     payment_identifier?: InputMaybe<Scalars['String']['input']>;
-    /** Payment methods list used to make the payment. */
-    payment_methods: Array<InputMaybe<PaymentMethodInput>>;
-    /** Payment mode of the payment selected to do the payment. */
+    /** Payment methods list. Example: [{ amount: 499.0, mode: 'CARD', name: 'Visa', payment_meta: { merchant_code: 'ICICI', payment_gateway: 'Razorpay', payment_identifier: 'pay_abc123' } }] */
+    payment_methods?: InputMaybe<Array<InputMaybe<PaymentMethodInput>>>;
+    /** Payment mode (e.g., COD, CARD, NB). Example: 'CARD' */
     payment_mode: Scalars['String']['input'];
-    /** Payment params which includes payment identifier and merchant code. */
+    /** Payment params (identifier, merchant code). Example: { payment_identifier: 'pay_abc123', merchant_code: 'ICICI' } */
     payment_params?: InputMaybe<Scalars['JSON']['input']>;
-    /** Staff details which can be added while checkout if staff member is doing check on behalf of customer which incluedes empployee code, user, last name, first name and staff user id. */
-    staff?: InputMaybe<StaffCheckoutInput>;
-    /** Type of cart if payment mode is card to do the payment. */
+    /** Success callback URL. Example: 'https://example.com/pay/success' */
+    success_callback_url?: InputMaybe<Scalars['String']['input']>;
+    /** Card type for card payments (e.g., DEBIT, CREDIT). Example: 'CREDIT' */
     type?: InputMaybe<Scalars['String']['input']>;
 };
-/** Checkout cart detail respoonse schema includes cart id, delivery promise, items, comment, coupon text etc. */
+/** Checkout cart detail response schema includes cart id, delivery promise, items, comment, coupon text etc. */
 export type CartCheckoutResponse = {
     __typename?: 'CartCheckoutResponse';
-    /** App intercept url which is used to redirect on app after payment in confirmed/failed. */
+    /**
+     * App intercept url for app redirection. Example: 'fynd://checkout/callback'
+     * @deprecated This field is obsolete
+     */
     app_intercept_url?: Maybe<Scalars['String']['output']>;
-    /** Callback url to be redirected after payment received/failed. */
+    /** Callback url after payment success/failed. Example: 'https://example.com/pay/callback' */
     callback_url?: Maybe<Scalars['String']['output']>;
-    /** Checkout cart detail respoonse schema includes cart id, delivery promise, items, comment, coupon text etc. */
+    /** Checkout cart detail response schema includes cart id, delivery promise, items, comment, coupon text etc. */
     cart?: Maybe<CheckCart>;
-    /** Data of the user cart checkout includes cart data, address, user id, order type etc. */
+    /** Payment related fields returned by the API across different aggregators (like Razorpay, Juspay, Paytm, Simpl, etc.). It contains details such as transaction amount, payment method, aggregator info, wallet/bank codes, callback URLs, and QR or UPI information. */
     data?: Maybe<Scalars['JSON']['output']>;
-    /** Message of the cart checkout API response. */
+    /** Message of the cart checkout API response. Example: 'Checkout initialized' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Order id generated after placing order. */
+    /** Order id generated after placing order. Example: 'FY2025-10001' */
     order_id?: Maybe<Scalars['String']['output']>;
-    /** Payment confirm url used to redirect after payment is confirmed. */
+    /**
+     * Payment confirm url used to redirect after payment is confirmed. Example: 'https://example.com/pay/confirm'
+     * @deprecated This field is obsolete, use callback_url instead
+     */
     payment_confirm_url?: Maybe<Scalars['String']['output']>;
-    /** Success flag of cart checkout API response. */
+    /** Success flag of cart checkout API response. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Cart common config which determines delivery charge config. */
 export type CartCommonConfig = {
     __typename?: 'CartCommonConfig';
-    /** Delivery charge config which includes charges applicable condition and enabled flag. */
+    /** Delivery charge config which includes charges applicable condition and enabled flag. Example: { enabled: true, charges: [{ threshold: 999, charges: 0 }] } */
     delivery_charges_config?: Maybe<DeliveryChargesConfig>;
 };
-/** Currency data of the cart for prices. */
+/** Currency data used for cart prices. */
 export type CartCurrency = {
     __typename?: 'CartCurrency';
-    /** Currency code defined by ISO 4217:2015. */
+    /** Currency code (ISO 4217), e.g., 'INR'. Example: 'INR' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for currency of user cart prices. */
+    /** Currency symbol, e.g., '₹'. Example: '₹' */
     symbol?: Maybe<Scalars['String']['output']>;
 };
-/** Cart level coupon data which denoes cashback amount, coupon code, coupon description, coupon sub title, and coupon value. */
+/** Cart-level coupon data including code, title, messages, value, and validity. */
 export type CartDetailCoupon = {
     __typename?: 'CartDetailCoupon';
-    /** Fields denotes cashback amount applied to cart. */
+    /** Cashback amount applied to the cart. Example: 50.0 */
     cashback_amount?: Maybe<Scalars['Float']['output']>;
-    /** Primary cashback message for coupon applied to cart. */
+    /** Primary cashback message. Example: 'You will receive ₹50 cashback' */
     cashback_message_primary?: Maybe<Scalars['String']['output']>;
-    /** Secondary cashback message for coupon applied to cart. */
+    /** Secondary cashback message. Example: 'Cashback credited within 48 hours' */
     cashback_message_secondary?: Maybe<Scalars['String']['output']>;
-    /** Coupon code to be applied to cart. */
+    /** Coupon code applied to cart. Example: 'SAVE10' */
     coupon_code?: Maybe<Scalars['String']['output']>;
-    /** Coupon description of the coupon applied to cart. */
+    /** Description of the applied coupon. Example: '10% off on orders above ₹999' */
     coupon_description?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the coupon applied to cart. */
+    /** Unique identifier of the coupon. Example: 'cpn_123' */
     coupon_id?: Maybe<Scalars['String']['output']>;
-    /** Coupon subtitle of the coupon applied to cart. */
+    /** Coupon subtitle used for display. Example: 'Limited time offer' */
     coupon_subtitle?: Maybe<Scalars['String']['output']>;
-    /** Coupon Title of the coupon applied. */
+    /** Coupon title. Example: 'SAVE10' */
     coupon_title?: Maybe<Scalars['String']['output']>;
-    /** Type of the coupon applied to cart. */
+    /** Type of coupon. Example: 'percentage' */
     coupon_type?: Maybe<Scalars['String']['output']>;
-    /** Value of the coupon applied to cart. */
+    /** Coupon value. Example: 10.0 */
     coupon_value?: Maybe<Scalars['Float']['output']>;
-    /** Total discount earned from coupon applied to cart. */
+    /** Additional custom attributes associated with the cart coupon for extended metadata and configuration */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Total discount earned from coupon. Example: 150.0 */
     discount?: Maybe<Scalars['Float']['output']>;
-    /** Flag to determine where the coupon is applied to cart or not. */
+    /** Whether any coupon is applied. Example: true */
     is_applied?: Maybe<Scalars['Boolean']['output']>;
-    /** Determine where the coupon applied to cart is valid. */
+    /** Whether the applied coupon is valid. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Maximum discount value of the coupon applied to cart. */
+    /** Maximum discount amount allowed. Example: 500.0 */
     maximum_discount_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon message of the coupon applied to cart. */
+    /** Coupon message for display. Example: 'Coupon applied successfully' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Minimum cart value of the coupon applied to cart. */
+    /** Minimum cart value required. Example: 999.0 */
     minimum_cart_value?: Maybe<Scalars['Float']['output']>;
 };
-/** Get cart detail API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc. */
-export type CartDetailResponse = {
-    __typename?: 'CartDetailResponse';
-    /** List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type. */
-    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
-    /** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
-    breakup_values?: Maybe<CartBreakup>;
-    /** Buy now flag for the cart which denotes user is doing fast checkout for the cart using buy now. */
-    buy_now?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique identifier of the user cart. */
-    cart_id?: Maybe<Scalars['Int']['output']>;
-    /** Checkout mode of user cart. */
-    checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** Comment message to be added in user cart. */
-    comment?: Maybe<Scalars['String']['output']>;
-    /** Common config at sales channel which includes delivery charge config. */
-    common_config?: Maybe<CartCommonConfig>;
-    /** Coupon data of user cart which denotes if coupon is applied, coupon code, coupon amount, coupon title and coupon message. */
-    coupon?: Maybe<CartDetailCoupon>;
-    /** Coupon text of coupon applied on cart. */
-    coupon_text?: Maybe<Scalars['String']['output']>;
-    /** Currency of the price for the cart. */
-    currency?: Maybe<CartCurrency>;
-    /** Metadata for custom cart */
-    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Delivery charge in information message on shipment. */
-    delivery_charge_info?: Maybe<Scalars['String']['output']>;
-    /** Delivery promise of user cart. */
-    delivery_promise?: Maybe<DeliveryPromiseResponse>;
-    /** GSTIN added in user cart. */
-    gstin?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the user cart. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** Cart validity flag determines the if the response is valid or not. */
-    is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Items data list in user cart that includes item id, item size, store id, available sizes and rest of the item related data. */
-    items?: Maybe<Array<Maybe<CartProductInfo>>>;
-    /** Last modified timestamp of cart. */
-    last_modified?: Maybe<Scalars['String']['output']>;
-    /** Message of the get cart detail API response. */
-    message?: Maybe<Scalars['String']['output']>;
-    /** Notification object which denotes notification data for user cart. */
-    notification?: Maybe<Scalars['JSON']['output']>;
-    /** Pan card config states at what condition user should enter the pan card. */
-    pan_config?: Maybe<Scalars['JSON']['output']>;
-    /** Permanent Account Number of the user. */
-    pan_no?: Maybe<Scalars['String']['output']>;
-    /** Payment selection lock config for the user cart. */
-    payment_selection_lock?: Maybe<PaymentSelectionLock>;
-    /** Restrict checkout flag to restrict the checkout process. */
-    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
-    /** Staff employee user id if cart is created by staff employee for the customer. */
-    staff_user_id?: Maybe<Scalars['String']['output']>;
-    /** Success flag of get cart detail API response. */
-    success?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique identifier of the user cart. */
-    uid?: Maybe<Scalars['String']['output']>;
+/** Cart-level coupon data including code, title, messages, value, and validity. */
+export type CartDetailCouponCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Configuration options for features related to the shopping cart, including GST input, staff selection, and coupon usage. */
 export type CartFeature = {
     __typename?: 'CartFeature';
-    /** Allow adding of Google Maps. Default value is true. */
-    google_map?: Maybe<Scalars['Boolean']['output']>;
+    /** Allow adding Google Maps integration. Default value is true. */
+    google_map: Scalars['Boolean']['output'];
     /** Whether customer is allowed to enter GST on the cart page for claiming input credits. */
-    gst_input?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether the staff is placing order on behalf of customer. Default value is true. */
+    gst_input: Scalars['Boolean']['output'];
+    /**
+     * Whether staff is placing order on behalf of customer. Default value is true.
+     * @deprecated This field is obsolete.
+     */
     placing_for_customer?: Maybe<Scalars['Boolean']['output']>;
-    /** Allow coupon apply and credits, together. Default value is false. */
+    /**
+     * Allow coupons and credits to be applied together. Default value is false.
+     * @deprecated This field is obsolete.
+     */
     revenue_engine_coupon?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether staff selection is enabled on cart page. */
+    /**
+     * Whether staff selection is enabled on cart page.
+     * @deprecated This field is obsolete.
+     */
     staff_selection?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Add to cart request schema which has items data to be added in cart. */
+/** Input for adding items to cart. */
 export type CartItem = {
-    /** Field to add custom json at article level while add items to cart . */
+    /** Custom JSON at article level. Example: { gift_wrap: true } */
     _custom_json?: InputMaybe<Scalars['JSON']['input']>;
-    /** Field to determine how article assignment should happen by article assignment level and strategy. */
-    article_assignment?: InputMaybe<Scalars['JSON']['input']>;
-    /** Unique identifier of an article . */
-    article_id?: InputMaybe<Scalars['String']['input']>;
-    /** Display field at article level . */
-    display?: InputMaybe<Scalars['String']['input']>;
-    /** Extra meta data to be added at article level while add items to cart. */
-    extra_meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Unique identifier to identify product. */
+    /** Article assignment rules (level/strategy). Example: { level: 'item', strategy: 'fast-delivery/optimal' } */
+    article_assignment?: InputMaybe<ArticleAssignmentInput>;
+    /** If true, forces a separate line item. Example: true */
+    force_new_line_item?: InputMaybe<Scalars['Boolean']['input']>;
+    /** Fulfillment method slug. Example: 'home-delivery' or 'store-pickup' */
+    fulfillment_option_slug?: InputMaybe<Scalars['String']['input']>;
+    /** Product identifier. Example: 987654 */
     item_id?: InputMaybe<Scalars['Int']['input']>;
-    /** Field to determine size of the product. */
+    /** Size of the product. Example: 'M' */
     item_size?: InputMaybe<Scalars['String']['input']>;
-    /** Field to add meta data at article level. */
+    /** Metadata at article level. Example: { source: 'PDP' } */
     meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Fields to determine parent product of the product. */
-    parent_item_identifiers?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
-    /** Filed to determine whether user is making request from pos or not. */
-    pos?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Field to specify the product groups of the product that the user is trying to add in cart. */
-    product_group_tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-    /** Field to specify the product quantity that user wants to buy. */
+    /** Quantity to add. Example: 2 */
     quantity?: InputMaybe<Scalars['Int']['input']>;
-    /** Unique idetifier of the seller selected by the user from which user want to buy a product . */
+    /** Selected seller ID. Example: 5678 */
     seller_id?: InputMaybe<Scalars['Int']['input']>;
-    /** Add items using seller identifier for store os. */
-    seller_identifier?: InputMaybe<Scalars['String']['input']>;
-    /** Unique identifier of the store selected by the user from which user want to buy a product. */
+    /** Selected store ID. Example: 1234 */
     store_id?: InputMaybe<Scalars['Int']['input']>;
 };
 /** Response schema which defines how many total number of items are in cart. */
 export type CartItemCountResponse = {
     __typename?: 'CartItemCountResponse';
-    /** Item count present in cart. */
+    /** Item count present in cart. Example: 3 */
     user_cart_items_count?: Maybe<Scalars['Int']['output']>;
 };
-/** Cart meta request schema to update the cart meta detail like delivery slots, comment message, GSTIN and custom cart meta. */
+/** Information about cart items including item ID, size, store ID, success status and message */
+export type CartItemInfo = {
+    __typename?: 'CartItemInfo';
+    /** Item id of the product that needs to be added/updated/removed. Example: 123456 */
+    item_id?: Maybe<Scalars['Int']['output']>;
+    /** Message for added/updated/removed item. Example: 'Updated quantity to 2' */
+    message?: Maybe<Scalars['String']['output']>;
+    /** Item size of the product that needs to be added/updated/removed. Example: 'M' */
+    size?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier of the store selected by the user. Example: 1001 */
+    store_id?: Maybe<Scalars['Int']['output']>;
+    /** True if items are added/updated/removed successfully. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+};
+/** Update cart metadata like delivery slots, comment, GSTIN, custom meta, and pickup details. */
 export type CartMetaRequestInput = {
-    /** Checkout mode of user cart. */
-    checkout_mode?: InputMaybe<Scalars['String']['input']>;
-    /** Comment message to be added in user cart. */
+    /** Cart-level comment. Example: 'Please deliver after 6 PM' */
     comment?: InputMaybe<Scalars['String']['input']>;
-    /** Metadata for custom cart */
+    /** Custom cart metadata. Example: { channel: 'web' } */
     custom_cart_meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Delivery slots details includes article level time slot when the shipment can be delivered. */
-    delivery_slots?: InputMaybe<Scalars['JSON']['input']>;
-    /** Article level gift details which includes article id. */
-    gift_details?: InputMaybe<ArticleGiftDetailInput>;
-    /** GSTIN number to be added in user cart. */
+    /** Gift details per article. Example: [{ article_id: '5fdc737e3c05146138192f79', gift_message: 'Happy Birthday!' }] */
+    gift_details?: InputMaybe<Array<InputMaybe<GiftDetailInput>>>;
+    /** GSTIN to add to the cart. Example: '27AAACI1195H1ZK' */
     gstin?: InputMaybe<Scalars['String']['input']>;
-    /** Customer contact details for customer pickup at store. */
-    pick_up_customer_details?: InputMaybe<Scalars['JSON']['input']>;
 };
 /** Cart meta response schema. */
 export type CartMetaResponse = {
     __typename?: 'CartMetaResponse';
-    /** Whether added meta was vaild. */
+    /** Whether added meta was valid. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Detailed message. */
+    /** Detailed message. Example: 'Meta updated' */
     message?: Maybe<Scalars['String']['output']>;
 };
-/** Price of single quantity product for seller currency and customer currency. */
+/** Price of single quantity product in seller and customer currency. */
 export type CartPriceInfo = {
     __typename?: 'CartPriceInfo';
-    /** Seller currency price details of the product for single quantity. */
+    /** Seller currency price details for single quantity. */
     base?: Maybe<PriceInfo>;
-    /** Customer currency price details of the product for single quantity. */
+    /** Customer currency price details for single quantity. */
     converted?: Maybe<PriceInfo>;
 };
-/** Cart product data structure which includes product data as action, attributes, brand, categoreis,, images, item code, tags, item id, item name, etc. */
+/** Cart product data structure which includes product data as action, attributes, brand, categories, images, item code, tags, item id, item name, etc. */
 export type CartProduct = {
     __typename?: 'CartProduct';
-    /** Field to add custom json of the product in cart. */
+    /** Custom JSON for the product in cart. Example: { personalization: true } */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
     /** Schema of Action Object to render the product. */
     action?: Maybe<ProductAction>;
-    /** Product attributes defined on platform. */
+    /** Product attributes defined on platform. Example: { material: 'Cotton' } */
     attributes?: Maybe<Scalars['JSON']['output']>;
     /** Basic information which provides basic info like uid of any entity like brand or seller and name of the entity. */
     brand?: Maybe<BaseInfo>;
-    /** Product category information which incldes category name and category id. */
+    /** Product category information which includes category name and category id. */
     categories?: Maybe<Array<Maybe<CategoryInfo>>>;
-    /** Product Images urls of different types like secure url, aspect ration url and url. */
+    /** Additional custom attributes associated with the cart product for extended product information and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Product images in different formats. Example: [{ secure_url: 'https://cdn.example.com/img.jpg' }] */
     images?: Maybe<Array<Maybe<ProductImage>>>;
-    /** Product code of the product while defining product on platform. */
+    /** Product code defined on platform. Example: 'SKU123' */
     item_code?: Maybe<Scalars['String']['output']>;
-    /** Product name of the product in cart which is defined on platform. */
+    /** Product name defined on platform. Example: 'Cotton T-Shirt' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Unique product url name generated via product name and other meta data. */
+    /** Unique product URL slug. Example: 'cotton-tshirt' */
     slug?: Maybe<Scalars['String']['output']>;
-    /** Products tags that are added to each product to identify the set of products. */
+    /** Product tags used for identification. Example: ['new', 'bestseller'] */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Contains Tags which is a lable or batch that is attached to a product in cart. */
+    /** Contains labels attached to a product in cart. Example: { tags: ['teaser'] } */
     teaser_tag?: Maybe<Tags>;
-    /** Type of product in cart. */
+    /** Type of product in cart. Example: 'standard' */
     type?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the product in cart. */
+    /** Unique identifier of the product in cart. Example: 123456 */
     uid?: Maybe<Scalars['Int']['output']>;
+};
+/** Cart product data structure which includes product data as action, attributes, brand, categories, images, item code, tags, item id, item name, etc. */
+export type CartProductCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Product identifiers uniquely generated by cart to uniquely identify the product in cart. */
 export type CartProductIdentifer = {
     __typename?: 'CartProductIdentifer';
-    /** Article idenfier generated by cart. */
+    /** Article identifier generated by cart. Example: 'line_abc123' */
     identifier?: Maybe<Scalars['String']['output']>;
 };
-/** Product identifiers uniquely generated by cart to uniquely identify the product in cart. */
+/** Cart-generated product identifiers to uniquely identify an item. */
 export type CartProductIdentiferInput = {
-    /** Article idenfier generated by cart. */
+    /** Identifier generated by cart. Example: 'line_abc123' */
     identifier?: InputMaybe<Scalars['String']['input']>;
 };
-/** Product information of the products in cart which includes article information, charges applied, coupon data, delivery promise, discount etc. */
+/** Product information in cart including article info, availability, charges, coupon, delivery promise, discount, identifiers, price, and quantity. */
 export type CartProductInfo = {
     __typename?: 'CartProductInfo';
-    /** Product store information of the product added in cart. */
+    /** Date and time when the item was added to the cart e.g. `Tue, 28 Jun 2022 14:47:12 GMT`  */
+    added_on?: Maybe<Scalars['String']['output']>;
+    /** Product article information including pricing, seller details, store information, fulfillment options and other article-specific data for the product added in cart. */
     article?: Maybe<ProductArticle>;
-    /** Availability information of the product like deliverable, out of stock, valid product etc. */
+    /** Availability information (deliverable, out of stock, validity, sizes). */
     availability?: Maybe<ProductAvailability>;
-    /** Bulk offer information for the product which denotes if any bulk offer is applied to the product in cart. */
+    /** Bulk offer information if applicable. */
     bulk_offer?: Maybe<Scalars['JSON']['output']>;
-    /** Charges information which denotes types of charges and amount of charge applied to that product in cart. */
+    /** Charges applied to the product. Example: [{ name: 'delivery', amount: { currency: 'INR', value: 49 } }] */
     charges?: Maybe<Array<Maybe<ChargesInfo>>>;
-    /** Coupon actual price breakup details. */
+    /** Coupon price breakup for this product. */
     coupon?: Maybe<CouponDetails>;
-    /** Message for the coupon denotes which coupon is applied and empty if not applied. */
+    /** Coupon message (empty if none). Example: 'SAVE10 applied' */
     coupon_message?: Maybe<Scalars['String']['output']>;
-    /** Whether MTO (Make to Order) is enabled or not. */
+    /** Make to Order (MTO) configuration object containing custom order settings like manufacturing time, time unit, and custom order flag. */
     custom_order?: Maybe<Scalars['JSON']['output']>;
-    /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
+    /** Shipment-level delivery promise. */
     delivery_promise?: Maybe<DeliveryPromiseResponse>;
-    /** Discount amount of the product in cart. */
+    /** Discount amount for the product. Example: '₹150' */
     discount?: Maybe<Scalars['String']['output']>;
-    /** Product identifiers uniquely generated by cart to uniquely identify the product in cart. */
+    /** Cart-generated product identifiers. */
     identifiers: CartProductIdentifer;
-    /** Whether or not the product is a set of items. */
+    /** Whether the product is a set. Example: false */
     is_set?: Maybe<Scalars['Boolean']['output']>;
-    /** The attribute key associated with the size. */
+    /** This field describes the type of item, indicating the category or nature of the product. */
+    item_type?: Maybe<ItemTypeEnum>;
+    /** Attribute key associated with the size. Example: 'eu_size' */
     key?: Maybe<Scalars['String']['output']>;
-    /** Product level message which denotes error information to display over the product in cart. */
+    /** Maximum quantity information based on store/seller/overall. */
+    max_quantity?: Maybe<ProductMaxQuantityInfo>;
+    /** Product-level message (e.g., error/info). Example: 'Only 1 left in stock' */
     message?: Maybe<Scalars['String']['output']>;
-    /** An Integer indication the Minimum Order Quantity of a product, e.g. 100. */
+    /** Minimum order quantity information. */
     moq?: Maybe<Scalars['JSON']['output']>;
-    /** Parent item information of the product which identifies the parent of the product in cart. */
+    /** Parent item identifiers. Example: { parent_item_id: 111 } */
     parent_item_identifiers?: Maybe<Scalars['JSON']['output']>;
-    /** Price of single quantity product for seller currency and customer currency. */
+    /** Price per unit in seller and customer currency. */
     price?: Maybe<CartPriceInfo>;
-    /** Price of single quantity product for seller currency and customer currency. */
+    /** Price per unit of the product. */
     price_per_unit?: Maybe<ProductPriceInfo>;
-    /** Cart product data structure which includes product data as action, attributes, brand, categoreis,, images, item code, tags, item id, item name, etc. */
+    /** Product details including action, attributes, brand, categories, images, item code, name, slug, tags, etc. */
     product?: Maybe<CartProduct>;
-    /** European Article Number of the product (limited upto 50 EAN identifier in a single request). */
+    /** European Article Number of the product. Example: '8901234567890' */
     product_ean_id?: Maybe<Scalars['String']['output']>;
-    /** Loyalty points message data. */
+    /**
+     * Loyalty points message data.
+     * @deprecated This field is obsolete.
+     */
     promo_meta?: Maybe<PromoMeta>;
-    /** List of applicable promotion for the product in cart. */
+    /** List of applicable promotions for the product. */
     promotions_applied?: Maybe<Array<Maybe<AppliedPromotion>>>;
-    /** Quantity of the product added in cart. */
+    /** Quantity of the product in cart. Example: 2 */
     quantity?: Maybe<Scalars['Int']['output']>;
 };
 /** Cart shipment response schema for get shipments API. */
 export type CartShipmentsResponse = {
     __typename?: 'CartShipmentsResponse';
-    /** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
+    /** Price breakup of cart (coupon, display, loyalty points, etc.). Example: { display: [{ key: 'total', value: 1499.0 }] } */
     breakup_values?: Maybe<CartBreakup>;
-    /** Buy now flag of user cart. */
+    /** Buy now flag of user cart. Example: false */
     buy_now?: Maybe<Scalars['Boolean']['output']>;
-    /** Cart id of the user cart. */
+    /** Cart id of the user cart. Example: 123456 */
     cart_id?: Maybe<Scalars['Int']['output']>;
-    /** Checkout mode of cart. */
+    /** Checkout mode of cart. Example: 'self' */
     checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** Comment message added in cart. */
+    /** Comment message added in cart. Example: 'Please call on arrival' */
     comment?: Maybe<Scalars['String']['output']>;
-    /** Coupon text of coupon applied on cart. */
+    /** Coupon text of coupon applied on cart. Example: 'SAVE10 applied' */
     coupon_text?: Maybe<Scalars['String']['output']>;
-    /** Currency data of the cart for prices. */
+    /** Currency data of the cart for prices. Example: { code: 'INR', symbol: '₹' } */
     currency?: Maybe<CartCurrency>;
-    /** Metadata for custom cart */
+    /** Metadata for custom cart. Example: { channel: 'web' } */
     custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Delivery charge in information message on shipment. */
+    /** Customer user id associated with cart. Example: 'usr_456' */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /** Delivery charge info message on shipment. Example: 'Free delivery over ₹999' */
     delivery_charge_info?: Maybe<Scalars['String']['output']>;
-    /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
+    /** Shipment level promise (formatted time, timestamp, ISO). */
     delivery_promise?: Maybe<ShipmentPromise>;
-    /** Error details if any error occurs which includes type of error, error code and error message. */
+    /** Whether an error occurred. Example: false */
     error?: Maybe<Scalars['Boolean']['output']>;
-    /** GSTIN number added in cart. */
+    /** GSTIN number added in cart. Example: '27AAACI1195H1ZK' */
     gstin?: Maybe<Scalars['String']['output']>;
-    /** Cart id of the user cart. */
+    /** Cart uid of the user cart. Example: '5bb521cfdc83215e1889b346' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Cart validity flag determines the if the response is valid or not. */
+    /** Cart validity flag. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Last modified timestamp of cart. */
+    /** Last modified timestamp of cart. Example: '2025-10-07T14:20:00Z' */
     last_modified?: Maybe<Scalars['String']['output']>;
-    /** Response message of get shipments API. */
+    /** Response message of get shipments API. Example: 'Shipments fetched successfully' */
     message?: Maybe<Scalars['String']['output']>;
     /** Payment Default Selection Schema. */
     payment_selection_lock?: Maybe<PaymentSelectionLock>;
-    /** Restrict checkout flag to restrict the checkout process. */
+    /**
+     * Restrict checkout flag. Example: false
+     * @deprecated This field is obsolete
+     */
     restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
-    /** List of Shipments which includes shipment data like shipment items, shipment promise, Shipment type, shipment order type, shipment dp options etc. */
+    /** List of shipments with items and promise details. Example: [{ shipments: 1, order_type: 'HomeDelivery' }] */
     shipments?: Maybe<Array<Maybe<ShipmentResponse>>>;
-    /** Cart id of the user cart. */
+    /** Cart uid of the user cart. Example: 'uid_987' */
     uid?: Maybe<Scalars['String']['output']>;
 };
 /** Response containing a list of department category trees and department identifiers. */
@@ -2093,153 +3147,162 @@ export type Categories = {
 /** Response containing metadata for a category. */
 export type Category = {
     __typename?: 'Category';
-    /** Custom JSON data related to the category, allowing for additional metadata. */
+    /** Application-specific data and configuration associated with the category. */
+    _app?: Maybe<Scalars['JSON']['output']>;
+    /** Custom JSON data related to the category, allowing for additional metadata and configuration. */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Banner images associated with the category, including portrait and landscape orientations. */
+    /** Banner images associated with the category, including portrait and landscape orientations for display. */
     banners?: Maybe<ImageUrls>;
-    /** Logo associated with the category. */
+    /** Logo image associated with the category for branding and identification. */
     logo?: Maybe<Media>;
-    /** Name of the category. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for the category. */
-    uid?: Maybe<Scalars['Int']['output']>;
+    /** Display name of the category, e.g. 'Men's Clothing', 'Electronics', 'Home & Garden'. */
+    name: Scalars['String']['output'];
+    /** Unique identifier for the category, e.g. 123, 456, 789. */
+    uid: Scalars['Int']['output'];
 };
 /** Details regarding a FAQ category under which FAQs are stored. */
 export type CategoryBySlug = {
     __typename?: 'CategoryBySlug';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
     /** Details regarding a FAQs stored under a FAQs category. */
-    children?: Maybe<Array<Maybe<ChildSchema>>>;
-    /** Custom JSON object for specific use cases. */
+    children?: Maybe<Array<Maybe<Faq>>>;
+    /**
+     * Custom JSON object for specific use cases.
+     * @deprecated This field is obsolete.
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Details of the FAQ category. */
+    /** Details of the FAQ category. For example, 'Frequently asked questions about shipping and delivery'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** URL of the image associated with FAQ Category. */
+    /** URL of the image associated with FAQ Category. For example, 'https://cdn.example.com/icons/shipping.png'. */
     icon_url?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Order of FAQ Category. */
+    /** Order of FAQ Category. For example, 0, 1, 2, or 3. */
     index?: Maybe<Scalars['Int']['output']>;
-    /** A short, human-readable, URL-friendly identifier. */
+    /** A short, human-readable, URL-friendly identifier. For example, 'shipping' or 'returns'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** Title of a FAQ Category. */
+    /** Title of a FAQ Category. For example, 'Shipping & Delivery' or 'Returns & Refunds'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Details regarding a FAQ category under which FAQs are stored. */
 export type CategoryDetail = {
     __typename?: 'CategoryDetail';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '621e1f2ca78f7425f939641d'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Details regarding a FAQs stored under a FAQs category. */
+    /** Details regarding a FAQs stored under a FAQs category. For example, ['5ebe2b02543625128ae9d66b', '5ebe2b02543625128ae9d66b', '5ebe2b02543625e92be9d670']. */
     children?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Custom JSON object for specific use cases. */
+    /**
+     * Custom JSON object for housing additional information that may be used for custom use cases.
+     * @deprecated This field is obsolete.
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Details of the FAQ category. */
+    /** Details of the FAQ category. For example, 'Frequently asked questions about shipping and delivery'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** URL of the image associated with FAQ Category. */
+    /** URL of the image associated with FAQ Category. For example, 'https://cdn.example.com/icons/shipping.png'. */
     icon_url?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Order of FAQ Category. */
+    /** Order of FAQ Category. For example, 0, 1, 2, or 3. */
     index?: Maybe<Scalars['Int']['output']>;
-    /** A short, human-readable, URL-friendly identifier. */
+    /** A short, human-readable, URL-friendly identifier. For example, 'shipping' or 'returns'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** Title of a FAQ Category. */
+    /** Title of a FAQ Category. For example, 'Shipping & Delivery' or 'Returns & Refunds'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Category information schema which denotes category name and category id. */
 export type CategoryInfo = {
     __typename?: 'CategoryInfo';
-    /** Category name of the product . */
+    /** Category name of the product. Example: 'T-Shirts' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Product Category Id. */
+    /** Product Category ID. Example: 1234 */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** Represents a L1 category. */
+/** Represents a L1 (top-level) category. */
 export type CategoryItem = {
     __typename?: 'CategoryItem';
-    /** Schema of Action Object. */
+    /** Custom JSON data related to the L1 category, allowing for additional metadata and configuration. */
+    _custom_json?: Maybe<Scalars['JSON']['output']>;
+    /** Navigation action configuration for the L1 category. */
     action: PageActionDetail;
-    /** Banner images associated with the L1  category. */
+    /** Banner images associated with the L1 category for display purposes. */
     banners: ImageUrls;
-    /** List of categories under the L1  category. */
+    /** List of L2 (sub)categories under this L1 category. */
     childs?: Maybe<Array<Maybe<CategoryItemL2>>>;
-    /** Name of the L1 category. */
+    /** Display name of the L1 category, e.g. 'Clothing', 'Shoes', 'Accessories'. */
     name: Scalars['String']['output'];
-    /** Slug or URL-friendly identifier for the L1 category. */
+    /** Display priority order of the category in listings, e.g. 1, 2, 3 (lower numbers appear first). */
+    priority?: Maybe<Scalars['Int']['output']>;
+    /** URL-friendly identifier for the L1 category, e.g. 'clothing', 'shoes', 'accessories'. */
     slug: Scalars['String']['output'];
-    /** Unique identifier for the L1 category. */
+    /** Unique identifier for the L1 category, e.g. 101, 102, 103. */
     uid: Scalars['Int']['output'];
 };
-/** Represents a L2 category. */
+/** Represents a L2 (second-level) category. */
 export type CategoryItemL2 = {
     __typename?: 'CategoryItemL2';
-    /** Custom JSON data related to the L2 category, allowing for additional metadata. */
+    /** Custom JSON data related to the L2 category, allowing for additional metadata and configuration. */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Schema of Action Object. */
+    /** Navigation action configuration for the L2 category. */
     action: PageActionDetail;
-    /** Banner images associated with the L2  category. */
+    /** Banner images associated with the L2 category for display purposes. */
     banners: ImageUrls;
-    /** List of categories under the L2  category. */
+    /** List of L3 (sub)categories under this L2 category. */
     childs?: Maybe<Array<Maybe<CategoryItemL3>>>;
-    /** Name of the L2 category. */
+    /** Display name of the L2 category, e.g. 'Men's Shirts', 'Women's Dresses', 'Running Shoes'. */
     name: Scalars['String']['output'];
-    /** Slug or URL-friendly identifier for the L2 category. */
+    /** Display priority order of the category in listings, e.g. 1, 2, 3 (lower numbers appear first). */
+    priority?: Maybe<Scalars['Int']['output']>;
+    /** URL-friendly identifier for the L2 category, e.g. 'mens-shirts', 'womens-dresses', 'running-shoes'. */
     slug: Scalars['String']['output'];
-    /** Unique identifier for the L2  category. */
+    /** Unique identifier for the L2 category, e.g. 201, 202, 203. */
     uid: Scalars['Int']['output'];
 };
-/** Represents a L3 category with associated details and banners. */
+/** Represents a L3 (third-level) category with associated details and banners. */
 export type CategoryItemL3 = {
     __typename?: 'CategoryItemL3';
-    /** Custom JSON data related to the L3 category, allowing for additional metadata. */
+    /** Custom JSON data related to the L3 category, allowing for additional metadata and configuration. */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Schema of Action Object. */
+    /** Navigation action configuration for the L3 category. */
     action: PageActionDetail;
-    /** Banner images associated with the L3  category. */
+    /** Banner images associated with the L3 category for display purposes. */
     banners: ImageUrls;
-    /** List of categories under the L3  category. */
+    /** List of L4 (sub)categories under this L3 category. */
     childs?: Maybe<Array<Maybe<CategoryItemL4>>>;
-    /** Name of the L3 category. */
+    /** Display name of the L3 category, e.g. 'Casual Shirts', 'Formal Shirts', 'Tank Tops'. */
     name: Scalars['String']['output'];
-    /** Slug or URL-friendly identifier for the L3 category. */
+    /** Display priority order of the category in listings, e.g. 1, 2, 3 (lower numbers appear first). */
+    priority?: Maybe<Scalars['Int']['output']>;
+    /** URL-friendly identifier for the L3 category, e.g. 'casual-shirts', 'formal-shirts', 'tank-tops'. */
     slug: Scalars['String']['output'];
-    /** Unique identifier for the L3  category. */
+    /** Unique identifier for the L3 category, e.g. 301, 302, 303. */
     uid: Scalars['Int']['output'];
 };
-/** Represents a L4 category with associated details and banners. */
+/** Represents a L4 (fourth-level) category with associated details and banners. */
 export type CategoryItemL4 = {
     __typename?: 'CategoryItemL4';
-    /** Custom JSON data related to the L3 category, allowing for additional metadata. */
+    /** Custom JSON data related to the L4 category, allowing for additional metadata and configuration. */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Schema of Action Object. */
+    /** Navigation action configuration for the L4 category. */
     action: PageActionDetail;
-    /** Banner images associated with the L4  category. */
+    /** Banner images associated with the L4 category for display purposes. */
     banners: ImageUrls;
-    /** List of categories under the L4  category. */
+    /** List of L5 (sub)categories under this L4 category, if any exist. */
     childs?: Maybe<Array<Maybe<CategoryItemL4>>>;
-    /** Name of the L4 category. */
+    /** Display name of the L4 category, e.g. 'Cotton Casual Shirts', 'Linen Casual Shirts', 'Printed Casual Shirts'. */
     name: Scalars['String']['output'];
-    /** Slug or URL-friendly identifier for the L3 category. */
+    /** Display priority order of the category in listings, e.g. 1, 2, 3 (lower numbers appear first). */
+    priority?: Maybe<Scalars['Int']['output']>;
+    /** URL-friendly identifier for the L4 category, e.g. 'cotton-casual-shirts', 'linen-casual-shirts'. */
     slug: Scalars['String']['output'];
-    /** Unique identifier for the L4 category. */
+    /** Unique identifier for the L4 category, e.g. 401, 402, 403. */
     uid: Scalars['Int']['output'];
-};
-/** Represents a L1 category. */
-export type CategoryItem5 = {
-    __typename?: 'CategoryItem';
-    /** Banner images associated with the L1  category. */
-    banners: ImageUrls;
-    /** List of categories under the L1  category. */
-    childs?: Maybe<Array<Maybe<CategoryItemL2>>>;
-    /** Name of the L1 category. */
-    name: Scalars['String']['output'];
-    /** Slug or URL-friendly identifier for the L1 category. */
-    slug: Scalars['String']['output'];
-    /** Unique identifier for the L1 category. */
-    uid: Scalars['Int']['output'];
-    logo?: Maybe<CollectionLogo>;
 };
 /** The schema for the all the communication channels that the user has accept to receive communication through. */
 export type Channels = {
@@ -2251,20 +3314,20 @@ export type Channels = {
     /** The schema for the communication channel for whatsapp channel which includes the response indicating the user's preference and the display name of the communication channel. */
     whatsapp?: Maybe<WhatsappCommunication>;
 };
-/** Charge amount schema, amount defined for the charges */
+/** Charge amount schema, amount defined for the charges. */
 export type ChargeAmount = {
     __typename?: 'ChargeAmount';
-    /** Charges amount in base currency. */
+    /** Charges amount in base currency. For example, `base_currency` can be set to a ChargeAmountCurrency object. */
     base_currency?: Maybe<ChargeAmountCurrency>;
-    /** Charges amount in ordering currency. */
+    /** Charges amount in ordering currency. For example, `ordering_currency` can be set to a ChargeAmountCurrency object. */
     ordering_currency?: Maybe<ChargeAmountCurrency>;
 };
-/** Charge amount currency currency schema */
+/** Charge amount currency currency schema. */
 export type ChargeAmountCurrency = {
     __typename?: 'ChargeAmountCurrency';
-    /** Charge currency code */
+    /** Charge currency code. For example, `currency` can be set to 'INR'. */
     currency?: Maybe<Scalars['String']['output']>;
-    /** Charge currency value or amount */
+    /** Charge currency value or amount. For example, `value` can be set to 2499.5. */
     value?: Maybe<Scalars['Float']['output']>;
 };
 /** Charge Customer Request. */
@@ -2298,136 +3361,135 @@ export type ChargeCustomerResponse = {
     /** Response is successful or not. */
     success: Scalars['Boolean']['output'];
 };
-/** Charge amount distribution logic, config by which charge will assign to the entity or distribution_level */
+/** Charge amount distribution logic, config by which charge will assign to the entity or distribution_level. */
 export type ChargeDistributionLogic = {
     __typename?: 'ChargeDistributionLogic';
-    /** This field defines the distribution */
+    /** This field defines the distribution. For example, `distribution` can be set to a ChargeDistributionSchema object. */
     distribution?: Maybe<ChargeDistributionSchema>;
-    /** This field defines the distribution level, e.g distribution level is (order, shipment, article) */
+    /** This field defines the distribution level, e.g distribution level is (order, shipment, article). For example, `distribution_level` can be set to 'value'. */
     distribution_level?: Maybe<Scalars['String']['output']>;
 };
-/** Charge distribution structure, used to refer the distribution logic for the entity such as Order, shipment, article */
+/** Charge distribution structure, used to refer the distribution logic for the entity such as Order, shipment, article. */
 export type ChargeDistributionSchema = {
     __typename?: 'ChargeDistributionSchema';
-    /** This field defines the distribution logic */
+    /** This field defines the distribution logic. For example, `logic` can be set to 'value'. */
     logic?: Maybe<Scalars['String']['output']>;
-    /** This field defines the distribution type */
+    /** This field defines the distribution type. For example, `type` can be set to 'order'. */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Charges amount data which deffently denotes amount of charges in seller currency and customer currency. */
+/** Charges amount data which definitely denotes amount of charges in seller currency and customer currency. */
 export type ChargesAmount = {
     __typename?: 'ChargesAmount';
-    /** This is destination currency of value. */
+    /** Charge in Base currency (seller currency) */
+    base_currency?: Maybe<CurrencyValue>;
+    /**
+     * Destination currency of value. Example: 'INR'
+     * @deprecated This field is obsolete
+     */
     currency?: Maybe<Scalars['String']['output']>;
-    /** This is the value of amount added. */
+    /** Charge in Ordering currency (customer currency) */
+    ordering_currency?: Maybe<CurrencyValue>;
+    /**
+     * Numeric amount value. Example: 49.0
+     * @deprecated This field is obsolete
+     */
     value?: Maybe<Scalars['Float']['output']>;
 };
-/** Charges information which denotes types of charges and amount of charge applied to that product in cart. */
+/** Charge details including type, name, amount, refund policy, and code. */
 export type ChargesInfo = {
     __typename?: 'ChargesInfo';
-    /** Whether refund is allowed or not for the charge. */
+    /** Whether refund is allowed for this charge. Example: true */
     allow_refund?: Maybe<Scalars['Boolean']['output']>;
-    /** Charge amount applied to the product in cart. */
+    /** Charge amount applied. Example: { currency: 'INR', value: 49 } */
     amount?: Maybe<ChargesAmount>;
-    /** Code of the charge applied. */
+    /** Code of the charge. Example: 'DELIVERY' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Meta data related to charges price adjustment. */
+    /** Metadata related to charge price adjustment. Example: { price_adjustment_id: '697373bb8fe26665a1f0d17a', article_level_distribution: true } */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** Name of the charge applied. */
+    /** Name of the charge. Example: 'delivery' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Type of the charge applied. */
+    /** Type of charge. Example: 'fee' */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Charges threshhold data which denotes how much charge will be applied on cart value threshold. */
+/** Charge amount applied at specific cart value threshold. */
 export type ChargesThreshold = {
     __typename?: 'ChargesThreshold';
-    /** Charges amount to be applied on cart. */
+    /** Charge amount. Example: 49.0 */
     charges?: Maybe<Scalars['Float']['output']>;
-    /** Threshold of cart value on which the charge should be applied . */
+    /** Cart value threshold for applying the charge. Example: 999.0 */
     threshold?: Maybe<Scalars['Float']['output']>;
 };
-/** Checkout cart detail respoonse schema includes cart id, delivery promise, items, comment, coupon text etc. */
+/** Checkout cart detail response schema includes cart id, delivery promise, items, comment, coupon text etc. */
 export type CheckCart = {
     __typename?: 'CheckCart';
-    /** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
+    /** Price breakup of cart (coupon, display, loyalty points, etc.). Example: { display: [{ key: 'total', value: 1499.0 }] } */
     breakup_values?: Maybe<CartBreakup>;
-    /** Buy now flag of user cart. */
+    /** Buy now flag of user cart. Example: false */
     buy_now?: Maybe<Scalars['Boolean']['output']>;
-    /** Cart id of the user cart for which the order placed. */
+    /** Cart id of the user cart for which the order placed. Example: 123456 */
     cart_id?: Maybe<Scalars['Int']['output']>;
-    /** Checkout mode of user cart. */
+    /** Checkout mode of user cart. Example: 'self' */
     checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** Whether Cash On Delivery available. */
+    /** Whether Cash On Delivery available. Example: true */
     cod_available?: Maybe<Scalars['Boolean']['output']>;
-    /** Cash On Delivery charges of the user cart. */
+    /** Cash On Delivery charges of the user cart. Example: 50 */
     cod_charges?: Maybe<Scalars['Int']['output']>;
-    /** Cash On Delivery message for the order placed. */
+    /** Cash On Delivery message for the order placed. Example: 'Available for orders up to ₹10,000' */
     cod_message?: Maybe<Scalars['String']['output']>;
-    /** Comment message added in cart after order placed. */
+    /** Comment message added in cart after order placed. Example: 'Leave at reception' */
     comment?: Maybe<Scalars['String']['output']>;
-    /** Coupon text of the applied coupon on order placed. */
+    /** Coupon text of the applied coupon on order placed. Example: 'SAVE10 applied' */
     coupon_text?: Maybe<Scalars['String']['output']>;
-    /** Currency data of the cart for prices. */
+    /** Currency data of the cart for prices. Example: { code: 'INR', symbol: '₹' } */
     currency?: Maybe<CartCurrency>;
     /** Metadata for custom cart */
     custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Delivery charge in information message on shipment. */
+    /** Delivery charge information message on shipment. Example: 'Free delivery over ₹999' */
     delivery_charge_info?: Maybe<Scalars['String']['output']>;
-    /** Delivery charge order value. */
+    /** Delivery charge order value. Example: 999 */
     delivery_charge_order_value?: Maybe<Scalars['Int']['output']>;
-    /** Delivery charges of the order placed via checkout API. */
+    /** Delivery charges of the order placed via checkout API. Example: 0 */
     delivery_charges?: Maybe<Scalars['Int']['output']>;
-    /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
+    /** Shipment level promise (formatted, timestamp, ISO). */
     delivery_promise?: Maybe<ShipmentPromise>;
-    /** Error details if any error occurs which includes type of error, error code and error message. */
+    /** Error message if any. Example: 'Payment pending' */
     error_message?: Maybe<Scalars['String']['output']>;
-    /** GSTIN number added in cart. */
+    /** GSTIN number added in cart. Example: '27AAACI1195H1ZK' */
     gstin?: Maybe<Scalars['String']['output']>;
-    /** Cart id of the user cart. */
+    /** Cart uid of the user cart. Example: '5bb521cfdc83215e1889b346' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Valid flag fotr the checkout response if order placed was valid. */
+    /** Valid flag for the checkout response. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Items details in cart after order placed. */
+    /** Items details in cart after order placed. Example: [{ quantity: 2 }] */
     items?: Maybe<Array<Maybe<CartProductInfo>>>;
-    /** Last modified timestamp of cart. */
+    /** Last modified timestamp of cart. Example: '2025-10-07T14:20:00Z' */
     last_modified?: Maybe<Scalars['String']['output']>;
-    /** Message of the cart checkout API response. */
+    /** Message of the cart checkout API response. Example: 'Checkout successful' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Order id generated after placing order. */
+    /** Order id generated after placing order. Example: 'FY2025-10001' */
     order_id?: Maybe<Scalars['String']['output']>;
     /** Payment Default Selection Schema. */
     payment_selection_lock?: Maybe<PaymentSelectionLock>;
-    /** Restrict checkout flag to restrict the checkout process. */
+    /**
+     * Restrict checkout flag. Example: false
+     * @deprecated This field is obsolete
+     */
     restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
-    /** Store code from which the order placed. */
+    /** Store code from which the order placed. Example: 'ANDH001' */
     store_code?: Maybe<Scalars['String']['output']>;
-    /** Store employees data. */
+    /** Store employees data. Example: [{ id: 'emp_01' }] */
     store_emps?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Success flag of checkout cart API response. */
+    /** Success flag of checkout cart API response. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
-    /** Cart id of user cart. */
+    /** Cart uid of user cart. Example: 'uid_987' */
     uid?: Maybe<Scalars['String']['output']>;
-    /** User type of the cart who places the order. */
+    /** User type of the cart who places the order. Example: 'guest' */
     user_type?: Maybe<Scalars['String']['output']>;
 };
-/** Details regarding a FAQs stored under a FAQs category. */
-export type ChildSchema = {
-    __typename?: 'ChildSchema';
-    /** The contents of a answer of a FAQ. */
-    answer?: Maybe<Scalars['String']['output']>;
-    /** Application ID - Identifier for a Sales channel. */
-    application?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** The contents of a question of a FAQ. */
-    question?: Maybe<Scalars['String']['output']>;
-    /** A short, human-readable, URL-friendly identifier. */
-    slug?: Maybe<Scalars['String']['output']>;
-};
-/** Describes the request to send code to reset password. */
+/** Describes the request to send/verify a code. */
 export type CodeRequestBodySchemaInput = {
-    /** Unique code to verify request. */
-    code?: InputMaybe<Scalars['String']['input']>;
+    /** Verification code. */
+    code: Scalars['String']['input'];
 };
 /** Provides detailed information about a collection. */
 export type Collection = {
@@ -2436,47 +3498,95 @@ export type Collection = {
     _custom_json?: Maybe<Scalars['JSON']['output']>;
     /** Actions associated with the collection. */
     action?: Maybe<CollectionAction>;
-    /** Indicates if facets are allowed for filtering within the collection. */
+    /**
+     * Indicates if facets are allowed for filtering within the collection.
+     * @deprecated This field is obsolete.
+     */
     allow_facets?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates if sorting is allowed for this collection. */
+    /**
+     * Indicates if sorting is allowed for this collection.
+     * @deprecated This field is obsolete.
+     */
     allow_sort?: Maybe<Scalars['Boolean']['output']>;
-    /** Application ID associated with the collection. */
+    /**
+     * Application ID associated with the collection.
+     * @deprecated This field is obsolete.
+     */
     app_id?: Maybe<Scalars['String']['output']>;
-    /** Badge information associated with the collection. */
+    /**
+     * Badge information associated with the collection.
+     * @deprecated This field is obsolete.
+     */
     badge?: Maybe<Badge>;
     /** Banner URLs associated with the collection. */
     banners?: Maybe<ImageUrls>;
-    /** Cron details for scheduling related to the collection. */
+    /**
+     * Cron details for scheduling related to the collection.
+     * @deprecated This field is obsolete.
+     */
     cron?: Maybe<Scalars['JSON']['output']>;
-    /** Detailed description of the collection,. */
+    /** Detailed description of the collection explaining its purpose and contents, e.g. 'Curated collection of trending summer fashion items'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** Indicates whether the collection is active. */
+    /**
+     * Indicates whether the collection is active.
+     * @deprecated This field is obsolete.
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates if the item is visible. */
+    is_visible?: Maybe<Scalars['Boolean']['output']>;
     /** Logo image associated with the collection. */
     logo?: Maybe<CollectionLogo>;
-    /** Additional metadata related to the collection. */
+    /**
+     * Additional metadata related to the collection.
+     * @deprecated This field is obsolete.
+     */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** The name of the collection. */
+    /** The display name of the collection, e.g. 'Summer Essentials', 'Trending Now', 'Best Sellers'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Priority level of the collection for sorting or display purposes. */
+    /**
+     * Priority level of the collection for sorting or display purposes.
+     * @deprecated This field is obsolete.
+     */
     priority?: Maybe<Scalars['Int']['output']>;
-    /** List of product details included in the response. */
+    /**
+     * List of product details included in the response.
+     * @deprecated Removed from collections API to avoid N+1 query issues. Use the products field available on a single collection instead.
+     */
     products?: Maybe<ProductConnection>;
-    /** A list of queries used to filter the collection. */
+    /** Whether collection is published or not. */
+    published?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * A list of queries used to filter the collection.
+     * @deprecated This field is obsolete.
+     */
     query?: Maybe<Array<Maybe<CollectionQuery>>>;
-    /** Schedule details for the collection, including timing and duration information. */
+    /**
+     * Schedule details for the collection, including timing and duration information.
+     * @deprecated This field is obsolete.
+     */
     schedule?: Maybe<Schedule>;
+    /** SEO details for the item, with dynamic fields. */
+    seo?: Maybe<SeoDetails>;
     /** The URL-friendly identifier for the collection. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** The attribute by which the collection items are sorted. */
+    /**
+     * The attribute by which the collection items are sorted.
+     * @deprecated This field is obsolete.
+     */
     sort_on?: Maybe<Scalars['String']['output']>;
     /** Tags associated with the collection. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Type of collections e.g query, items. */
-    type?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the collection. */
+    /**
+     * Type of collection: 'query' for dynamic collections based on search criteria, 'items' for manually curated collections.
+     * @deprecated This field is obsolete.
+     */
+    type?: Maybe<CollectionType>;
+    /** The unique identifier for the collection, e.g. '507f1f77bcf86cd799439011'. */
     uid?: Maybe<Scalars['String']['output']>;
-    /** Keys of the facets visible for filtering within the collection. */
+    /**
+     * Keys of the facets visible for filtering within the collection.
+     * @deprecated This field is obsolete.
+     */
     visible_facets_keys?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** Provides detailed information about a collection. */
@@ -2485,6 +3595,7 @@ export type CollectionProductsArgs = {
     filters?: InputMaybe<Scalars['Boolean']['input']>;
     first?: InputMaybe<Scalars['Int']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
     pageType?: InputMaybe<Scalars['String']['input']>;
     query?: InputMaybe<Scalars['String']['input']>;
     search?: InputMaybe<Scalars['String']['input']>;
@@ -2508,56 +3619,113 @@ export type CollectionConnection = {
     /** Pagination details for the collection listings. It includes information such as the current page number, total pages, and items per page. */
     page: PageInfo;
 };
+/** Detailed information about a collection including metadata and configuration. */
 export type CollectionDetail = {
     __typename?: 'CollectionDetail';
     /** Custom JSON object containing additional properties specific to the collection. */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Indicates if facets are allowed for filtering within the collection. */
+    /** Actions associated with the collection. */
+    action?: Maybe<CollectionAction>;
+    /**
+     * Indicates if facets are allowed for filtering within the collection.
+     * @deprecated This field is obsolete.
+     */
     allow_facets?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates if sorting is allowed for this collection. */
+    /**
+     * Indicates if sorting is allowed for this collection.
+     * @deprecated This field is obsolete.
+     */
     allow_sort?: Maybe<Scalars['Boolean']['output']>;
-    /** Application ID associated with the collection. */
+    /**
+     * Application ID associated with the collection.
+     * @deprecated This field is obsolete.
+     */
     app_id?: Maybe<Scalars['String']['output']>;
-    /** Badge information associated with the collection. */
+    /**
+     * Badge information associated with the collection.
+     * @deprecated This field is obsolete.
+     */
     badge?: Maybe<Badge>;
     /** Banner URLs associated with the collection. */
     banners?: Maybe<ImageUrls>;
-    /** Cron details for scheduling related to the collection. */
+    /**
+     * Cron details for scheduling related to the collection.
+     * @deprecated This field is obsolete.
+     */
     cron?: Maybe<Scalars['JSON']['output']>;
-    /** Detailed description of the collection,. */
+    /** Detailed description of the collection explaining its purpose and contents, e.g. 'Curated collection of trending summer fashion items'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** Indicates whether the collection is active. */
+    /**
+     * Indicates whether the collection is active.
+     * @deprecated This field is obsolete.
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates if the item is visible. */
+    is_visible?: Maybe<Scalars['Boolean']['output']>;
     /** Logo image associated with the collection. */
     logo?: Maybe<CollectionLogo>;
-    /** Additional metadata related to the collection. */
+    /**
+     * Additional metadata related to the collection.
+     * @deprecated This field is obsolete.
+     */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** The name of the collection. */
+    /** The display name of the collection, e.g. 'Summer Essentials', 'Trending Now', 'Best Sellers'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Priority level of the collection for sorting or display purposes. */
+    /**
+     * Priority level of the collection for sorting or display purposes.
+     * @deprecated This field is obsolete.
+     */
     priority?: Maybe<Scalars['Int']['output']>;
     /** List of product details included in the response. */
     products?: Maybe<ProductConnection>;
-    /** A list of queries used to filter the collection. */
+    /** Whether collection is published or not. */
+    published?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * A list of queries used to filter the collection.
+     * @deprecated This field is obsolete.
+     */
     query?: Maybe<Array<Maybe<CollectionQuery>>>;
-    /** Schedule details for the collection, including timing and duration information. */
+    /**
+     * Schedule details for the collection, including timing and duration information.
+     * @deprecated This field is obsolete.
+     */
     schedule?: Maybe<Schedule>;
+    /** SEO details for the item, with dynamic fields. */
+    seo?: Maybe<SeoDetails>;
     /** The URL-friendly identifier for the collection. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** The attribute by which the collection items are sorted. */
+    /**
+     * The attribute by which the collection items are sorted.
+     * @deprecated This field is obsolete.
+     */
     sort_on?: Maybe<Scalars['String']['output']>;
-    /** Tags associated with the collection. */
+    /**
+     * Tags associated with the collection.
+     * @deprecated This field is obsolete.
+     */
     tag?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Type of collections e.g query, items. */
-    type?: Maybe<Scalars['String']['output']>;
-    /** Keys of the facets visible for filtering within the collection. */
+    /** Tags associated with the collection. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * Type of collection: 'query' for dynamic collections based on search criteria, 'items' for manually curated collections.
+     * @deprecated This field is obsolete.
+     */
+    type?: Maybe<CollectionType>;
+    /** The unique identifier for the collection, e.g. '507f1f77bcf86cd799439011'. */
+    uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Keys of the facets visible for filtering within the collection.
+     * @deprecated This field is obsolete.
+     */
     visible_facets_keys?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
+/** Detailed information about a collection including metadata and configuration. */
 export type CollectionDetailProductsArgs = {
     after?: InputMaybe<Scalars['String']['input']>;
     filters?: InputMaybe<Scalars['Boolean']['input']>;
     first?: InputMaybe<Scalars['Int']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
     pageType?: InputMaybe<Scalars['String']['input']>;
     query?: InputMaybe<Scalars['String']['input']>;
     search?: InputMaybe<Scalars['String']['input']>;
@@ -2571,13 +3739,151 @@ export type CollectionFilter = {
     /** An array of filter types available for the collection listings. Each type represents a different category or attribute for filtering. */
     type?: Maybe<Array<Maybe<CollectionListingFilterTagType>>>;
 };
+/** Individual item within a collection containing product details and metadata. */
+export type CollectionItem = {
+    __typename?: 'CollectionItem';
+    /** Navigation action configuration for page routing and user interactions. */
+    action?: Maybe<PageActionDetail>;
+    /** A dictionary of product attributes. */
+    attributes?: Maybe<Scalars['JSON']['output']>;
+    /** Brand associated with the product. */
+    brand?: Maybe<NavigationAction>;
+    /** List of product categories associated with the product. */
+    categories?: Maybe<Array<Maybe<NavigationAction>>>;
+    /** Represents a mapping of product categories at different levels. */
+    category_map?: Maybe<ProductCategoryMap>;
+    /**
+     * Identifier for the product channel.
+     * @deprecated This field is obsolete.
+     */
+    channel?: Maybe<Scalars['String']['output']>;
+    /** Color of the product, if applicable. */
+    color?: Maybe<Scalars['String']['output']>;
+    /** The country of origin for the product. */
+    country_of_origin?: Maybe<Scalars['String']['output']>;
+    /** Custom JSON object for additional product data. */
+    custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** Additional custom attributes associated with the collection item for extended product information and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Custom metadata fields associated with the product. */
+    custom_meta?: Maybe<Array<Maybe<CustomMetaFields>>>;
+    /** Schema to define manufacturing time(MTO) for a product that needs to be sold before manufacturing. */
+    custom_order?: Maybe<ProductDetailCustomOrder>;
+    /** Array of delivery promise options available for the product. */
+    delivery_promises?: Maybe<Array<Maybe<DeliveryPromiseItem>>>;
+    /** Department to which the product belongs. */
+    department?: Maybe<ProductDepartment>;
+    /** The long description of the product. */
+    description?: Maybe<Scalars['String']['output']>;
+    /** Discount applied to the product, if any. */
+    discount?: Maybe<Scalars['String']['output']>;
+    /** A dictionary of grouped product attributes. */
+    grouped_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
+    /** Indicates whether the product has variants. */
+    has_variant?: Maybe<Scalars['Boolean']['output']>;
+    /** A list of highlights for the product. */
+    highlights?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** List of seller identifiers for the product. */
+    identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * The nature of the product's images.
+     * @deprecated This field is obsolete.
+     */
+    image_nature?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether the product can be sold as an individual product. */
+    is_dependent?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Indicates if the product is available for tryout.
+     * @deprecated This field is obsolete.
+     */
+    is_tryout?: Maybe<Scalars['Boolean']['output']>;
+    /** The item code of the product. */
+    item_code?: Maybe<Scalars['String']['output']>;
+    /** This field describes the type of item, indicating the category or nature of the product. Possible values are Standard, Composite, Wet, Digital. */
+    item_type?: Maybe<Scalars['String']['output']>;
+    /** Media files associated with the product. */
+    media?: Maybe<Array<Maybe<Media>>>;
+    /** Minimum order quantity requirements for the product. */
+    moq?: Maybe<Moq>;
+    /** The name of the product. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Represents the net quantity of a product, including its unit of measurement and value. */
+    net_quantity?: Maybe<NetQuantity>;
+    /** No of boxes required to pack the product. */
+    no_of_boxes?: Maybe<Scalars['Int']['output']>;
+    /** Price details of the product. */
+    price?: Maybe<ProductListingPriceDetails>;
+    /**
+     * List of bundle/product grouping slugs mapped to the product.
+     * @deprecated This field is obsolete.
+     */
+    product_group_tag?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Date and time when the product was made available online. */
+    product_online_date?: Maybe<Scalars['String']['output']>;
+    /** Meta data for promotions associated with the product. */
+    promo_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * The rating of the product.
+     * @deprecated This field is obsolete.
+     */
+    rating?: Maybe<Scalars['Float']['output']>;
+    /**
+     * The number of ratings the product has received.
+     * @deprecated This field is obsolete.
+     */
+    rating_count?: Maybe<Scalars['Int']['output']>;
+    /** Indicates whether the product is available for sale. */
+    sellable?: Maybe<Scalars['Boolean']['output']>;
+    /** SEO metadata for the product. */
+    seo?: Maybe<SeoDetails>;
+    /** The short description of the product. */
+    short_description?: Maybe<Scalars['String']['output']>;
+    /**
+     * List of products marked similar to given product.
+     * @deprecated This field is obsolete.
+     */
+    similars?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Available sizes for product. */
+    size_options?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * To be deprecated: Product available sizes details. Use size_options.
+     * @deprecated Use size_options instead
+     */
+    sizes?: Maybe<ProductSizes>;
+    /** A list of image URLs for the product. */
+    slug: Scalars['String']['output'];
+    /** Tags associated with the product for better categorization. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Teaser tag or short promotional phrase for the product. */
+    teaser_tag?: Maybe<Scalars['String']['output']>;
+    /**
+     * Identifiers or names of tryout versions of the product.
+     * @deprecated This field is obsolete.
+     */
+    tryouts?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Product type or classification. */
+    type?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the product. */
+    uid?: Maybe<Scalars['Int']['output']>;
+    /** List of product variants, each representing a specific option of the product (e.g., size, color, or material). */
+    variants?: Maybe<Array<Maybe<ProductVariant>>>;
+};
+/** Individual item within a collection containing product details and metadata. */
+export type CollectionItemCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+/** Individual item within a collection containing product details and metadata. */
+export type CollectionItemSizesArgs = {
+    storeId?: InputMaybe<Scalars['Int']['input']>;
+};
 /** Detailed list of collection objects. */
 export type CollectionItems = {
     __typename?: 'CollectionItems';
     /** True for fetching all filter parameters and False for disabling the filter parameters. */
     filters?: Maybe<Array<Maybe<ProductFilters>>>;
     /** List of collection objects. */
-    items?: Maybe<Array<Maybe<ProductListingDetail>>>;
+    items?: Maybe<Array<Maybe<CollectionItem>>>;
     /** Page information for collections response. */
     page?: Maybe<PageInfo>;
     /** The order in which the list of products should be sorted, e.g. popularity, price, latest and discount, in either ascending or descending order. See the supported values below. */
@@ -2598,7 +3904,10 @@ export type CollectionLogo = {
     __typename?: 'CollectionLogo';
     /** Alternative text for the media, used for accessibility and SEO purposes. */
     alt?: Maybe<Scalars['String']['output']>;
-    /** Metadata for collection logo */
+    /**
+     * Metadata for collection logo
+     * @deprecated This field is obsolete.
+     */
     meta?: Maybe<CollectionLogoMeta>;
     /** The type of media, such as image, video. */
     type?: Maybe<Scalars['String']['output']>;
@@ -2621,6 +3930,11 @@ export type CollectionQuery = {
     /** The values used for filtering based on the attribute. */
     value?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
+/** Type of collection: 'query' for dynamic collections based on search criteria, 'items' for manually curated collections. */
+export declare enum CollectionType {
+    Items = "items",
+    Query = "query"
+}
 /** Different color options. */
 export type Colors = {
     __typename?: 'Colors';
@@ -2660,29 +3974,55 @@ export type ColumnHeaders = {
     col_5?: Maybe<ColumnHeader>;
     /** Header for column 6. */
     col_6?: Maybe<ColumnHeader>;
+    /** Header for column 7. */
+    col_7?: Maybe<ColumnHeader>;
+    /** Header for column 8. */
+    col_8?: Maybe<ColumnHeader>;
+    /** Header for column 9. */
+    col_9?: Maybe<ColumnHeader>;
+    /** Header for column 10. */
+    col_10?: Maybe<ColumnHeader>;
 };
-/** Configuration for common features across the application. */
+/** Configuration for common features across the sales channel. */
 export type CommonFeature = {
     __typename?: 'CommonFeature';
-    /** Configuration for the WhatsApp communication opt-in dialog. */
+    /**
+     * Configuration for the WhatsApp communication opt-in dialog.
+     * @deprecated This field is obsolete.
+     */
     communication_optin_dialog?: Maybe<CommunicationOptinDialogFeature>;
-    /** Whether product comparison feature is enabled on PDP. */
-    compare_products?: Maybe<CompareProductsFeature>;
-    /** Configuration for currency settings in the application. */
-    currency?: Maybe<CurrencyFeature>;
-    /** Configuration for store selection during application deployment. */
-    deployment_store_selection?: Maybe<DeploymentStoreSelectionFeature>;
-    /** Whether customer feedback is enabled on PDP. */
-    feedback?: Maybe<FeedbackFeature>;
+    /** Configuration for product comparison feature on PDP. */
+    compare_products: CompareProductsFeature;
+    /** Configuration for currency settings in the sales channel. */
+    currency: CurrencyFeature;
+    /**
+     * Configuration for store selection during sales channel deployment.
+     * @deprecated This field is obsolete.
+     */
+    deployment_store_selection: DeploymentStoreSelectionFeature;
+    /**
+     * Configuration for customer feedback on PDP.
+     * @deprecated This field is obsolete.
+     */
+    feedback: FeedbackFeature;
     /** Configuration for international shipping settings. */
-    international_shipping?: Maybe<IntrenationalShippingFeature>;
-    /** Configuration for sorting product listings on the listing page. */
+    international_shipping: IntrenationalShippingFeature;
+    /**
+     * Configuration for sorting product listings on the listing page.
+     * @deprecated This field is obsolete.
+     */
     listing_page?: Maybe<ListingPageFeature>;
     /** Configuration for displaying prices on product listing pages. */
-    listing_price?: Maybe<ListingPriceFeature>;
-    /** Configuration for the revenue engine. */
+    listing_price: ListingPriceFeature;
+    /**
+     * Configuration for the revenue engine.
+     * @deprecated This field is obsolete.
+     */
     revenue_engine?: Maybe<RevenueEngineFeature>;
-    /** Configuration for reward points within the application. */
+    /**
+     * Configuration for reward points within the sales channel.
+     * @deprecated This field is obsolete.
+     */
     reward_points?: Maybe<RewardPointsConfig>;
 };
 /** An object representing commonjs module information. */
@@ -2691,112 +4031,189 @@ export type CommonJs = {
     /** A string representing the url or link to the commonjs module. */
     link?: Maybe<Scalars['String']['output']>;
 };
+/** Actions available for communication operations. */
 export declare enum CommunicationActionEnum {
     Optin = "optin",
     Optout = "optout"
 }
+/** Channels available for communication. */
 export declare enum CommunicationChannelEnum {
     Email = "email",
     Sms = "sms",
     Whatsapp = "whatsapp"
 }
-/** The response schema for the communication consent API includes the application ID associated with the transaction, the user’s identity, and the channels of communication. */
+/** The response schema for the communication consent API includes the application ID associated with the transaction, the user's identity, and the channels of communication. */
 export type CommunicationConsent = {
     __typename?: 'CommunicationConsent';
-    /** The ID of the sales channel where the user has given their consent. */
+    /**
+     * The ID of the sales channel where the user has given their consent. Example: "000000000000000000000004".
+     * @deprecated This field is obsolete.
+     */
     app_id?: Maybe<Scalars['String']['output']>;
-    /** The schema for the all the communication channels that the user has accept to receive communication through. */
+    /** The schema for all the communication channels that the user has accepted to receive communication through. Contains preferences for email, SMS, and WhatsApp channels. */
     channels?: Maybe<Channels>;
-    /** Identifier which can uniquely identify the user. */
+    /**
+     * Whether the communication consent is encrypted or not. Indicates if PII data (email, phone numbers) is stored encrypted. Data is decrypted before being returned in API responses. Defaults to false. Example: false.
+     * @deprecated This field is obsolete.
+     */
+    encrypted?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Identifier which can uniquely identify the user. Example: "5e56021c4bda3ccab6d9f884".
+     * @deprecated This field is obsolete.
+     */
     user_id?: Maybe<Scalars['String']['output']>;
 };
 /** The request schema for the communication consent API includes the user's response status, the user's choice to opt in or opt out of receiving communications, and the channel through which the user wishes to receive communications. */
 export type CommunicationConsentReqInput = {
-    /** The user's choice to opt in or opt out of receiving communications. */
+    /** The user's choice to opt in or opt out of receiving communications. Values: "optin" (User wants to receive communications) or "optout" (User wants to stop receiving communications). */
     action?: InputMaybe<CommunicationActionEnum>;
-    /** The channel of communication the user has agreed to receive messages through. */
+    /** The channel of communication the user has agreed to receive messages through. Values: "email", "sms", or "whatsapp". */
     channel?: InputMaybe<CommunicationChannelEnum>;
-    /** Whether the user has responded to the inquiry regarding their preference for opting in or out of receiving communications. */
+    /** Whether the user has responded to the inquiry regarding their preference for opting in or out of receiving communications. Values: "yes" (User has consented) or "no" (User has declined). */
     response?: InputMaybe<ResponseEnum>;
 };
 /** Configuration for the WhatsApp communication opt-in dialog. */
 export type CommunicationOptinDialogFeature = {
     __typename?: 'CommunicationOptinDialogFeature';
-    /** Shows whether WhatsApp communication is enabled. */
-    visibility?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether WhatsApp communication opt-in dialog is visible. */
+    visibility: Scalars['Boolean']['output'];
 };
-/** Detailed address for the company. */
+/** Detailed address information for the company. */
 export type CompanyAddress = {
     __typename?: 'CompanyAddress';
-    /** Address of the opted store. */
-    address1?: Maybe<Scalars['String']['output']>;
-    /** Address of the opted store. */
+    /** Primary address line, e.g. '123 Business Street'. */
+    address1: Scalars['String']['output'];
+    /** Secondary address line, e.g. 'Suite 456'. */
     address2?: Maybe<Scalars['String']['output']>;
-    /** Indicates different office types like office, registered, and home. */
-    address_type?: Maybe<Scalars['String']['output']>;
-    /** City of the opted store, e.g. Mumbai. */
-    city?: Maybe<Scalars['String']['output']>;
-    /** Country of the opted store, e.g. India. */
+    /** Type of address like 'office', 'registered' */
+    address_type: AddressType;
+    /** City name, e.g. 'Mumbai'. */
+    city: Scalars['String']['output'];
+    /** Country name, e.g. 'India'. */
     country?: Maybe<Scalars['String']['output']>;
-    /** 6-digit PIN Code  of the ordering store, e.g. 400001. */
+    /** Country calling code, e.g. '+91'. */
+    country_code?: Maybe<Scalars['String']['output']>;
+    /** Latitude and longitude coordinates of the company location. */
+    lat_long?: Maybe<LatLong>;
+    /**
+     * 6-digit PIN Code, e.g. 400001.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
-    /** State of the opted store, e.g. Maharashtra. */
+    /** Postal code, e.g. '400001'. */
+    postal_code: Scalars['String']['output'];
+    /** Specifies the sector or district of the address if applicable. */
+    sector?: Maybe<Scalars['String']['output']>;
+    /** State name, e.g. 'Maharashtra'. */
     state?: Maybe<Scalars['String']['output']>;
 };
-/** Company details. */
+/** Company information and identification details. */
 export type CompanyDetail = {
     __typename?: 'CompanyDetail';
-    /** Unique identifier of the company. */
+    /** Unique numeric identifier for the company, e.g. 12345, 67890. */
     id?: Maybe<Scalars['Int']['output']>;
-    /** Name of the company. */
+    /** Official company name, e.g. 'ABC Electronics Pvt Ltd', 'XYZ Fashion House'. */
     name?: Maybe<Scalars['String']['output']>;
 };
-/** Details about the application, covering company and owner information, domain, website, CORS settings, and other attributes. */
+/** Details about the company associated with the sales channel. */
 export type CompanyInfo = {
     __typename?: 'CompanyInfo';
     /** List of addresses associated with the company. */
     addresses?: Maybe<Array<Maybe<CompanyAddress>>>;
-    /** ISO 8601 timestamp of company information creation. */
-    created_on?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier (24-digit Mongo Object ID) of company information. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** Indicates company is active or not active. */
+    /**
+     * ISO 8601 timestamp of company information creation, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    created_on: Scalars['String']['output'];
+    /** The unique identifier of company information. */
+    id: Scalars['String']['output'];
+    /**
+     * Indicates whether company is active or inactive.
+     * @deprecated This field is obsolete.
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** Name of the company, Reliance Retail Limited. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** List of emails to notify. */
+    /** Name of the company, e.g. 'Reliance Retail Limited'. */
+    name: Scalars['String']['output'];
+    /** List of notification email addresses, e.g. ['admin@company.com', 'support@company.com']. */
     notification_emails?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Unique identifier for the company. */
-    uid?: Maybe<Scalars['Int']['output']>;
+    /** Unique numeric identifier for the company. */
+    uid: Scalars['Int']['output'];
 };
-/** Information about the company that owns the store. */
+/** Company information that owns the store. */
 export type CompanyStore = {
     __typename?: 'CompanyStore';
-    /**
-     * The type of business structure, which can be one of the following:
-     *         - `Private`: Private Limited Company
-     *         - `LLP/Partnership`: Limited Liability Partnership or Partnership
-     *         - `HUF/Proprietorship`: Hindu Undivided Family or Proprietorship.
-     */
+    /** Type of business structure: Private (Private Limited Company), LLP/Partnership (Limited Liability Partnership), or HUF/Proprietorship (Hindu Undivided Family or Proprietorship). */
     business_type?: Maybe<Scalars['String']['output']>;
-    /**
-     * The type of company, which can be one of the following:
-     *         - `distributor`: Distributor
-     *         - `franchise`: Franchise
-     *         - `mbo`: MBO (Managed Business Operations)
-     *         - `manufacturer-owner`: Owner/Manufacturer.
-     */
+    /** Type of company: distributor (Distributor), franchise (Franchise), mbo (Managed Business Operations), or manufacturer-owner (Owner/Manufacturer). */
     company_type?: Maybe<Scalars['String']['output']>;
-    /** The name of the company store. */
+    /** Company store name. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the company store. */
+    /** Unique company store identifier. */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** Whether product comparison feature is enabled on PDP. */
+/** Configuration for product comparison feature on PDP. */
 export type CompareProductsFeature = {
     __typename?: 'CompareProductsFeature';
-    /** Whether product comparison feature is enabled on PDP. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether product comparison feature is enabled on PDP. */
+    enabled: Scalars['Boolean']['output'];
+};
+/** JavaScript frameworks compatible with the content engine. */
+export declare enum CompatibleEngine {
+    React = "react",
+    Vue2 = "vue2"
+}
+/** The response schema provides the outcome of a file upload including file metadata, storage details, and the status of the upload. */
+export type CompleteUploadData = {
+    __typename?: 'CompleteUploadData';
+    /** CDN details for accessing the uploaded file. Contains the URL information needed to retrieve the file from the CDN. */
+    cdn?: Maybe<Cdn>;
+    /**
+     * The MIME type of the uploaded file. This is the content type that was validated during upload. Examples: "image/jpeg", "application/pdf", "text/csv".
+     * @deprecated This field is obsolete.
+     */
+    content_type?: Maybe<Scalars['String']['output']>;
+    /** The name of the file that was uploaded. This is the original filename provided by the client. Example: "product-image.jpg". */
+    file_name?: Maybe<Scalars['String']['output']>;
+    /**
+     * The complete storage path where the file is stored in GCS. This is the same path returned from the /start API. Format: /{namespace_path}/{hashed_filename}. Used internally for file retrieval. Example: "/user-profile-pic/free/original/abc123-profile.jpg".
+     * @deprecated This field is obsolete.
+     */
+    file_path?: Maybe<Scalars['String']['output']>;
+    /**
+     * The namespace identifier that was used for the upload. Determines which bucket (public/private) the file is stored in and the validation rules that were applied. Examples: "user-profile-pic" (public), "feedback-media" (public), "application-audience" (private).
+     * @deprecated This field is obsolete.
+     */
+    namespace?: Maybe<Scalars['String']['output']>;
+    /** The size of the file in bytes. Required for validation to ensure the file doesn't exceed namespace size limits. Used to validate against the namespace's max size constraint before upload. Example: 524288. */
+    size?: Maybe<Scalars['Int']['output']>;
+    /** Array of string tags associated with the file. These are the same tags provided during the /start API call. Can be used for filtering, searching, or organizing files. Examples: ["product", "image"], ["invoice", "2024"], []. If no tags were provided, defaults to empty array. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * Contains the upload URL and expiry information from the /start API.
+     * @deprecated This field is obsolete.
+     */
+    upload?: Maybe<Upload>;
+};
+/** Detailed information about the uploaded file and its processing */
+export type CompleteUploadReqInput = {
+    /** The MIME type of the file being uploaded. Must match one of the valid content types for the namespace. Examples: "image/jpeg", "application/pdf", "text/csv", "video/mp4". Used for validation and proper file handling by the storage service. */
+    content_type: Scalars['String']['input'];
+    /** The original name of the file to be uploaded. This is the filename provided in the request. Example: "product-image.jpg". */
+    file_name: Scalars['String']['input'];
+    /** The complete storage path where the file will be stored in GCS. Auto-generated by the system based on the namespace rules. Format: /{namespace_path}/{hashed_filename}. This path is needed for the /complete API call after uploading. Example: "/user-profile-pic/free/original/abc123-profile.jpg". */
+    file_path: Scalars['String']['input'];
+    /** The HTTP method to use when uploading to the signed URL. Always "PUT" for file uploads. Use this method when making the request to upload.url. Example: "PUT". */
+    method: Scalars['String']['input'];
+    /** The namespace that determines file storage rules, validation, path generation, and access control (public/private bucket). Examples: "user-profile-pic" (public), "feedback-media" (public), "application-audience" (private). Each namespace has specific allowed content types and size limits. */
+    namespace: Scalars['String']['input'];
+    /** The storage operation type to perform. Always "putObject" for file uploads. Indicates this is a write operation to create a new object in the storage bucket. Example: "putObject". */
+    operation: Scalars['String']['input'];
+    /** The size of the file in bytes. Must match the actual file size. Used for validation against namespace size limits. The system validates this before generating the upload URL. Example: 524288. */
+    size: Scalars['Int']['input'];
+    /** Optional array of string tags for categorizing and organizing the file. Tags can be provided in the request to attach metadata to the file. Can be used later for filtering and searching. Examples: ["product", "thumbnail"], ["invoice", "2024"], []. Defaults to empty array if not provided. */
+    tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+    /** Contains the pre-signed upload URL and its expiration time. */
+    upload: UploadDetailsInput;
 };
 /** The configuration object that contains various settings and parameters. Each property within this object defines a specific configuration setting, allowing for customization and control over different aspects of the system or application. */
 export type Config = {
@@ -2810,42 +4227,53 @@ export type Config = {
     /** Preset configuration, containing an array of pages. */
     preset?: Maybe<Preset>;
 };
-/** Data related to slideshow/screensaver. */
-export type ConfigurationSchema = {
-    __typename?: 'ConfigurationSchema';
-    /** Duration of the slideshow/screensaver. */
-    duration?: Maybe<Scalars['Int']['output']>;
-    /** Amount of time in seconds after which slideshow/screensaver is run. */
-    sleep_time?: Maybe<Scalars['Int']['output']>;
-    /** Direction of the slideshow. */
-    slide_direction?: Maybe<Scalars['String']['output']>;
-    /** Flag denoting whether screensaver needs to be shown on launch of website/app. */
-    start_on_launch?: Maybe<Scalars['Boolean']['output']>;
+/** Contact details including phone number and country code. */
+export type ContactDetails = {
+    __typename?: 'ContactDetails';
+    /** Country code for the contact number (e.g., 91 for India, 1 for USA). */
+    country_code?: Maybe<Scalars['Int']['output']>;
+    /** Phone number for contacting the store (e.g., '9876543210'). */
+    number?: Maybe<Scalars['String']['output']>;
 };
 /** Get contact details of the sales channel. */
 export type ContactInfo = {
     __typename?: 'ContactInfo';
-    /** Contains address details for the application. */
+    /** Contains address details for the sales channel. */
     address?: Maybe<InformationAddress>;
-    /** Alphanumeric ID allotted to an application (sales channel website) created within a business account. */
+    /**
+     * The ID of the sales channel this contact info belongs to.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Array of notable business highlights with icons and descriptions. */
+    /** A list of notable business highlights with icons and descriptions. */
     business_highlights?: Maybe<Array<Maybe<BusinessHighlights>>>;
     /** Copyright statement usually seen at the site's footer. */
     copyright_text?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of creation of the application information. */
+    /**
+     * Timestamp when sales channel information was created.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier (24-digit Mongo Object ID) of the application information. */
+    /**
+     * The unique ID for sales channel contact information.
+     * @deprecated This field is obsolete.
+     */
     id?: Maybe<Scalars['String']['output']>;
-    /** Array of additional relevant web links related to the application. */
+    /** List of additional relevant web links related to the sales channel. */
     links?: Maybe<Array<Maybe<Links>>>;
-    /** Includes links to the application's social media profiles. */
-    social_links?: Maybe<SocialLinks>;
-    /** Contains support information, including contact details and working hours. */
+    /** Includes links to the sales channel's social media profiles. */
+    social_links: SocialLinks;
+    /** The Support information which includes contact details and working hours. */
     support?: Maybe<InformationSupport>;
-    /** ISO 8601 timestamp of updation of the application information. */
+    /**
+     * Timestamp when sales channel information was updated.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** Version key for tracking revisions. Default value is zero. */
+    /**
+     * Version key for tracking revisions. Default value is zero.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['Int']['output']>;
 };
 /** Details regarding the customer support contact details. */
@@ -2861,7 +4289,10 @@ export type ContentAction = {
     __typename?: 'ContentAction';
     /** Details of the action when its related to a page. */
     page?: Maybe<ActionPage>;
-    /** Details of the action when its related to a popup. */
+    /**
+     * Details of the action when its related to a popup.
+     * @deprecated This field is obsolete.
+     */
     popup?: Maybe<ActionPage>;
     /** Type of action to be taken e.g, page. */
     type?: Maybe<Scalars['String']['output']>;
@@ -2871,19 +4302,46 @@ export type Country = {
     __typename?: 'Country';
     /** User-friendly version of the geographical data, which may be more descriptive or formatted differently. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** Whether the country entity is currently active or not. */
+    /**
+     * Whether the country entity is currently active or not.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** Details about the logistics operations associated with the country. */
+    /** Geographical latitude and longitude data. */
+    lat_long?: Maybe<PincodeLatLongData>;
+    /**
+     * Details about the logistics operations associated with the country.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     logistics?: Maybe<CountryLogistics>;
     /** Metadata associated with the country, offering additional details or classifications. */
     meta?: Maybe<CountryMetaResponse>;
-    /** The name of the packaging. */
+    /** The name of the country. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Identifier for the parent of the current locality. */
-    parent_id?: Maybe<Scalars['String']['output']>;
-    /** Specific type of locality hierarchy the pincode belongs to (e.g., city, state, country). */
+    /**
+     * Denotes whether a seller can get onboarded to a particular country.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    onboarding_allowed?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Identifier for the parent of the current locality.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    parent_id?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * Serviceability details for the country.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    serviceability?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Specific type of locality hierarchy the pincode belongs to (e.g., city, state, country).
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     sub_type?: Maybe<Scalars['String']['output']>;
-    /** Specifies the type of geographical feature or data, typically "Point" for coordinates in geographic data systems. */
+    /**
+     * Specifies the type of geographical feature or data, typically "Point" for coordinates in geographic data systems.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     type?: Maybe<Scalars['String']['output']>;
     /** Unique identifier for the country. */
     uid?: Maybe<Scalars['String']['output']>;
@@ -2896,24 +4354,14 @@ export type CountryConnection = {
     /** Pagination details for the list of locations, including current page, page size, and total items. */
     page?: Maybe<PageInfo>;
 };
-/** Provides details about a currency. */
-export type CountryCurrency = {
-    __typename?: 'CountryCurrency';
-    /** The currency code, typically a three-letter ISO code (e.g., "USD" for US Dollar). */
-    code?: Maybe<Scalars['String']['output']>;
-    /** It represent a country name. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** The symbol used to represent the currency (e.g., "$" for US Dollar). */
-    symbol?: Maybe<Scalars['String']['output']>;
-};
 /** Currency info details of ladder price which includes currncy code and currency symbol. */
 export type CountryCurrencyInfo = {
     __typename?: 'CountryCurrencyInfo';
-    /** Currency code of country. */
+    /** Currency code of country (e.g., "USD"). */
     code?: Maybe<Scalars['String']['output']>;
-    /** Currency name for currency of country. */
+    /** Currency name for currency of country (e.g., "United States Dollar"). */
     name?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for currency of country. */
+    /** Currency symbol for currency of country (e.g., "$", "₹"). */
     symbol?: Maybe<Scalars['String']['output']>;
 };
 /** Provides details about a country. */
@@ -2926,7 +4374,7 @@ export type CountryDetail = {
     /** Address-related information in a country. */
     fields?: Maybe<CountryFields>;
     /** Levels within the country (e.g., states, cities) and their slugs (e.g., [{"name": "State", "slug": "state"}, {"name": "City", "slug": "city"}]). */
-    hierarchy?: Maybe<CountryHierarchy>;
+    hierarchy?: Maybe<Array<Maybe<CountryHierarchy>>>;
     /** Unique identifier for the country. */
     id?: Maybe<Scalars['String']['output']>;
     /** Two-letter ISO code representing the country. */
@@ -2949,39 +4397,42 @@ export type CountryDetail = {
 /** Provides details about a country. */
 export type CountryDetails = {
     __typename?: 'CountryDetails';
-    /** Details about the country’s currency, including code, name, and symbol (e.g., {"code": "USD", "name": "United States Dollar", "symbol": "$"}). */
+    /** Country currency info (code, name, symbol), e.g., {"code": "USD", "name": "United States Dollar", "symbol": "$"}. */
     currency?: Maybe<CountryCurrencyInfo>;
     /** User-friendly version of the geographical data, which may be more descriptive or formatted differently. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** Levels within the country (e.g., states, cities) and their slugs (e.g., [{"name": "State", "slug": "state"}, {"name": "City", "slug": "city"}]). */
+    /** Location hierarchy within the country (e.g., states, cities) and their slugs (e.g., [{"name": "State", "slug": "state"}, {"name": "City", "slug": "city"}]). */
     hierarchy?: Maybe<CountryHierarchy>;
     /** Unique identifier for the country. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Two-letter ISO code representing the country. */
+    /** Two-letter ISO code representing the country (e.g., "US"). */
     iso2?: Maybe<Scalars['String']['output']>;
-    /** Three-letter ISO code representing the country. */
+    /** Three-letter ISO code representing the country (e.g., "USA"). */
     iso3?: Maybe<Scalars['String']['output']>;
-    /** Geographical latitude of the country. */
+    /** Geographical latitude of the country (e.g., "37.7749"). */
     latitude?: Maybe<Scalars['String']['output']>;
-    /** Geographical longitude of the country. */
+    /** Geographical longitude of the country (e.g., "-122.4194"). */
     longitude?: Maybe<Scalars['String']['output']>;
-    /** The name of the packaging. */
+    /** The name of the country (e.g., "United States"). */
     name?: Maybe<Scalars['String']['output']>;
-    /** International dialing code for the country (e.g., "+1"). */
+    /** Country dialing code (e.g., "+91" for India, "+1" for US). */
     phone_code?: Maybe<Scalars['String']['output']>;
     /** List of time zones used in the country (e.g., ["America/New_York", "America/Los_Angeles"]). */
     timezones?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Indicates the type of object. */
+    /**
+     * Indicates the type of object.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Address-related information in a country. */
+/** Defines address field configuration for a country. */
 export type CountryFields = {
     __typename?: 'CountryFields';
-    /** Specifies the fields and attributes related to address information, including display names, input types, and validation rules. This section defines the details needed for address collection and formatting. */
+    /** Address fields and their metadata. */
     address: Array<Maybe<CountryFieldsAddress>>;
     /** Provides templates for how addresses should be formatted in different contexts, such as during checkout, in store operating systems, and for general display. */
     address_template: CountryFieldsAddressTemplate;
-    /** Lists the specific address fields used to determine whether a location is serviceable. These fields are crucial for validating service coverage and availability. */
+    /** Address fields used for serviceability checks (e.g., [pincode] for India, [city, sector] for UAE). */
     serviceability_fields: Array<Maybe<Scalars['String']['output']>>;
 };
 /** Describes the configuration of address fields for a country. */
@@ -2994,10 +4445,12 @@ export type CountryFieldsAddress = {
     /** The message shown to the user if the input does not meet the validation criteria. */
     error_text?: Maybe<Scalars['String']['output']>;
     /** Defines the type of input control used for the field (e.g., textbox). */
-    input: Scalars['String']['output'];
+    input?: Maybe<Scalars['String']['output']>;
+    /** Indicates the next field to fetch in the address entry sequence. This is for dependent fields eg if city is selected then next field will be state. */
+    next?: Maybe<Scalars['String']['output']>;
     /** Indicates whether the field is mandatory for the user to fill out. */
-    required: Scalars['Boolean']['output'];
-    /** URL-friendly version of the name, often used for referencing or querying purposes. */
+    required?: Maybe<Scalars['Boolean']['output']>;
+    /** Unique field identifier for address field. e.g., 'landmark' for landmark field; stays the same even if display_name changes. */
     slug: Scalars['String']['output'];
     /** Details any validation rules applied to the field, such as regex patterns. */
     validation?: Maybe<FieldValidation>;
@@ -3025,9 +4478,11 @@ export type CountryFieldsAddressValues = {
 /** Describes the hierarchical structure of a country. */
 export type CountryHierarchy = {
     __typename?: 'CountryHierarchy';
-    /** It represent a country name. */
+    /** Display name of hierarchy of location (e.g., "City", "State", "Pincode"). */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /** It represent hierarchy of location in country (e.g., "City", "State", "Pincode"). */
     name?: Maybe<Scalars['String']['output']>;
-    /** A URL-friendly version of the name, often used for referencing or querying purposes. */
+    /** Slug of the hierarchy (e.g., "city", "pincode"). */
     slug?: Maybe<Scalars['String']['output']>;
 };
 /** A response containing a list of countries, with each entry providing details about individual countries. */
@@ -3043,168 +4498,364 @@ export type CountryLogistics = {
     dp?: Maybe<DeliveryOperationSchema>;
 };
 /** Provides metadata about a country. */
-export type CountryMetaData = {
-    __typename?: 'CountryMetaData';
-    /** The International Subscriber Dialing (ISD) code, also known as the country dialing code, used for making international phone calls to the country (e.g., "+91" for India, "+1" for the United States). */
-    ISD_code?: Maybe<Scalars['String']['output']>;
-    /** The ISO 3166-1 alpha-2 code representing the country (e.g., "IN" for India, "US" for the United States). */
-    country_code?: Maybe<Scalars['String']['output']>;
-};
-/** Provides metadata about a country. */
 export type CountryMetaResponse = {
     __typename?: 'CountryMetaResponse';
     /** The ISO 3166-1 alpha-2 code representing the country (e.g., "IN" for India, "US" for the United States). */
     country_code?: Maybe<Scalars['String']['output']>;
-    /** The International Subscriber Dialing (ISD) code, also known as the country dialing code, used for making international phone calls to the country (e.g., "+91" for India, "+1" for the United States). */
+    /** Details about the currency associated with the country. */
+    currency?: Maybe<CurrencyObject>;
+    /**
+     * List of deliverables associated with the locality.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    deliverables?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Levels within the country (e.g., states, cities) and their slugs (e.g., [{"name": "State", "slug": "state"}, {"name": "City", "slug": "city"}]). */
+    hierarchy?: Maybe<Array<Maybe<CountryHierarchy>>>;
+    /** Country dialing code (e.g., "+91" for India, "+1" for US). */
     isd_code?: Maybe<Scalars['String']['output']>;
+    /** Two-letter ISO code representing the country (e.g., "IN" for India, "US" for the United States). */
+    iso2?: Maybe<Scalars['String']['output']>;
+    /** Three-letter ISO code representing the country (e.g., "IND" for India, "USA" for the United States). */
+    iso3?: Maybe<Scalars['String']['output']>;
+    /** Geographical latitude of the country (e.g., "37.0902"). */
+    latitude?: Maybe<Scalars['String']['output']>;
+    /** Geographical longitude of the country (e.g., "-95.7129"). */
+    longitude?: Maybe<Scalars['String']['output']>;
+    /**
+     * Identifier for the parent of the current locality.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    parent_id?: Maybe<Scalars['String']['output']>;
+    /** International dialing code for the country (e.g., "+1"). */
+    phone_code?: Maybe<Scalars['String']['output']>;
+    /**
+     * Geographical region to which the locality belongs, often used to categorize or group regions for regional management or postal purposes.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    zone?: Maybe<Scalars['String']['output']>;
 };
 /** Coupon data applied on cart that includes coupon code, coupon type, coupon value, description, title, subtitle etc. */
 export type Coupon = {
     __typename?: 'Coupon';
-    /** The amount based on cart value. */
+    /** Discount amount based on cart value. Example: 150.0 */
     coupon_amount?: Maybe<Scalars['Float']['output']>;
-    /** Message which is used to display to the customer if the coupon is applied successfully. */
+    /** Message displayed to the customer when coupon is applied. Example: 'Coupon applied successfully' */
     coupon_applicable_message?: Maybe<Scalars['String']['output']>;
-    /** Coupon code of the coupon applied on cart. */
+    /** Coupon code. Example: 'SAVE10' */
     coupon_code?: Maybe<Scalars['String']['output']>;
-    /** Type of the coupon applied to cart. */
+    /** Unique identifier of the coupon applied to cart. */
+    coupon_id?: Maybe<Scalars['String']['output']>;
+    /** Type of the coupon. Example: 'percentage' */
     coupon_type?: Maybe<Scalars['String']['output']>;
-    /** Coupon value of the coupon applied to cart. */
+    /** Coupon value. Example: 10.0 */
     coupon_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon description of the coupon applied to cart. */
+    /** Additional custom attributes associated with the coupon for extended functionality and metadata storage */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Description of the coupon. Example: '10% off on orders above ₹999' */
     description?: Maybe<Scalars['String']['output']>;
-    /** End date of the coupon on which the coupon expires. */
+    /** End date of the coupon. Example: '2025-12-31' */
     end_date?: Maybe<Scalars['String']['output']>;
-    /** Message to display to user for expiry of the coupon . */
+    /** Represents the last valid timeslot date on which the coupon can be applied in ISO 8601 (UTC Z) format,based on its configured schedule. If the coupon is restricted to specific days (e.g., Mondays and Thursdays), the expiry date will be the last eligible day within the overall end date range, not necessarily the end date itself. */
+    expires_at?: Maybe<Scalars['String']['output']>;
+    /** Expiry message. Example: 'Expires soon' */
     expires_on?: Maybe<Scalars['String']['output']>;
-    /** Flag to determine where the coupon is applicable to cart or not. */
+    /** Whether the coupon is applicable to the cart. Example: true */
     is_applicable?: Maybe<Scalars['Boolean']['output']>;
-    /** Flag to determine where the coupon is applied to cart or not. */
+    /** Whether the coupon is applied to the cart. Example: false */
     is_applied?: Maybe<Scalars['Boolean']['output']>;
-    /** Bank offer flag for the coupon if the coupon is applicable for only if payment done by bank or mode specified in coupon. */
+    /** Whether this is a bank/payment mode specific offer. Example: false */
     is_bank_offer?: Maybe<Scalars['Boolean']['output']>;
-    /** Maximum discount value of the coupon applied to cart. */
+    /** Maximum discount value allowed. Example: 500.0 */
     max_discount_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon message of the coupon applied to cart. */
+    /** Coupon message to show to the user. Example: 'Applicable on orders above ₹999' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Minimum cart value of the coupon applied to cart. */
+    /** Minimum cart value required. Example: 999.0 */
     minimum_cart_value?: Maybe<Scalars['Float']['output']>;
-    /** Offer text of the coupon which highligts coupon offer defined while creating coupon . */
+    /** Offer text highlighting the coupon. Example: 'Save 10% today' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Start date of the coupon when the coupon will be live for the users to apply on cart. */
+    /** List of discounted rules of coupon. Example: [{ discounted_price: 1499.0 }] */
+    rule?: Maybe<Array<Maybe<DiscountRules>>>;
+    /** Start date of the coupon. Example: '2025-10-01' */
     start_date?: Maybe<Scalars['String']['output']>;
-    /** Coupon subtitle of the coupon applied to cart which is used to display. */
+    /** Coupon subtitle used for display. Example: 'Limited time offer' */
     sub_title?: Maybe<Scalars['String']['output']>;
-    /** Coupon Title of the coupon applied denotes name of the coupon. */
+    /** Coupon Title (name of the coupon). Example: 'SAVE10' */
     title?: Maybe<Scalars['String']['output']>;
 };
-/** Coupon price breakup details which includes coupon code, coupon type, coupon value, coupon description, coupn message etc. */
+/** Coupon data applied on cart that includes coupon code, coupon type, coupon value, description, title, subtitle etc. */
+export type CouponCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+/** Coupon price breakup details which includes coupon code, coupon type, coupon value, coupon description, coupon message etc. */
 export type CouponBreakup = {
     __typename?: 'CouponBreakup';
-    /** Coupon code of the coupon applied. */
+    /** Coupon code of the coupon applied. Example: 'SAVE10' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Type of the coupon applied to cart. */
+    /** Type of the coupon applied to cart. Example: 'percentage' */
     coupon_type?: Maybe<Scalars['String']['output']>;
-    /** Value of the coupon applied to cart. */
+    /** Value of the coupon applied to cart. Example: 10.0 */
     coupon_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon description of the coupon applied to cart. */
+    /** Description of the coupon applied to cart. Example: '10% off on orders above ₹999' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Applied flag which denotes if any coupon is applied to cart. */
+    /** Whether any coupon is applied to cart. Example: true */
     is_applied?: Maybe<Scalars['Boolean']['output']>;
-    /** Maximum discount value of the coupon applied to cart. */
+    /** Maximum discount value of the coupon applied to cart. Example: 500.0 */
     max_discount_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon message of the coupon applied to cart. */
+    /** Coupon message of the coupon applied to cart. Example: 'Coupon applied successfully' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Minumum cart value of cart after which the coupon can be applied. */
+    /** Minimum cart value after which the coupon can be applied. Example: 999.0 */
     minimum_cart_value?: Maybe<Scalars['Float']['output']>;
-    /** Coupon subtitle of the coupon applied to cart which is used to display. */
+    /** Coupon subtitle used for display. Example: 'Limited time offer' */
     sub_title?: Maybe<Scalars['String']['output']>;
-    /** Coupon Title of the coupon applied denotes name of the coupon. */
+    /** Coupon Title (name of the coupon). Example: 'SAVE10' */
     title?: Maybe<Scalars['String']['output']>;
-    /** Type of the coupon applied to cart. */
+    /** Type of the coupon applied to cart. Example: 'percentage' */
     type?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the coupon applied to cart. */
+    /** Unique identifier of the coupon applied to cart. Example: 'cpn_123' */
     uid?: Maybe<Scalars['String']['output']>;
-    /** Coupon value of the coupon applied to cart. */
+    /** Coupon value of the coupon applied to cart. Example: 150.0 */
     value?: Maybe<Scalars['Float']['output']>;
 };
 /** Coupon actual price breakup details. */
 export type CouponDetails = {
     __typename?: 'CouponDetails';
-    /** Coupon code of the coupon applied. */
+    /** Coupon code of the coupon applied. Example: 'SAVE10' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Discout amount applied from coupon for single quantity of the product. */
+    /** Discount amount per unit from coupon. Example: 50.0 */
     discount_single_quantity?: Maybe<Scalars['Float']['output']>;
-    /** Total discount earned from coupon applied to cart. */
+    /** Total discount earned from coupon applied to cart. Example: 150.0 */
     discount_total_quantity?: Maybe<Scalars['Float']['output']>;
+};
+/** Apply coupon response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type CouponUpdateResponse = {
+    __typename?: 'CouponUpdateResponse';
+    /**
+     * List of saved addresses for user cart checkout.
+     * @deprecated This field is obsolete
+     */
+    addresses?: Maybe<Addresses>;
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /**
+     * Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }]
+     * @deprecated This field is obsolete
+     */
+    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
+    /** Price breakup for coupon, display, loyalty points, etc. */
+    breakup_values?: Maybe<CartBreakup>;
+    /**
+     * Buy Now flag for fast checkout. Example: false
+     * @deprecated This field is obsolete
+     */
+    buy_now?: Maybe<Scalars['Boolean']['output']>;
+    /** Numeric cart identifier. Example: 123456 */
+    cart_id?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Checkout mode (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
+    checkout_mode?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cart-level comment. Example: 'Deliver after 6 PM'
+     * @deprecated This field is obsolete
+     */
+    comment?: Maybe<Scalars['String']['output']>;
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
+    common_config?: Maybe<CartCommonConfig>;
+    /**
+     * Cart-level coupon data (applied flag, code, amount, title, message).
+     * @deprecated This field is obsolete , Use breakup_values.coupon instead
+     */
+    coupon?: Maybe<CartDetailCoupon>;
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
+    coupon_text?: Maybe<Scalars['String']['output']>;
+    /** Currency for prices (e.g., code 'INR', symbol '₹'). */
+    currency?: Maybe<CartCurrency>;
+    /**
+     * Custom cart metadata. Example: { channel: 'web' }
+     * @deprecated This field is obsolete
+     */
+    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery charge informational message. Example: 'Free delivery above ₹999'
+     * @deprecated This field is obsolete
+     */
+    delivery_charge_info?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery promise for the cart.
+     * @deprecated This field is obsolete
+     */
+    delivery_promise?: Maybe<DeliveryPromiseResponse>;
+    /**
+     * Whether promotion free gift selection is available. Example: true
+     * @deprecated This field is obsolete
+     */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * GSTIN associated with the cart. Example: '27AAACI1195H1ZK'
+     * @deprecated This field is obsolete
+     */
+    gstin?: Maybe<Scalars['String']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Whether the cart response is valid. Example: true
+     * @deprecated This field is obsolete
+     */
+    is_valid?: Maybe<Scalars['Boolean']['output']>;
+    /** List of cart items including item id, size, store, pricing, etc. */
+    items?: Maybe<Array<Maybe<CartProductInfo>>>;
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
+    last_modified?: Maybe<Scalars['String']['output']>;
+    /** Response message. Example: 'Cart fetched successfully' */
+    message?: Maybe<Scalars['String']['output']>;
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
+    notification?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 }
+     * @deprecated This field is obsolete
+     */
+    pan_config?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * User PAN number. Example: 'ABCDE1234F'
+     * @deprecated This field is obsolete
+     */
+    pan_no?: Maybe<Scalars['String']['output']>;
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
+    payment_selection_lock?: Maybe<PaymentSelectionLock>;
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
+    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
+    staff_user_id?: Maybe<Scalars['String']['output']>;
+    /** Whether the API call was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Number of items in cart. Example: 3
+     * @deprecated This field is obsolete
+     */
+    user_cart_items_count?: Maybe<Scalars['Int']['output']>;
+};
+/** Apply coupon response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type CouponUpdateResponseAddressesArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+    mobileNo?: InputMaybe<Scalars['String']['input']>;
+    tags?: InputMaybe<Scalars['String']['input']>;
 };
 /** Payment mode validity details of the coupon which shows coupon is valid for the payment mode or not. */
 export type CouponValidate = {
     __typename?: 'CouponValidate';
-    /** Coupon is valid flag if coupon is valid for the payment mode. */
+    /** Coupon validity status for the payment mode. Example: { valid: true } */
     coupon_validity?: Maybe<CouponValidity>;
-    /** Payment mode valid message for coupon. */
+    /** Payment mode validity message. Example: 'Applicable on CARD only' */
     message?: Maybe<Scalars['String']['output']>;
-    /** success flag of coupon payment mode validity API response. */
+    /** Success flag of validation response. Example: true */
     success: Scalars['Boolean']['output'];
 };
 /** Coupon validity schema which includes coupon title, coupon code, next validation flag, valid flag, error display message and discount of coupon. */
 export type CouponValidity = {
     __typename?: 'CouponValidity';
-    /** Coupon code of the coupon applied. */
+    /** Coupon code of the coupon applied. Example: 'SAVE10' */
     code?: Maybe<Scalars['String']['output']>;
-    /** Coupon discount value of the coupon applied. */
+    /** Coupon discount value. Example: 150.0 */
     discount?: Maybe<Scalars['Float']['output']>;
-    /** Display message for coupon validity. */
+    /** Display message for coupon validity. Example: 'Coupon valid for this payment mode' */
     display_message_en?: Maybe<Scalars['String']['output']>;
-    /** Flag for coupon validation required on next page or not. */
+    /** Error message for the selected payment mode. Example: 'Not valid on COD' */
+    error?: Maybe<Scalars['String']['output']>;
+    /** Whether next page validation is required. Example: false */
     next_validation_required?: Maybe<Scalars['Boolean']['output']>;
-    /** Coupon Title of the coupon applied. */
+    /** Coupon title. Example: 'SAVE10' */
     title?: Maybe<Scalars['String']['output']>;
-    /** Valid flag which denotes if the applied coupon is valid or not. */
+    /** Whether the coupon is valid. Example: true */
     valid?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Get coupon list response schema which page information and list of coupons. */
 export type Coupons = {
     __typename?: 'Coupons';
-    /** List of available coupon which can be applied on cart. */
+    /** List of available coupons that can be applied on cart. Example: [{ coupon_code: 'SAVE10', coupon_value: 10 }] */
     available_coupon_list?: Maybe<Array<Maybe<Coupon>>>;
-    /** Page information of the coupon list. */
+    /** Page information of the coupon list. Example: { current: 1, total: 5, has_next: true } */
     page?: Maybe<PageCoupon>;
 };
 /** Create Order User Data. */
 export type CreateOrderUserData = {
     __typename?: 'CreateOrderUserData';
+    /** Access code issued by CCAvenue, used for decrypting and validating the response payload. */
+    access_code?: Maybe<Scalars['String']['output']>;
     /** Aggregator name. */
     aggregator?: Maybe<Scalars['String']['output']>;
     /** Total amount for the transaction. */
     amount?: Maybe<Scalars['Float']['output']>;
+    /** Base64-encoded HTML form content. */
+    base64_html?: Maybe<Scalars['String']['output']>;
     /** Callback url for aggregator. */
     callback_url?: Maybe<Scalars['String']['output']>;
-    /** Mobile number. */
+    /** Mobile number without country code. eg 9876543210. */
     contact?: Maybe<Scalars['String']['output']>;
-    /** Currency of the transaction. */
+    /** Currency code of the transaction. eg. INR */
     currency?: Maybe<Scalars['String']['output']>;
     /** Aggregator customer id. */
     customer_id?: Maybe<Scalars['String']['output']>;
     /** Email. */
     email?: Maybe<Scalars['String']['output']>;
+    /** Encrypted message required by CCAvenue for redirection. */
+    enc_message?: Maybe<Scalars['String']['output']>;
+    /** Transaction Id for Extensions. */
+    gid?: Maybe<Scalars['String']['output']>;
+    /** CCAvenue merchant identifier associated with the transaction. */
+    merchant_id?: Maybe<Scalars['String']['output']>;
     /** Merchant order id. */
     merchant_order_id?: Maybe<Scalars['String']['output']>;
-    /** Method details. */
+    /** Merchant Transaction Id */
+    merchant_transaction_id?: Maybe<Scalars['String']['output']>;
+    /** Method details. eg card */
     method?: Maybe<Scalars['String']['output']>;
-    /** Aggregator order id. */
+    /** Next step information for the order response. */
+    nextAction?: Maybe<NextAction>;
+    /** Aggregator order id. eg order_RmFxCPUQ4qvn39 */
     order_id?: Maybe<Scalars['String']['output']>;
 };
 /** Create order user request schema. */
 export type CreateOrderUserRequestInput = {
-    /** Currency of the transaction. */
+    /** Currency code of the transaction. eg. INR */
     currency: Scalars['String']['input'];
     /** Failure page url. */
     failure_callback_url: Scalars['String']['input'];
-    /** Meta details. */
-    meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Unique id of payment link. */
+    /** Unique id of payment link. Refer to the response of the createPaymentLink mutation. */
     payment_link_id: Scalars['String']['input'];
     /** Create Order User Payment Method schema. */
     payment_methods: PaymentMethodsInput;
@@ -3220,12 +4871,18 @@ export type CreateOrderUserResponse = {
     data?: Maybe<CreateOrderUserData>;
     /** Detailed message. */
     message: Scalars['String']['output'];
-    /** Merchant order id. */
+    /** Merchant order id. eg FY692D3ADF53333A20BD */
     order_id?: Maybe<Scalars['String']['output']>;
-    /** Payment confirm url for aggregator. */
+    /**
+     * Payment confirm url for aggregator.
+     * @deprecated Field is not required and will be removed in a future release. Use callback_url instead.
+     */
     payment_confirm_url?: Maybe<Scalars['String']['output']>;
-    /** HTTP status code. */
-    status_code: Scalars['Int']['output'];
+    /**
+     * HTTP status code.
+     * @deprecated Field is not required and will be removed in a future release.
+     */
+    status_code?: Maybe<Scalars['Int']['output']>;
     /** Successful or failure. */
     success: Scalars['Boolean']['output'];
 };
@@ -3233,7 +4890,9 @@ export type CreateOrderUserResponse = {
 export type CreatePaymentLinkRequestInput = {
     /** Total value of order. */
     amount: Scalars['Float']['input'];
-    /** Merchant order id. */
+    /** country phone code eg. +91 */
+    country_phone_code?: InputMaybe<Scalars['String']['input']>;
+    /** Description of payment. */
     description?: InputMaybe<Scalars['String']['input']>;
     /** Email to which the payment link is to be sent. */
     email: Scalars['String']['input'];
@@ -3241,7 +4900,7 @@ export type CreatePaymentLinkRequestInput = {
     external_order_id: Scalars['String']['input'];
     /** Create Payment Link Meta. */
     meta: MetaInput;
-    /** Mobile number to which the payment link is to be sent. */
+    /** Mobile number without country code to which the payment link is to be sent. eg. 9876543210 */
     mobile_number: Scalars['String']['input'];
 };
 /** Create Payment Link Response. */
@@ -3253,10 +4912,13 @@ export type CreatePaymentLinkResponse = {
     payment_link_id?: Maybe<Scalars['String']['output']>;
     /** Url of payment link. */
     payment_link_url?: Maybe<Scalars['String']['output']>;
-    /** Polling request timeout. */
+    /** Time in seconds until the payment link expires. After this period, polling is no longer necessary. */
     polling_timeout?: Maybe<Scalars['Int']['output']>;
-    /** HTTP status code. */
-    status_code: Scalars['Int']['output'];
+    /**
+     * HTTP status code.
+     * @deprecated This field is obsolete.
+     */
+    status_code?: Maybe<Scalars['Int']['output']>;
     /** Successful or failure. */
     success: Scalars['Boolean']['output'];
 };
@@ -3272,11 +4934,39 @@ export type CreatedOn = {
     /** Useragent details. */
     user_agent: Scalars['String']['output'];
 };
-/** Details for crediting reward points. */
+/** Configuration for crediting reward points. */
 export type Credit = {
     __typename?: 'Credit';
-    /** Shows whether reward points should be credited. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether reward points crediting is enabled. */
+    enabled: Scalars['Boolean']['output'];
+};
+/** Credit Account Sumamry Schema. */
+export type CreditAccountSummary = {
+    __typename?: 'CreditAccountSummary';
+    /** Unique identifier associated with the customer's account */
+    account_id: Scalars['String']['output'];
+    /** Amount on hold Summary */
+    amount_on_hold?: Maybe<Array<Maybe<UserCreditInfo>>>;
+    /** Available Balance Summary */
+    available_balance?: Maybe<UserCreditInfo>;
+    /** Redeemable Balance Summary */
+    redeemable_balance?: Maybe<UserCreditInfo>;
+    /** Current state of the account, indicating whether it is ACTIVE, INACTIVE, or UNREGISTERED. */
+    status?: Maybe<AccountStatusEnum>;
+};
+/** Validate customer and Fetch Balance response model. */
+export type CreditAndCustomerValidation = {
+    __typename?: 'CreditAndCustomerValidation';
+    /** Credit Account Sumamry */
+    account?: Maybe<CreditAccountSummary>;
+    /** Unique identifier for the shopping cart. */
+    cart_id?: Maybe<Scalars['String']['output']>;
+    /** Credit is applied to the user's account or not */
+    is_applied: Scalars['Boolean']['output'];
+    /** The customer is eligible to make a transaction or not */
+    is_eligible: Scalars['Boolean']['output'];
+    /** Detailed message about the user credit eligibility. */
+    message?: Maybe<Scalars['String']['output']>;
 };
 /** Credit Detail. */
 export type CreditDetail = {
@@ -3286,9 +4976,19 @@ export type CreditDetail = {
     /** Payment confirmation updated or not. */
     success: Scalars['Boolean']['output'];
 };
+/** Schema for credit note. */
+export type CreditNote = {
+    __typename?: 'CreditNote';
+    /** Unique identifier of the credit note generated for the shipment. For example, `credit_note_id` can be set to 'CN0000050AA000147'. */
+    credit_note_id?: Maybe<Scalars['String']['output']>;
+    /** Pre-signed URL to download the credit note PDF document generated against shipment and it is valid for a limited time only. For example, `credit_note_url` can be set to 'https://example.com/resource'. */
+    credit_note_url?: Maybe<Scalars['String']['output']>;
+};
 /** Credit summary response. */
 export type CreditSummary = {
     __typename?: 'CreditSummary';
+    /** Available credit balance. */
+    available_credit?: Maybe<Scalars['Float']['output']>;
     /** User is registered with aggregator or not. */
     is_registered: Scalars['Boolean']['output'];
     /** URL to which the user may redirect. */
@@ -3313,36 +5013,64 @@ export type CronSchedule = {
 /** Details about the currency supported by the sales channel, including its ID, name, code, and other attributes. */
 export type Currency = {
     __typename?: 'Currency';
-    /** 3-character currency code, e.g. INR, USD, EUR. */
+    /** 3-character currency code, e.g. 'INR', 'USD', 'EUR'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** Country code. */
+    /** Country code associated with the currency, e.g. 'IN'. */
     country_code?: Maybe<Scalars['String']['output']>;
-    /** Country name. */
+    /** Country name associated with the currency, e.g. 'India'. */
     country_name?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of sales channel support currency creation. */
+    /**
+     * Timestamp when sales channel currency was created, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Acceptable decimal limits for a given currency, e.g. 1.05$ means upto 2 decimal digits can be accepted as a valid value of a currency. */
+    /** Acceptable decimal limits for a given currency, e.g. 2 means up to 2 decimal digits can be accepted (like $1.05). */
     decimal_digits?: Maybe<Scalars['Int']['output']>;
-    /** The unique identifier of the application. */
+    /** The unique identifier of the currency. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Shows currency is enabled or not in current sales channel. */
+    /**
+     * Indicates whether currency is enabled or disabled in current sales channel.
+     * @deprecated By default only active currencies will be listed on the website
+     */
     is_active?: Maybe<Scalars['Boolean']['output']>;
-    /** Name of the currency, e.g Indian Rupee. */
+    /** Name of the currency, e.g. 'Indian Rupee'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Unique symbol for identifying the currency, e.g. ₹. */
+    /** Unique symbol for identifying the currency, e.g. '₹'. */
     symbol?: Maybe<Scalars['String']['output']>;
-    /** ISO 8601 timestamp of when the application was last modified. */
+    /**
+     * Timestamp when sales channel currency was updated, e.g. '2023-10-16T14:20:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
-/** Configuration for currency settings in the application. */
+/** Defines the currency details. */
+export type CurrencyDetail = {
+    __typename?: 'CurrencyDetail';
+    /** Currency code ISO 4217 */
+    code?: Maybe<Scalars['String']['output']>;
+    /** Whether this is default currency for country */
+    is_default?: Maybe<Scalars['Boolean']['output']>;
+    /** Name of currency */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Currency symbol */
+    symbol?: Maybe<Scalars['String']['output']>;
+};
+/** Defines how currency information is displayed to customers. */
+export declare enum CurrencyDisplayType {
+    /** Show all available currencies */
+    All = "all",
+    /** Show currency code explicitly with price */
+    Explicit = "explicit"
+}
+/** Configuration for currency settings in the sales channel. */
 export type CurrencyFeature = {
     __typename?: 'CurrencyFeature';
-    /** 3-letter code of the default currency used in the application. Default value is 'INR'. */
-    default_currency?: Maybe<Scalars['String']['output']>;
-    /** If 'explicit', currency formatting shows currency code with price. For explicit or all currency selection. */
-    type?: Maybe<Scalars['String']['output']>;
-    /** 3-letter currency code. */
-    value?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** 3-letter code of the default currency used in the sales channel, e.g. 'INR'. Default value is 'INR'. */
+    default_currency: Scalars['String']['output'];
+    /** Currency display type can be explicit or all. If 'explicit', currency formatting shows currency code with price. */
+    type: CurrencyDisplayType;
+    /** List of 3-letter currency codes supported, e.g. ['INR', 'USD', 'EUR']. */
+    value: Array<Maybe<Scalars['String']['output']>>;
 };
 /** Currency info details of ladder price which includes currncy code and currency symbol. */
 export type CurrencyInfo = {
@@ -3352,64 +5080,110 @@ export type CurrencyInfo = {
     /** Currency symbol for currency of ladder price product. */
     symbol?: Maybe<Scalars['String']['output']>;
 };
+/** Provides details about a currency. */
+export type CurrencyObject = {
+    __typename?: 'CurrencyObject';
+    /** The currency code, typically a three-letter ISO code (e.g., "USD" for US Dollar). */
+    code?: Maybe<Scalars['String']['output']>;
+    /** Name of the currency. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** The symbol used to represent the currency (e.g., "$" for US Dollar). */
+    symbol?: Maybe<Scalars['String']['output']>;
+};
+/** Schema for currency. */
+export type CurrencySchema = {
+    __typename?: 'CurrencySchema';
+    /** The ISO 4217 currency code, such as 'INR' for Indian Rupee. This field represents the standardized three-letter code of a currency. For example, 'INR', 'USD', or 'EUR'. */
+    currency_code?: Maybe<Scalars['String']['output']>;
+    /** The symbol representing the currency, such as '₹' for Indian Rupee. This is used for display purposes alongside currency amounts. For example, '₹', '$', or '€'. */
+    currency_symbol?: Maybe<Scalars['String']['output']>;
+};
+/** Currency value information containing currency code and amount. */
+export type CurrencyValue = {
+    __typename?: 'CurrencyValue';
+    /** Currency code. Example: 'INR' */
+    currency?: Maybe<Scalars['String']['output']>;
+    /** Numeric amount value. Example: 100.0 */
+    value?: Maybe<Scalars['Float']['output']>;
+};
 /** Schema for current status. */
 export type CurrentStatus = {
     __typename?: 'CurrentStatus';
-    /** The type of journey for the shipment, indicating the direction of the shipment. */
+    /** The type of journey for the shipment, indicating the direction of the shipment. For example, `journey_type` can be set to 'value'. */
     journey_type?: Maybe<Scalars['String']['output']>;
-    /** The name or label indicating the current state or status. */
+    /** The name or label indicating the current state or status. For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The current status of the bag. */
+    /** The current status of the bag. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the status was last updated. */
+    /** The date and time when the status was last updated. For example, `updated_at` can be set to '2024-11-01T10:00:00Z'. */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
-/** Object containing details of custom field. */
+/** Custom Field details for resources */
 export type CustomField = {
     __typename?: 'CustomField';
-    /** Application ID - Identifier for a Sales channel. */
-    application_id?: Maybe<Scalars['String']['output']>;
-    /** Unique Identifier for a company. */
-    company_id?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent the time when data was created. */
-    created_at?: Maybe<Scalars['String']['output']>;
-    /** Details of the owner of custom field creator. */
-    created_by?: Maybe<Scalars['String']['output']>;
-    /** Denotes where the custom field has been defined - within a company or within a sales channel. */
-    creator?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for a custom field definition. */
-    definition_id?: Maybe<Scalars['String']['output']>;
-    /** Whether the custom field has invalid values. */
-    has_invalid_values?: Maybe<Scalars['Boolean']['output']>;
+    /** Creator of the custom field */
+    creator?: Maybe<CustomFieldCreator>;
+    /** Custom object definition if type is custom object */
+    custom_object_definition_id?: Maybe<Scalars['String']['output']>;
     /** Unique identifier of an entry. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Array denoting if there's a validation failure on a custom field inside a custom object. */
-    invalid_value_errors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Whether the custom field definition is deleted. */
-    is_deleted?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique identifier for a custom field. */
-    key?: Maybe<Scalars['String']['output']>;
-    /** Whether custom field can have multiple values or not. */
-    multi_value?: Maybe<Scalars['Boolean']['output']>;
+    /** Key identifier for the custom field */
+    key: Scalars['String']['output'];
     /** Namespace under which custom field is present. */
     namespace?: Maybe<Scalars['String']['output']>;
-    /** Type of an entity under which custom field is defined. */
-    resource?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for the entity under which custom field is defined. */
-    resource_id?: Maybe<Scalars['String']['output']>;
-    /** The type type of custom field. */
-    type?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent when was the last time when data was updated. */
-    updated_at?: Maybe<Scalars['String']['output']>;
-    /** Array containing values of custom field. */
-    value?: Maybe<CustomFieldValue>;
+    /** Type of custom fields Supported */
+    type?: Maybe<CustomFieldType>;
+    /** Decoded values array for the custom field */
+    values: Scalars['JSON']['output'];
 };
-/** Array containing values of custom field. */
-export type CustomFieldValue = {
-    __typename?: 'CustomFieldValue';
-    /** Array containing value(s) of custom field. */
-    value?: Maybe<Scalars['JSON']['output']>;
+/** Supported custom field creator types */
+export declare enum CustomFieldCreator {
+    /** Created at application level */
+    Application = "application",
+    /** Created at company level */
+    Company = "company"
+}
+/** Result type that can contain either a single array of custom fields or grouped custom fields for multiple resources */
+export type CustomFieldResult = {
+    __typename?: 'CustomFieldResult';
+    /** Single array of custom fields (for single resource queries) */
+    fields?: Maybe<Array<CustomField>>;
+    /** Grouped custom fields by resource (for multiple resource queries) */
+    groups?: Maybe<Array<ResourceCustomFieldGroup>>;
 };
+/** Supported custom field types */
+export declare enum CustomFieldType {
+    /** Boolean true/false type */
+    BooleanType = "boolean_type",
+    /** Date type */
+    Date = "date",
+    /** Datetime type */
+    Datetime = "datetime",
+    /** Dropdown select field */
+    Dropdown = "dropdown",
+    /** Duration/time period type */
+    Duration = "duration",
+    /** File upload type */
+    File = "file",
+    /** Float/decimal number type */
+    FloatType = "float_type",
+    /** HTML content type */
+    Html = "html",
+    /** Integer number type */
+    Integer = "integer",
+    /** JSON object type */
+    Json = "json",
+    /** Metaobject reference type */
+    Metaobject = "metaobject",
+    /** Product reference type */
+    Product = "product",
+    /** Multi-line text string */
+    StringMultiLine = "string_multi_line",
+    /** Single line text string */
+    StringSingleLine = "string_single_line",
+    /** URL/link type */
+    Url = "url"
+}
 /** Object containing a list of custom fields against a resource. */
 export type CustomFields = {
     __typename?: 'CustomFields';
@@ -3466,94 +5240,123 @@ export type CustomMetaFields = {
 /** Custom meta tag for a sales channel website. */
 export type CustomMetaTag = {
     __typename?: 'CustomMetaTag';
-    /** Contents of the custom meta tag group. */
+    /** Contents of the custom meta tag group. For example, 'keywords, fashion, clothing'. */
     content?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of the custom meta tag group. */
+    /** Name of the custom meta tag group. For example, 'keywords' or 'author'. */
     name?: Maybe<Scalars['String']['output']>;
 };
 /** Data containing details of custom field definition. */
 export type CustomObjectDefintion = {
     __typename?: 'CustomObjectDefintion';
-    /** Key of custom field inside custom object. */
+    /** Key of custom field inside custom object. For example, 'warranty_period' or 'custom_size'. */
     display_name_key?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, 'def_123456' or '67890abcdef'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of definition of custom field. */
+    /** Name of definition of custom field. For example, 'Warranty Period' or 'Custom Size'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Data type of the custom field. */
+    /** Data type of the custom field. For example, 'text', 'number', 'boolean', or 'date'. */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** Details related to a custom page and contents. */
 export type CustomPageDetail = {
     __typename?: 'CustomPageDetail';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Flag denoting whether the page is archived or not. */
+    /**
+     * Flag denoting whether the page is archived or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     archived?: Maybe<Scalars['Boolean']['output']>;
-    /** Components can be used to store multiple components. */
+    /** Components can be used to store multiple components. For example, ['comp_1', 'comp_2', 'comp_3']. */
     component_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Contents of a custom page. */
+    /** Contents of a custom page. For example, [{"type": "text", "value": "Hello World"}, {"type": "image", "url": "https://example.com/img.jpg"}]. */
     content?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** A CDN URL at which the entire html content can be fetched from. */
+    /** A CDN URL at which the entire html content can be fetched from. For example, 'https://cdn.example.com/pages/about-us.html'. */
     content_path?: Maybe<Scalars['String']['output']>;
-    /** Details regarding the creator of entity. */
+    /**
+     * Details regarding the creator of entity.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<CreatedBy>;
     /** Custom JSON object for specific use cases. */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Details related to resource creation and updation. */
+    /**
+     * Details related to resource creation and updation.
+     * @deprecated This field is obsolete.
+     */
     date_meta?: Maybe<DateMeta>;
-    /** Description about the page. */
+    /** Description about the page. For example, 'Learn more about our company and mission'. */
     description?: Maybe<Scalars['String']['output']>;
     /** Data related to image. */
     feature_image?: Maybe<Asset>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, 'page_123456' or '67890abcdef'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Orientation for Custom Pages - Landscape or portrait. */
+    /** Orientation for Custom Pages - Landscape or portrait. For example, 'landscape' or 'portrait'. */
     orientation?: Maybe<Scalars['String']['output']>;
     /** List of Custom JSON object for specific use cases. */
     page_meta?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Platform for Custom Pages - Denotes the device type. */
+    /** Platform for Custom Pages - Denotes the device type. For example, 'web', 'ios', or 'android'. */
     platform?: Maybe<Scalars['String']['output']>;
-    /** Whether page is active or not on website. */
+    /**
+     * Whether page is active or not on website. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     published?: Maybe<Scalars['Boolean']['output']>;
     /** Details related to schedule of a custom page. */
     schedule?: Maybe<CronSchedule>;
     /** Details related to SEO of an entry. */
-    seo?: Maybe<BlogSeo>;
-    /** A short, human-readable, URL-friendly identifier. */
+    seo?: Maybe<SeoDetails>;
+    /** A short, human-readable, URL-friendly identifier. For example, 'about-us' or 'contact'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** Tags under a page. */
+    /** Tags under a page. For example, ['about', 'company']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** The title of the page. */
+    /** The title of the page. For example, 'About Us' or 'Contact'. */
     title?: Maybe<Scalars['String']['output']>;
-    /** Type of editor through which the page was created so appropriate rendering engine is used. */
+    /** Type of editor through which the page was created so appropriate rendering engine is used. For example, 'visual', 'html', or 'markdown'. */
     type?: Maybe<Scalars['String']['output']>;
-    /** Visibility of Page. */
+    /**
+     * Visibility of Page.
+     * @deprecated This field is obsolete.
+     */
     visibility?: Maybe<Scalars['JSON']['output']>;
 };
-/** Customer details Schema which includes customer name, mobile and email. */
+/** Validate customer eligibility and show credit summary. */
+export type CustomerAndCreditSummary = {
+    /** Payment aggregator handling the transaction. */
+    aggregator: Scalars['String']['input'];
+    /** Unique identifier for the shopping cart. */
+    cart_id?: InputMaybe<Scalars['String']['input']>;
+    /** Payable amount */
+    transaction_amount: Scalars['Float']['input'];
+    /** The unique identifier of the user. */
+    user_id?: InputMaybe<Scalars['String']['input']>;
+};
+/** Customer details including name, mobile, and email. */
 export type CustomerDetailsInput = {
-    /** Email address of the customer to be added in customer detail while checkout. */
+    /** Email address. Example: 'john.doe@example.com' */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** Mobile number of customer to be added in customer detail while checkout. */
+    /** Mobile number. Example: '9876543210' */
     mobile: Scalars['String']['input'];
-    /** name of customer to be added in customer detail while checkout. */
+    /** Full name. Example: 'John Doe' */
     name?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema for customer details response. */
 export type CustomerDetailsResponse = {
     __typename?: 'CustomerDetailsResponse';
-    /** Country of the customer. */
+    /** Country of the customer. For example, `country` can be set to 'India'. */
     country?: Maybe<Scalars['String']['output']>;
-    /** Customer's name. */
+    /** Customer's name. For example, `name` can be set to 'John Doe'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the order. */
+    /** Unique identifier of the order. For example, `order_id` can be set to 'FY63C1FBA80195F734C0'. */
     order_id?: Maybe<Scalars['String']['output']>;
-    /** Customer's phone number. */
+    /** Customer's phone number. For example, `phone` can be set to '9876543210'. */
     phone?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of the shipment. */
+    /** Unique identifier of the shipment. For example, `shipment_id` can be set to '16736576489251696245'. */
     shipment_id?: Maybe<Scalars['String']['output']>;
 };
 /** Customer Onboarding Request Schema. */
@@ -3584,31 +5387,51 @@ export type CustomerOnboardingResponse = {
 /** Details regarding data loaders. */
 export type DataLoaderDetail = {
     __typename?: 'DataLoaderDetail';
-    /** Content of a data loader. */
+    /**
+     * Sales channel id.
+     * @deprecated This field is obsolete.
+     */
+    application?: Maybe<Scalars['String']['output']>;
+    /** Company id for data loader. For example, 'company_123'. */
+    company?: Maybe<Scalars['String']['output']>;
+    /** Content of a data loader. For example, HTML content or JSON data. */
     content?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /**
+     * ISO 8601 timestamp of creation of the application information. For example, '2024-01-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    created_at?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of dataloader. */
+    /** Boolean to determine that loader is selected or not. For example, true or false. */
+    is_selected?: Maybe<Scalars['Boolean']['output']>;
+    /** Name of dataloader. For example, 'Product Loader' or 'Category Loader'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Operation ID of the method which data loader is overriding. */
+    /** Operation ID of the method which data loader is overriding. For example, 'getProducts' or 'getCategories'. */
     operation_id?: Maybe<Scalars['String']['output']>;
-    /** Service of data loader which overrides the default method. */
+    /** Service of data loader which overrides the default method. For example, 'catalog' or 'content'. */
     service?: Maybe<Scalars['String']['output']>;
     /** Details regarding the details of extension which created dataloader. */
     source?: Maybe<DataLoaderSource>;
     /** Type of data loader. */
     type?: Maybe<DataLoaderType>;
-    /** URL at which data loader redirects. */
+    /**
+     * ISO 8601 timestamp of updation of the application information. For example, '2024-01-20T14:45:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    updated_at?: Maybe<Scalars['String']['output']>;
+    /** URL at which data loader redirects. For example, 'https://example.com/api/products'. */
     url?: Maybe<Scalars['String']['output']>;
 };
 /** Details regarding the details of extension which created dataloader. */
 export type DataLoaderSource = {
     __typename?: 'DataLoaderSource';
-    /** Identifier of an extension. */
+    /** Identifier of an extension. For example, '621e1f2ca78f7425f939641d'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Type of creator. */
+    /** Type of creator. For example, 'extension'. */
     type?: Maybe<Scalars['String']['output']>;
 };
+/** Types of data loaders for information retrieval. */
 export declare enum DataLoaderType {
     Function = "function",
     Url = "url"
@@ -3619,37 +5442,45 @@ export type DataLoaders = {
     /** List of data loaders. */
     items?: Maybe<Array<Maybe<DataLoaderDetail>>>;
 };
-/** Schema for data updates. */
+/**
+ * Schema for performing data updates across shipments and products.
+ * It can contain :
+ * - Shipment-level updates (via `entities`)
+ * - Product/bag-level updates (via `products`)
+ */
 export type DataUpdatesInput = {
-    /** Data updates for shipments. */
+    /** List of shipment-level updates. */
     entities?: InputMaybe<Array<InputMaybe<EntitiesDataUpdatesInput>>>;
-    /** Data updates for bags. */
+    /** List of product or bag-level updates. */
     products?: InputMaybe<Array<InputMaybe<ProductsDataUpdatesInput>>>;
 };
 /** Details related to resource creation and updation. */
 export type DateMeta = {
     __typename?: 'DateMeta';
-    /** Timestamp which represent the time when data was created. */
+    /** Timestamp which represent the time when data was created. For example, '2024-01-15T10:30:00Z'. */
     created_on?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent when was the last time when data was updated. */
+    /** Timestamp which represent when was the last time when data was updated. For example, '2024-01-20T14:45:00Z'. */
     modified_on?: Maybe<Scalars['String']['output']>;
 };
-/** Details for debiting reward points. */
+/** Configuration for debiting reward points. */
 export type Debit = {
     __typename?: 'Debit';
-    /** Allow automatic debit of reward points. */
+    /** Indicates whether automatic debit of reward points is allowed. */
     auto_apply?: Maybe<Scalars['Boolean']['output']>;
-    /** Shows whether reward points are available for debit. */
+    /** Indicates whether reward points debiting is enabled. */
     enabled?: Maybe<Scalars['Boolean']['output']>;
-    /** Strategy channel for debiting reward points. */
+    /** Strategy channel for debiting reward points, e.g. 'fynd', 'external'. */
     strategy_channel?: Maybe<Scalars['String']['output']>;
 };
 /** Represents the default currency. */
 export type DefaultCurrency = {
     __typename?: 'DefaultCurrency';
-    /** 3-character code of the default currency, e.g. INR, EUR, USD. */
+    /** 3-character code of the default currency, e.g. 'INR', 'EUR', 'USD'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier (24-digit Mongo Object ID) of the default currency. */
+    /**
+     * The unique identifier reference of the default currency.
+     * @deprecated This field is obsolete.
+     */
     ref?: Maybe<Scalars['String']['output']>;
 };
 /** Consent text details shown to user. */
@@ -3661,7 +5492,7 @@ export type DeleteAccountConsent = {
 /** Structure of reasons to be shown to user for delete account. */
 export type DeleteAccountReasons = {
     __typename?: 'DeleteAccountReasons';
-    /** Unique id of the reason . */
+    /** Unique ID of the reason. */
     reason_id?: Maybe<Scalars['String']['output']>;
     /** Text of the reason to be shown to user. */
     reason_text?: Maybe<Scalars['String']['output']>;
@@ -3671,23 +5502,26 @@ export type DeleteAccountReasons = {
 /** Delete address response, includes address id and deleted flag. */
 export type DeleteAddressResponse = {
     __typename?: 'DeleteAddressResponse';
-    /** Id of the address. */
+    /** Id of the address. Example: 'addr_001' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Deleted flag in delete address response states whether the address was deleted or not. */
+    /** Whether the address was deleted. Example: true */
     is_deleted?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to delete the application user. */
+/** Describes the request structure to delete the user. */
 export type DeleteApplicationUserRequestSchemaInput = {
-    /** OTP to verify the delete application user request. */
-    otp?: InputMaybe<Scalars['String']['input']>;
-    /** Reason to delete the application user. */
-    reason?: InputMaybe<Scalars['String']['input']>;
-    /** Reason id of request to delete the application user . */
-    reason_id?: InputMaybe<Scalars['String']['input']>;
-    /** ID of request to delete the application user . */
+    /** OTP to confirm deletion. */
+    otp: Scalars['String']['input'];
+    /** Reason for deleting the user. */
+    reason: Scalars['String']['input'];
+    /** Identifier for the selected deletion reason; see PlatformConfig.delete_account_reasons. */
+    reason_id: Scalars['String']['input'];
+    /** ID of request to delete the user. */
     request_id?: InputMaybe<Scalars['String']['input']>;
-    /** User id for the application user. */
-    user_id?: InputMaybe<Scalars['String']['input']>;
+};
+/** Input object used to delete an existing refund beneficiary. */
+export type DeleteBeneficiaryInput = {
+    /** Unique identifier of the beneficiary to delete. */
+    id: Scalars['String']['input'];
 };
 /** Delete Cards Response. */
 export type DeleteCardsResponse = {
@@ -3700,9 +5534,9 @@ export type DeleteCardsResponse = {
 /** Delete cart response which includes message and success flag. */
 export type DeleteCartDetailResponse = {
     __typename?: 'DeleteCartDetailResponse';
-    /** Message for delete cart response. */
+    /** Message for delete cart response. Example: 'Cart archived' */
     message?: Maybe<Scalars['String']['output']>;
-    /** True if cart is archived successfully. False if not archived. */
+    /** True if cart is archived successfully. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Schema representing the response received upon a successful user deletion. */
@@ -3719,84 +5553,124 @@ export type DeletehCardRequestInput = {
 /** An object containing the delivery address details. */
 export type DeliveryAddress = {
     __typename?: 'DeliveryAddress';
-    /** The full address. */
+    /** The full address. For example, `address` can be set to '123 Main Street, Downtown, Surat'. */
     address?: Maybe<Scalars['String']['output']>;
-    /** The primary line of the address. */
+    /** The primary line of the address. For example, `address1` can be set to '123 Main Street, Downtown'. */
     address1?: Maybe<Scalars['String']['output']>;
-    /** The secondary line of the address. */
+    /** The secondary line of the address. For example, `address2` can be set to '123 MG Road'. */
     address2?: Maybe<Scalars['String']['output']>;
-    /** The category of the address. */
+    /** The category of the address. For example, `address_category` can be set to '123 MG Road'. */
     address_category?: Maybe<Scalars['String']['output']>;
-    /** The type of address. */
+    /** The type of address. For example, `address_type` can be set to '123 MG Road'. */
     address_type?: Maybe<Scalars['String']['output']>;
-    /** The area or locality. */
+    /** The area or locality. For example, `area` can be set to 'Fynd apartments'. */
     area?: Maybe<Scalars['String']['output']>;
-    /** The city of the address. */
+    /** The city of the address. For example, `city` can be set to 'Panjim'. */
     city?: Maybe<Scalars['String']['output']>;
-    /** The name of the contact person. */
+    /** The name of the contact person. For example, `contact_person` can be set to 'value'. */
     contact_person?: Maybe<Scalars['String']['output']>;
-    /** The country of the address. */
+    /** The country of the address. For example, `country` can be set to 'India'. */
     country?: Maybe<Scalars['String']['output']>;
-    /** The ISO code for the country. */
+    /** The ISO code for the country. For example, `country_iso_code` can be set to 'sample_code'. */
     country_iso_code?: Maybe<Scalars['String']['output']>;
-    /** The country phone code. */
+    /** The country phone code. For example, `country_phone_code` can be set to '+919876543210'. */
     country_phone_code?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the address was created. */
+    /**
+     * The date and time when the address was created. For example, `created_at` can be set to 'value'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** The formatted display address, typically used for printing or displaying in user interfaces. */
+    /** The formatted display address, typically used for printing or displaying in user interfaces. For example, `display_address` can be set to '123 Main Street, Downtown, Panjim, Goa 403521'. */
     display_address?: Maybe<Scalars['String']['output']>;
-    /** The email address. */
+    /** The email address. For example, `email` can be set to 'user@example.com'. */
     email?: Maybe<Scalars['String']['output']>;
-    /** A nearby landmark. */
+    /** A nearby landmark. For example, `landmark` can be set to 'value'. */
     landmark?: Maybe<Scalars['String']['output']>;
-    /** The latitude coordinate. */
+    /** The latitude coordinate. For example, `latitude` can be set to 99.99. */
     latitude?: Maybe<Scalars['Float']['output']>;
-    /** The longitude coordinate. */
+    /** The longitude coordinate. For example, `longitude` can be set to 99.99. */
     longitude?: Maybe<Scalars['Float']['output']>;
-    /** The name of the person associated with the address. */
+    /** The name of the person associated with the address. For example, `name` can be set to 'John Doe'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The phone number of the person associated with the address. */
+    /** The phone number of the person associated with the address. For example, `phone` can be set to '9876543210'. */
     phone?: Maybe<Scalars['String']['output']>;
-    /** The postal code of the address. */
+    /** The postal code of the address. For example, `pincode` can be set to '403521'. */
     pincode?: Maybe<Scalars['String']['output']>;
-    /** The state of the address. */
+    /** The state of the address. For example, `state` can be set to 'Goa'. */
     state?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the address was last updated. */
+    /**
+     * The date and time when the address was last updated. For example, `updated_at` can be set to '2023-01-14T06:17:37Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** The version of the address format. */
+    /**
+     * The version of the address format. For example, `version` can be set to 'value'.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['String']['output']>;
 };
-/** Delivery charge config which includes charges applicable condition and enabled flag. */
+/** Delivery charge configuration including charge thresholds and enabled flag. */
 export type DeliveryChargesConfig = {
     __typename?: 'DeliveryChargesConfig';
-    /** Charges applicable based on threshold. */
+    /** Charges applicable based on threshold. Example: [{ threshold: 999.0, charges: 0.0 }] */
     charges?: Maybe<Array<Maybe<ChargesThreshold>>>;
-    /** Delivery charge enabled for the cart or not. */
+    /** Whether delivery charges are enabled. Example: true */
     enabled?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Provides comprehensive details about a delivery operation. */
 export type DeliveryOperationSchema = {
     __typename?: 'DeliveryOperationSchema';
-    /** A code that identifies a specific geographic area, often used for sorting and routing deliveries. */
+    /**
+     * A code that identifies a specific geographic area, often used for sorting and routing deliveries.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     area_code?: Maybe<Scalars['String']['output']>;
-    /** Indicates whether the delivery partner (DP) is assigned from stormbreaker service. */
+    /**
+     * Indicates whether the delivery partner (DP) is assigned from stormbreaker service.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     assign_dp_from_sb?: Maybe<Scalars['Boolean']['output']>;
-    /** An identifier used to reference accounts or entities outside the organization's system, such as partner accounts. */
+    /**
+     * An identifier used to reference accounts or entities outside the organization's system, such as partner accounts.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     external_account_id?: Maybe<Scalars['String']['output']>;
     /** First Mile Priority; focuses on the initial segment of the logistics process, from the point of origin to the first distribution center. */
     fm_priority?: Maybe<Scalars['Int']['output']>;
-    /** An identifier used internally to track accounts or entities within the organization's system. */
+    /**
+     * An identifier used internally to track accounts or entities within the organization's system.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     internal_account_id?: Maybe<Scalars['String']['output']>;
     /** Last Mile Priority; deals with the final stage of the delivery process, where goods are delivered from the distribution center to the final destination. */
     lm_priority?: Maybe<Scalars['Int']['output']>;
-    /** Refers to the various activities and processes involved in managing and executing the delivery and logistics operations. */
+    /**
+     * Refers to the various activities and processes involved in managing and executing the delivery and logistics operations.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     operations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** The method of payment used for transactions, such as credit card, debit card, cash on delivery, etc. */
+    /**
+     * The method of payment used for transactions, such as credit card, debit card, cash on delivery, etc.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     payment_mode?: Maybe<Scalars['String']['output']>;
     /** Reverse Pickup Priority; pertains to the process of collecting goods from the customer for return or exchange. */
     rvp_priority?: Maybe<Scalars['Int']['output']>;
-    /** The method of transportation used for delivering goods, such as road, rail, air, or sea. */
+    /**
+     * The method of transportation used for delivering goods, such as road, rail, air, or sea.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     transport_mode?: Maybe<Scalars['String']['output']>;
+};
+/** Contains delivery promises for both global and store levels based on a specific locality type. */
+export type DeliveryPromise = {
+    __typename?: 'DeliveryPromise';
+    /** List of delivery promises for each store. */
+    items?: Maybe<Array<Maybe<StorePromise>>>;
+    /** Pagination details for the list of promises, including current page, page size, and total items. */
+    page?: Maybe<PageInfo>;
+    /** Delivery promise information like max and min delivery time. */
+    promise?: Maybe<DeliveryPromiseInfo>;
 };
 /** Min and Max Delivery promise formatted. */
 export type DeliveryPromiseFormatted = {
@@ -3805,6 +5679,22 @@ export type DeliveryPromiseFormatted = {
     max?: Maybe<Scalars['String']['output']>;
     /** Minimum Delivery promise formatted. */
     min?: Maybe<Scalars['String']['output']>;
+};
+/** Contains earliest and latest delivery times for a store. */
+export type DeliveryPromiseInfo = {
+    __typename?: 'DeliveryPromiseInfo';
+    /** Latest delivery time. */
+    max?: Maybe<Scalars['String']['output']>;
+    /** Earliest delivery time. */
+    min?: Maybe<Scalars['String']['output']>;
+};
+/** Delivery promise option with code and promise details. */
+export type DeliveryPromiseItem = {
+    __typename?: 'DeliveryPromiseItem';
+    /** Fulfillment option name (e.g., 'Express Delivery', 'Hyper Delivery'). */
+    code?: Maybe<Scalars['String']['output']>;
+    /** Estimated delivery timestamp in ISO 8601 format with timezone. */
+    delivery_promise?: Maybe<Scalars['String']['output']>;
 };
 /** Promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
 export type DeliveryPromiseResponse = {
@@ -3824,6 +5714,37 @@ export type DeliveryPromiseTimestamp = {
     /** Minimum Delivery promise formatted timestamp. */
     min?: Maybe<Scalars['Float']['output']>;
 };
+/** Schema for delivery reattempt request. */
+export type DeliveryReattemptRequestInput = {
+    /** A dynamic object for the updated shipment delivery address, structured as per country-specific formats. To retrieve the address field structure for a specific country, use the getCountry operationID. Example: { address1: '123 Main Street, Downtown', city: 'Panjim', pincode: '403521', state: 'Goa', area: 'Fynd apartments', landmark: 'Near City Center' }. */
+    delivery_address?: InputMaybe<Scalars['JSON']['input']>;
+    /** The desired date and time for the shipment delivery reattempt in ISO 8601 UTC format (e.g., 2023-01-22T10:00:00Z). For example, '2023-01-22T10:00:00Z' or '2023-01-22T14:30:00Z'. */
+    delivery_reschedule_date: Scalars['String']['input'];
+    /** A short note from the customer stating the reason for requesting the delivery reattempt. For example, 'Please deliver in the morning' or 'Not available at this time'. */
+    remark: Scalars['String']['input'];
+};
+/** Represents the response returned after submitting a delivery reattempt request. */
+export type DeliveryReattemptRequestResponse = {
+    __typename?: 'DeliveryReattemptRequestResponse';
+    /** A message confirming the successful submission of the delivery reattempt request. For example, 'Delivery reattempt request submitted successfully' or 'Your delivery has been rescheduled'. */
+    message?: Maybe<Scalars['String']['output']>;
+};
+/**
+ * Configuration for worldwide shipping and restricted shipping to specific stores and products within defined delivery areas.
+ * This object has been deprecated and will be removed in future release.
+ */
+export type DeliveryStrategy = {
+    __typename?: 'DeliveryStrategy';
+    /** Delivery strategy value. 'all' allows worldwide shipping, 'delivery_zone' restricts to specific areas. */
+    value: DeliveryStrategyValue;
+};
+/** Defines the delivery strategy for order fulfillment. */
+export declare enum DeliveryStrategyValue {
+    /** Worldwide shipping is allowed */
+    All = "all",
+    /** Shipping is restricted to specific delivery zones */
+    DeliveryZone = "delivery_zone"
+}
 /** Represents a department with its associated details. */
 export type Department = {
     __typename?: 'Department';
@@ -3841,35 +5762,45 @@ export type Department = {
 /** Represents a department with its associated category hierarchy. */
 export type DepartmentCategoryDetail = {
     __typename?: 'DepartmentCategoryDetail';
-    /** Name of the department. */
+    /** Name of the department, e.g. 'Fashion', 'Electronics', 'Home & Garden'. */
     department: Scalars['String']['output'];
-    /** List of categories within the department. */
+    /** List of L1 categories within the department, organized hierarchically. */
     items?: Maybe<Array<Maybe<CategoryItem>>>;
 };
 /** Represents a unique identifier for a department. */
 export type DepartmentIdentifier = {
     __typename?: 'DepartmentIdentifier';
     /** Slug or URL-friendly identifier for the department. */
-    slug?: Maybe<Scalars['String']['output']>;
+    slug: Scalars['String']['output'];
     /** Unique identifier for the department. */
-    uid?: Maybe<Scalars['Int']['output']>;
+    uid: Scalars['Int']['output'];
 };
-/** Configuration for store selection during application deployment. */
+/**
+ * Configuration for store selection during sales channel deployment.
+ * This object has been deprecated and will be removed in future release.
+ */
 export type DeploymentStoreSelectionFeature = {
     __typename?: 'DeploymentStoreSelectionFeature';
-    /** Shows whether selection of store (for deploying the application) is permitted. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
-    /** Permitted values are 'hard' and 'soft'. For hard type delivery, store selection is compulsory. For soft type, delivery store selection is optional. */
-    type?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether store selection (for deploying the sales channel) is permitted. */
+    enabled: Scalars['Boolean']['output'];
+    /** Store selection type. 'hard' means store selection is compulsory, 'soft' means optional. */
+    type: DeploymentStoreSelectionFeatureType;
 };
-/** Data regarding the og:title and og:description of a sales channel website. */
+/** Defines the requirement level for store selection during deployment. */
+export declare enum DeploymentStoreSelectionFeatureType {
+    /** When store selection is compulsory */
+    Hard = "hard",
+    /** When store selection is optional */
+    Soft = "soft"
+}
+/** Data regarding the title and description of a sales channel website. */
 export type Detail = {
     __typename?: 'Detail';
-    /** Contents of the og:description of a sales channel website. */
+    /** Contents of the description of a sales channel website. For example, 'Shop the latest fashion trends and styles'. */
     description?: Maybe<Scalars['String']['output']>;
-    /** URL of the og:image of a sales channel website. */
+    /** URL of the image of a sales channel website. For example, 'https://cdn.example.com/og-image.jpg'. */
     image_url?: Maybe<Scalars['String']['output']>;
-    /** Contents of the og:title of a sales channel website. */
+    /** Contents of the title of a sales channel website. For example, 'Fashion Store - Latest Trends'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Represents an individual attribute of a product. */
@@ -3882,27 +5813,27 @@ export type DetailAttribute = {
     /** The value of the product attribute. */
     value?: Maybe<Scalars['String']['output']>;
 };
-/** Beneficiary Mode Details. */
+/** [Deprecated] Detailed information about the beneficiary. This input type will be removed in future versions. Use `BeneficiaryDetailsInput` instead. */
 export type DetailsInput = {
-    /** Name of the Account Holder. */
+    /** Full name of the bank account holder. */
     account_holder: Scalars['String']['input'];
-    /** Account Number of the Account Holder. */
+    /** Bank account number of the beneficiary. */
     account_no: Scalars['String']['input'];
-    /** Address of the User. */
+    /** Residential or business address of the user (optional). */
     address?: InputMaybe<Scalars['String']['input']>;
-    /** Bank Name of the Account. */
+    /** Name of the beneficiary's bank. */
     bank_name: Scalars['String']['input'];
-    /** Branch Name of the Account. */
+    /** Branch name of the beneficiary's bank. */
     branch_name: Scalars['String']['input'];
-    /** Remarks added by the user. */
+    /** Optional remarks or notes provided by the user */
     comment?: InputMaybe<Scalars['String']['input']>;
-    /** Email of the Account Holder. */
+    /** Email address of the beneficiary. */
     email: Scalars['String']['input'];
-    /** Ifsc Code of the Account. */
+    /** IFSC code of the beneficiary's bank branch. */
     ifsc_code: Scalars['String']['input'];
-    /** Mobile Number of the User. */
+    /** Mobile number of the beneficiary. */
     mobile: Scalars['String']['input'];
-    /** VPA of the Account. */
+    /** Virtual Payment Address (VPA) for UPI transfer mode. */
     vpa?: InputMaybe<Scalars['String']['input']>;
     /** Wallet of the Account. */
     wallet?: InputMaybe<Scalars['String']['input']>;
@@ -3953,56 +5884,72 @@ export type DiscountMeta = {
 /** Bulk price offer details which denotes offers list and seller details. */
 export type DiscountOfferDetails = {
     __typename?: 'DiscountOfferDetails';
-    /** offers is the list of Offer item, which consists of margin percentage, price, quantity, offer type and offer price. */
+    /** List of offer items with margin, price, quantity, type, offer price. Example: [{ margin: 10, quantity: 2, price: { effective: 499 } }] */
     offers?: Maybe<Array<Maybe<OfferItem>>>;
-    /** Seller details consists of seller uid and seller name. */
+    /** Seller details with uid and name. Example: { uid: 2001, name: 'Acme Retail' } */
     seller?: Maybe<CategoryInfo>;
+};
+/** Lists the discounted price applicable to the product. Note: discounted_price is returned only when store_id is provided in promotions input query object. */
+export type DiscountRules = {
+    __typename?: 'DiscountRules';
+    /** Discount will be reflected in the cart upon adding the product. Example: 1499.0 */
+    discounted_price?: Maybe<Scalars['Float']['output']>;
 };
 /** Discount rules of the promotion. */
 export type DiscountRulesApp = {
     __typename?: 'DiscountRulesApp';
-    /** Item criteria of promotion. */
+    /** Item criteria like item IDs, brand IDs, category IDs, store IDs, SKUs, tags, and exclusions that determine which items qualify for the discount rule. */
     item_criteria?: Maybe<Scalars['JSON']['output']>;
     /** Matched buy rules for promotion. */
     matched_buy_rules?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Offer for promotion. */
+    /** Discount offer details including discount amount, percentage, quantity limits, maximum discount amount, and other offer-specific configurations. */
     offer?: Maybe<Scalars['JSON']['output']>;
-    /** Raw offer details for promotion. */
+    /** Raw offer details of offer object for promotion. */
     raw_offer?: Maybe<Scalars['JSON']['output']>;
 };
 /** Display price breakup schema denotes price currency, key, value,message to display as breakup on UI. */
 export type DisplayBreakup = {
     __typename?: 'DisplayBreakup';
-    /** Currency code for the price . */
+    /** Attribute type (e.g., subtotal). Example: 'subtotal' */
+    attr?: Maybe<Scalars['String']['output']>;
+    /** Currency code for the price (ISO 4217). Example: 'INR' */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for the price. */
+    /** Currency symbol for the price. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** Display key field that to be shown against the value. */
+    /** Human-readable label to show against the value. Example: 'Discount' */
     display?: Maybe<Scalars['String']['output']>;
-    /** Key of the price like total_mrp, total, subtotal etc. */
+    /** Machine key for the price (e.g., total_mrp, subtotal). Example: 'total' */
     key?: Maybe<Scalars['String']['output']>;
-    /** List of message at price level to be displayed. */
+    /** Messages to display at this price level. Example: ['Includes taxes'] */
     message?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Value for the price which is set from platform if applicable. */
+    /** Original value of the price. Example: 1999.0 */
+    original?: Maybe<Scalars['Float']['output']>;
+    /** Preset value if set from platform. Example: 0.0 */
     preset?: Maybe<Scalars['Float']['output']>;
-    /** Numeric value of the price. */
+    /** Numeric value of the price. Example: 1499.0 */
     value?: Maybe<Scalars['Float']['output']>;
 };
 /** Details about the sales channel domain, including verification status, whether it's primary or shortlink, and its unique identifier. */
 export type Domain = {
     __typename?: 'Domain';
-    /** The unique identifier (24-digit Mongo Object ID) of the sales channel domain. */
+    /**
+     * The unique identifier of the sales channel domain.
+     * @deprecated This field is obsolete.
+     */
     id?: Maybe<Scalars['String']['output']>;
-    /** Domain is hosting domain or not. */
+    /**
+     * Indicates whether domain is a predefined hosting domain.
+     * @deprecated This field is obsolete.
+     */
     is_predefined?: Maybe<Scalars['Boolean']['output']>;
-    /** Domain is primary or not. Primary domain is the default/main domain. */
-    is_primary?: Maybe<Scalars['Boolean']['output']>;
-    /** Shortlink is present or not for the domain. */
-    is_shortlink?: Maybe<Scalars['Boolean']['output']>;
-    /** Domain name. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** Domain is verified or not. TXT and A records should propagate correctly. */
-    verified?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether this is the primary domain. Primary domain is the default/main domain. */
+    is_primary: Scalars['Boolean']['output'];
+    /** Indicates whether shortlink is enabled for the domain. */
+    is_shortlink: Scalars['Boolean']['output'];
+    /** Domain name, e.g. 'example.com'. */
+    name: Scalars['String']['output'];
+    /** Indicates whether domain is verified. TXT and A records should propagate correctly. */
+    verified: Scalars['Boolean']['output'];
 };
 /** Balance Details. */
 export type DueAmount = {
@@ -4016,47 +5963,81 @@ export type DueAmount = {
 };
 /** Describes the request structure to update the email. */
 export type EditEmailRequestSchemaInput = {
-    /** Email of the user. */
-    email?: InputMaybe<Scalars['String']['input']>;
+    /** User's email address. */
+    email: Scalars['String']['input'];
 };
 /** Describes the request structure to edit the phone number. */
 export type EditMobileRequestSchemaInput = {
-    /** Country code for the phone number. */
-    country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Phone number of user. */
-    phone?: InputMaybe<Scalars['String']['input']>;
+    /** Country calling code. */
+    country_code: Scalars['String']['input'];
+    /** User's phone number. */
+    phone: Scalars['String']['input'];
 };
 /** Describes the request structure to edit the mobile number in profile details. */
 export type EditProfileMobileSchemaInput = {
-    /** Country code for the phone number. */
+    /** Country calling code. */
     country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Phone number of user. */
+    /** User's phone number (without country code). */
     phone?: InputMaybe<Scalars['String']['input']>;
 };
-/** Describes the request structure to edit the profile details. */
+/** Describes the request structure to edit profile details. */
 export type EditProfileRequestSchemaInput = {
-    /** Unique hash value. */
+    /** Android SMS Retriever hash (optional). */
     android_hash?: InputMaybe<Scalars['String']['input']>;
-    /** Country code for the phone number. */
+    /** User's consent to the privacy policy. When true, a consent record is stored with a timestamp. */
+    consent?: InputMaybe<Scalars['Boolean']['input']>;
+    /** Country calling code for the phone number. */
     country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Date of birth of user. */
+    /** User's date of birth (ISO 8601 string). */
     dob?: InputMaybe<Scalars['String']['input']>;
-    /** Email id of user. */
+    /** Email address of the user. */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** First name of the application user. */
+    /** User's first name. */
     first_name?: InputMaybe<Scalars['String']['input']>;
-    /** Gender of user. */
+    /** Gender of the user. Valid values: male, female, unisex. */
     gender?: InputMaybe<Scalars['String']['input']>;
-    /** Last name of the application user. */
+    /** User's last name. */
     last_name?: InputMaybe<Scalars['String']['input']>;
-    /** Describes the request structure to edit the mobile number in profile details. */
+    /** Phone details to update (country code and number). */
     mobile?: InputMaybe<EditProfileMobileSchemaInput>;
-    /** Profile picture of user. */
+    /** URL of the user's profile picture. */
     profile_pic_url?: InputMaybe<Scalars['String']['input']>;
-    /** Unique temporary registration of the user. */
+    /** Temporary registration token for the user. */
     register_token?: InputMaybe<Scalars['String']['input']>;
-    /** Identity of the sender. */
+    /** Identifier of the request initiator. */
     sender?: InputMaybe<Scalars['String']['input']>;
+};
+/** Product item eligible for an offer. */
+export type EligibleProductItem = {
+    __typename?: 'EligibleProductItem';
+    /** URL-friendly identifier for the product. Example: 'cotton-tshirt-blue' */
+    product_slug?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier of the product. Example: 123456 */
+    uid?: Maybe<Scalars['Int']['output']>;
+};
+/** Pagination information for the response. */
+export type EligibleProductPageInfo = {
+    __typename?: 'EligibleProductPageInfo';
+    /** Current page number. Example: 1 */
+    current?: Maybe<Scalars['Int']['output']>;
+    /** Whether next page is available. Example: true */
+    has_next?: Maybe<Scalars['Boolean']['output']>;
+    /** Whether previous page is available. Example: false */
+    has_previous?: Maybe<Scalars['Boolean']['output']>;
+    /** Number of items per page. Example: 20 */
+    size?: Maybe<Scalars['Int']['output']>;
+};
+/** Response schema for eligible offer products list. */
+export type EligibleProductsResponse = {
+    __typename?: 'EligibleProductsResponse';
+    /** List of eligible products. Example: [{ product_slug: 'cotton-tshirt-blue', uid: 123456 }] */
+    items?: Maybe<Array<Maybe<EligibleProductItem>>>;
+    /** Response message. Example: 'Products fetched successfully' */
+    message?: Maybe<Scalars['String']['output']>;
+    /** Pagination information. */
+    page?: Maybe<EligibleProductPageInfo>;
+    /** Whether the request was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Represents user email details. */
 export type Email = {
@@ -4073,10 +6054,12 @@ export type Email = {
 /** The schema for the communication channel for email channel which includes the response indicating the user's preference and the display name of the communication channel. */
 export type EmailCommunication = {
     __typename?: 'EmailCommunication';
-    /** Name of the channel of communication the user has agreed to receive messages through. */
+    /** Name of the channel of communication the user has agreed to receive messages through. Human-readable label for the email channel. Example: "Email". */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** The user's choice to opt in or opt out of receiving communications. */
+    /** The user's choice to opt in or opt out of receiving communications. Values: "yes" (User has opted in to receive email communications) or "no" (User has opted out of receiving email communications). Defaults to "yes" if no consent record exists. Example: "yes". */
     response?: Maybe<Scalars['String']['output']>;
+    /** The email address of the user. Only present if user has provided email. Example: "user@example.com". */
+    value?: Maybe<Scalars['String']['output']>;
 };
 /** Schema representing the response received upon successfully sending an OTP to the user's email. */
 export type EmailOtpSuccess = {
@@ -4102,25 +6085,47 @@ export type EmailSchema = {
     /** Details related to email contact of SPOC. */
     email?: Maybe<Array<Maybe<EmailProperties>>>;
 };
-/** Schema for entity data updates. */
+/** Enabled status configuration. */
+export type EnabledStatus = {
+    __typename?: 'EnabledStatus';
+    /** Whether the feature is enabled. */
+    enabled?: Maybe<Scalars['Boolean']['output']>;
+};
+/**
+ * Defines structure for updating shipment/entity-level data.
+ * - The fields to update (via `data`)
+ * - The shipment selection criteria (via `filters`)
+ * Example: `{ "filters": [{}], "data": { "delivery_awb_number": "RSC000000513" } }`
+ */
 export type EntitiesDataUpdatesInput = {
     /** Information about the data to be updated. */
     data?: InputMaybe<Scalars['JSON']['input']>;
     /** Criteria applied to filter the shipments. */
     filters?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
 };
-/** Schema for entity reasons. */
+/**
+ * Defines the reason data structure for shipment (entity) level.
+ * - The reason details (via `data`)
+ * - The filter conditions to identify the target shipment(s)
+ *
+ * Example:
+ * {"filters": [{}],"data": {"reason_id": "507f1f77bcf86cd799439011","reason_text": "Out of stock"}}
+ */
 export type EntitiesReasonsInput = {
     /** Schema for entity reasons data. */
     data?: InputMaybe<EntityReasonDataInput>;
     /** Criteria applied to filter the shipment. */
     filters?: InputMaybe<Array<InputMaybe<Scalars['JSON']['input']>>>;
 };
-/** Schema for entity reasons data. */
+/**
+ * Specifies the actual reason details at the shipment (entity) level.
+ * Example:
+ * { "reason_id": "507f1f77bcf86cd799439011", "reason_text": "Customer requested cancellation" }
+ */
 export type EntityReasonDataInput = {
-    /** The unique identifier for the reason. */
+    /** The unique identifier for the reason. For values please refer to the <a href='/partners/commerce/sdk/2.11.0/graphql/application/order/queries/shipment'>shipment.shipment_reasons.</a>. */
     reason_id?: InputMaybe<Scalars['Int']['input']>;
-    /** The text describing the reason. */
+    /** The text describing the reason. For example, 'Customer requested cancellation' or 'Out of stock'. */
     reason_text?: InputMaybe<Scalars['String']['input']>;
 };
 /** Epaylater Banner Data. */
@@ -4144,17 +6149,20 @@ export type EpaylaterBanner = {
 /** Details related to FAQ. */
 export type Faq = {
     __typename?: 'FAQ';
-    /** The contents of a answer of a FAQ. */
+    /** The contents of a answer of a FAQ. For example, 'Standard shipping takes 5-7 business days'. */
     answer?: Maybe<Scalars['String']['output']>;
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, 'faq_123456' or '67890abcdef'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** The contents of a question of a FAQ. */
+    /** The contents of a question of a FAQ. For example, 'How long does shipping take?'. */
     question?: Maybe<Scalars['String']['output']>;
-    /** A short, human-readable, URL-friendly identifier. */
+    /** A short, human-readable, URL-friendly identifier. For example, 'shipping-time' or 'return-policy'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** Tags under a FAQ. */
+    /** Tags under a FAQ. For example, ['shipping', 'delivery', 'time']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** List of FAQ Categories. */
@@ -4169,11 +6177,11 @@ export type FaQs = {
     /** Detailed list of FAQs. */
     faqs?: Maybe<Array<Maybe<Faq>>>;
 };
-/** Whether customer feedback is enabled on PDP. */
+/** Configuration for customer feedback on PDP. */
 export type FeedbackFeature = {
     __typename?: 'FeedbackFeature';
-    /** Whether customer feedback is enabled on PDP. Default value is false. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether customer feedback is enabled on PDP. Default value is false. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Support category array list details. */
 export type FeedbackForm = {
@@ -4190,7 +6198,7 @@ export type FieldValidation = {
     __typename?: 'FieldValidation';
     /** Specifies rules for validating a data field using regular expressions. */
     regex?: Maybe<FieldValidationRegex>;
-    /** Specifies the validation method, such as regex for regular expression validation. */
+    /** Specifies the validation method. This will be regex for all. */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** Specifies rules for validating a data field using regular expressions. */
@@ -4201,88 +6209,118 @@ export type FieldValidationRegex = {
     /** Regular expression pattern used to validate the field. */
     value?: Maybe<Scalars['String']['output']>;
 };
+/** Namespace that determines storage location, validation rules, and file-specific constraints */
+export declare enum FileStorageNamespace {
+    /** Private namespace allowing images and PDFs up to 50Mb */
+    ApplicationAudience = "application_audience",
+    /** Public namespace allowing images and videos up to 1Gb */
+    FeedbackMedia = "feedback_media",
+    /** Public namespace allowing all file types up to 100Mb */
+    Misc = "misc",
+    /** Public namespace allowing images up to 15Mb */
+    UserProfilePic = "user_profile_pic",
+    /** Private namespace allowing images up to 40Mb */
+    UsersVtoImages = "users_vto_images"
+}
+/** The request schema defines the additional data and instructions for processing the file. */
+export type FileUploadParamsInput = {
+    /** Specifies a particular directory or location within the storage structure where the file should be placed or is located. */
+    subpath?: InputMaybe<Scalars['String']['input']>;
+};
+/** Filter options for different entity types. */
+export declare enum FilterByEnum {
+    Order = "order",
+    Shipment = "shipment"
+}
 /** Schema for financial breakup. */
 export type FinancialBreakup = {
     __typename?: 'FinancialBreakup';
-    /** Indicates if the refund amount was added to Fynd Cash. */
+    /** Indicates if the refund amount was added to Fynd Cash. For example, `added_to_fynd_cash` can be set to true. */
     added_to_fynd_cash?: Maybe<Scalars['Boolean']['output']>;
-    /** The total amount paid by the customer. */
+    /** The total amount paid by the customer. Calculated as price_effective + cod_charges + delivery_charge + article_charge - coupon_effective_discount - promotion_effective_discount - referral_credits - cashback - gift_card_amount - employee_discount - loyalty_discount (must be non-negative). */
     amount_paid?: Maybe<Scalars['Float']['output']>;
-    /** The rounded-off amount paid by the customer. */
+    /** The rounded-off amount paid by the customer. For example, `amount_paid_roundoff` can be set to 2499.5. */
     amount_paid_roundoff?: Maybe<Scalars['Float']['output']>;
-    /** The total amount that needs to be collected from the customer. */
+    /** Net amount that needs to be collected: price_effective + cod_charges + delivery_charge - coupon_effective_discount - promotion_effective_discount - referral_credits - cashback - customer credit note - gift card - employee_discount - loyalty_discount - sodexo (where applicable). */
     amount_to_be_collected?: Maybe<Scalars['Float']['output']>;
-    /** The amount calculated by the brand. */
+    /** The amount paid to the brand after subtracting all seller-funded discounts. It represents the brand’s net receivable calculated as: BCA = price_effective - coupon_effective_discount (seller) - promotion_effective_discount (seller). */
     brand_calculated_amount?: Maybe<Scalars['Float']['output']>;
-    /** The cashback amount earned. */
+    /** The cashback amount earned. For example, `cashback` can be set to 99.99. */
     cashback?: Maybe<Scalars['Float']['output']>;
-    /** The amount of cashback applied. */
+    /** The amount of cashback applied. For example, `cashback_applied` can be set to 99.99. */
     cashback_applied?: Maybe<Scalars['Float']['output']>;
-    /** The cash on delivery charges, if applicable. */
+    /** The cash on delivery charges, if applicable. For example, `cod_charges` can be set to 99.99. */
     cod_charges?: Maybe<Scalars['Float']['output']>;
-    /** The effective discount from coupons. */
+    /** The effective discount from coupons. If `coupon_effective_discount` is provided, the accompanying coupon_json payload must not be empty. */
     coupon_effective_discount?: Maybe<Scalars['Float']['output']>;
-    /** The value of the coupon applied. */
+    /** The value of the coupon applied. For example, `coupon_value` can be set to 2499.5. */
     coupon_value?: Maybe<Scalars['Float']['output']>;
-    /** The delivery charge for the order. */
+    /** The delivery charge for the order. Included in amount_paid and amount_to_be_collected calculations. */
     delivery_charge?: Maybe<Scalars['Float']['output']>;
-    /** The discount applied to the item. */
+    /** Discount = price_marked (MRP) - price_effective; cannot be negative. */
     discount?: Maybe<Scalars['Float']['output']>;
-    /** The amount of Fynd credits used. */
+    /**
+     * The amount of Fynd credits used. For example, `fynd_credits` can be set to 99.99.
+     * @deprecated This field is obsolete.
+     */
     fynd_credits?: Maybe<Scalars['Float']['output']>;
-    /** The GST fee applied to the item. */
+    /** The GST fee applied to the item; used when deriving Value of Good (VOG). */
     gst_fee?: Maybe<Scalars['Float']['output']>;
-    /** The GST tag indicating the type of GST applied. */
+    /** The GST tag indicating the type of GST applied. For example, `gst_tag` can be set to 'value'. */
     gst_tag?: Maybe<Scalars['String']['output']>;
-    /** The GST tax percentage applied . */
+    /** The GST tax percentage applied . For example, `gst_tax_percentage` can be set to 0.18. */
     gst_tax_percentage?: Maybe<Scalars['Float']['output']>;
-    /** The HSN (Harmonized System of Nomenclature) code of the item. */
+    /** The HSN (Harmonized System of Nomenclature) code of the item. For example, `hsn_code` can be set to 'sample_code'. */
     hsn_code?: Maybe<Scalars['String']['output']>;
-    /** Schema for identifiers. */
+    /** Schema for identifiers. For example, `identifiers` can be set to a Identifiers object. */
     identifiers?: Maybe<Identifiers>;
-    /** The name of the item. */
+    /** The name of the item. For example, `item_name` can be set to 'Sample Name'. */
     item_name?: Maybe<Scalars['String']['output']>;
-    /** The effective price after all adjustments. */
+    /** Amount reduced from the payable price when the customer applies loyalty program points while placing the order; also impacts amount_paid and amount_to_be_collected. */
+    loyalty_discount?: Maybe<Scalars['Float']['output']>;
+    /** The effective price after all adjustments; must not exceed price_marked/MRP. */
     price_effective?: Maybe<Scalars['Float']['output']>;
-    /** The original marked price of the item. */
+    /** The original marked price (MRP) of the item; must be greater than or equal to price_effective. */
     price_marked?: Maybe<Scalars['Float']['output']>;
-    /** The effective discount from promotions. */
+    /** The effective discount from promotions (seller/marketplace) used in BCA and collection calculations. */
     promotion_effective_discount?: Maybe<Scalars['Float']['output']>;
-    /** The amount refunded to the customer. */
+    /** The amount refunded to the customer. For example, `refund_amount` can be set to 2499.5. */
     refund_amount?: Maybe<Scalars['Float']['output']>;
-    /** The amount credited for refund . */
+    /** The amount credited for refund . For example, `refund_credit` can be set to 99.99. */
     refund_credit?: Maybe<Scalars['Float']['output']>;
-    /** The size of the item . */
+    /** The size of the item . For example, `size` can be set to 'value'. */
     size?: Maybe<Scalars['String']['output']>;
-    /** The total number of units purchased. */
+    /** Applied Tax Components. For example, `taxes` can be set to [a TaxComponent object]. */
+    taxes?: Maybe<Array<Maybe<TaxComponent>>>;
+    /** The total number of units purchased. For example, `total_units` can be set to 2. */
     total_units?: Maybe<Scalars['Int']['output']>;
-    /** The transfer price of the item. */
+    /** The transfer price of the item. For example, `transfer_price` can be set to 2499.5. */
     transfer_price?: Maybe<Scalars['Float']['output']>;
-    /** The value of the goods before tax and other charges. */
+    /** Value of Good (VOG). VOG = brand_calculated_amount - GST amount (e.g., gst_fee or summed taxes). */
     value_of_good?: Maybe<Scalars['Float']['output']>;
 };
-/** Firebase integration settings for the application. */
+/** Firebase integration settings for the sales channel. */
 export type Firebase = {
     __typename?: 'Firebase';
     /** Credentials required for Firebase integration. */
-    credentials?: Maybe<FirebaseCredentials>;
-    /** Shows whether Firebase integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: FirebaseCredentials;
+    /** Indicates whether Firebase integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for Firebase integration. */
 export type FirebaseCredentials = {
     __typename?: 'FirebaseCredentials';
     /** Firebase credentials for the Android platform. */
-    android?: Maybe<AppCredentials>;
-    /** Secret API key for Google Maps. A unique identifier that authenticates requests made to Google Maps API. */
+    android: AppCredentials;
+    /** Firebase API key for authentication, e.g. 'AIzaSyC1234567890abcdef'. */
     api_key?: Maybe<Scalars['String']['output']>;
-    /** Alphanumeric ID allotted to a sales channel application created within a business account. */
+    /** Application ID allotted to the sales channel, e.g. 'com.example.app'. */
     application_id?: Maybe<Scalars['String']['output']>;
-    /** Google Cloud Manager's Sender ID for Firebase. It is a unique numerical value which is created when you configure your project in the Google Developers Console/Google Cloud Console. */
+    /** Google Cloud Messaging Sender ID for Firebase, e.g. '123456789012'. */
     gcm_sender_id?: Maybe<Scalars['String']['output']>;
     /** Firebase credentials for the iOS platform. */
-    ios?: Maybe<AppCredentials>;
-    /** Project ID for Firebase integration. Project ID is a unique identifier for a project and is used only within the console. */
+    ios: AppCredentials;
+    /** Project ID for Firebase integration, e.g. 'my-project-id'. */
     project_id?: Maybe<Scalars['String']['output']>;
 };
 /** Structure of flashcard details. */
@@ -4295,21 +6333,188 @@ export type FlashCard = {
     /** Text colour for the text in the flash card. */
     text_color?: Maybe<Scalars['String']['output']>;
 };
-/** Response object containing a list of products that the user is following and pagination information for the follow listing. */
+/** User's followed products list with pagination support. */
 export type FollowListing = {
     __typename?: 'FollowListing';
-    /** An array of product details that the user is following. Each item includes information such as the product name, price, and other attributes. */
-    items: Array<Maybe<ProductListingDetail>>;
-    /** Pagination details for the follow listing. It includes information such as the current page number, total pages, and items per page. */
+    /** Array of products that the user is currently following, including details like name, price, availability, and images. */
+    items: Array<Maybe<FollowedProduct>>;
+    /** Pagination information for navigating through the user's followed products list. */
     page: PageInfo;
 };
-/** Response object returned after a user follows or unfollows an item, indicating the success of the operation. */
+/** Response confirming follow/unfollow action completion. */
 export type FollowPostResponse = {
     __typename?: 'FollowPostResponse';
-    /** A unique identifier for the follow operation, which can be used to reference or track the follow status. */
+    /** Unique identifier for tracking the follow operation, e.g. 'follow_123456789'. */
     id: Scalars['String']['output'];
-    /** A message indicating the result of the follow or unfollow operation. This could be a confirmation message or an error message. */
+    /** Status message confirming the operation result, e.g. 'Successfully followed', 'Successfully unfollowed', 'Already following'. */
     message: Scalars['String']['output'];
+};
+/** Followed Product details including pricing, availability, and fulfillment information. */
+export type FollowedProduct = {
+    __typename?: 'FollowedProduct';
+    /** Navigation action configuration for page routing and user interactions. */
+    action?: Maybe<PageActionDetail>;
+    /** A dictionary of product attributes. */
+    attributes?: Maybe<Scalars['JSON']['output']>;
+    /** Brand associated with the product. */
+    brand?: Maybe<NavigationAction>;
+    /** List of product categories associated with the product. */
+    categories?: Maybe<Array<Maybe<NavigationAction>>>;
+    /**
+     * Represents a mapping of product categories at different levels.
+     * @deprecated This field is obsolete.
+     */
+    category_map?: Maybe<ProductCategoryMap>;
+    /**
+     * Identifier for the product channel.
+     * @deprecated This field is obsolete.
+     */
+    channel?: Maybe<Scalars['String']['output']>;
+    /**
+     * Color of the product, if applicable.
+     * @deprecated This field is obsolete.
+     */
+    color?: Maybe<Scalars['String']['output']>;
+    /** The country of origin for the product. */
+    country_of_origin?: Maybe<Scalars['String']['output']>;
+    /**
+     * Custom JSON object for additional product data.
+     * @deprecated This field is obsolete.
+     */
+    custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** Additional custom attributes associated with the followed product for extended product tracking and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Custom metadata fields associated with the product. */
+    custom_meta?: Maybe<Array<Maybe<CustomMetaFields>>>;
+    /**
+     * Schema to define manufacturing time(MTO) for a product that needs to be sold before manufacturing.
+     * @deprecated Replaced by 'is_custom_order' in followedListing schema.
+     */
+    custom_order?: Maybe<ProductDetailCustomOrder>;
+    /**
+     * Department to which the product belongs.
+     * @deprecated This field is obsolete.
+     */
+    department?: Maybe<ProductDepartment>;
+    /** The long description of the product. */
+    description?: Maybe<Scalars['String']['output']>;
+    /** Discount applied to the product, if any. */
+    discount?: Maybe<Scalars['String']['output']>;
+    /**
+     * A dictionary of grouped product attributes.
+     * @deprecated This field is obsolete.
+     */
+    grouped_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
+    /**
+     * Indicates whether the product has variants.
+     * @deprecated This field is obsolete.
+     */
+    has_variant?: Maybe<Scalars['Boolean']['output']>;
+    /** A list of highlights for the product. */
+    highlights?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** List of seller identifiers for the product. */
+    identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * The nature of the product's images.
+     * @deprecated This field is obsolete.
+     */
+    image_nature?: Maybe<Scalars['String']['output']>;
+    /**
+     * Indicates whether the product can be sold as an individual product.
+     * @deprecated This field is obsolete.
+     */
+    is_dependent?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Indicates if the product is available for tryout.
+     * @deprecated This field is obsolete.
+     */
+    is_tryout?: Maybe<Scalars['Boolean']['output']>;
+    /** The item code of the product. */
+    item_code?: Maybe<Scalars['String']['output']>;
+    /** This field describes the type of item, indicating the category or nature of the product. Possible values are Standard, Composite, Wet, Digital. */
+    item_type?: Maybe<Scalars['String']['output']>;
+    /** Media files associated with the product. */
+    media?: Maybe<Array<Maybe<Media>>>;
+    /** Minimum order quantity requirements for the product. */
+    moq?: Maybe<Moq>;
+    /** The name of the product. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Represents the net quantity of a product, including its unit of measurement and value. */
+    net_quantity?: Maybe<NetQuantity>;
+    /**
+     * No of boxes required to pack the product.
+     * @deprecated This field is obsolete.
+     */
+    no_of_boxes?: Maybe<Scalars['Int']['output']>;
+    /** Price details of the product. */
+    price?: Maybe<ProductListingPriceDetails>;
+    /**
+     * List of bundle/product grouping slugs mapped to the product.
+     * @deprecated This field is obsolete.
+     */
+    product_group_tag?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Date and time when the product was made available online. */
+    product_online_date?: Maybe<Scalars['String']['output']>;
+    /**
+     * Meta data for promotions associated with the product.
+     * @deprecated This field is obsolete.
+     */
+    promo_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * The rating of the product.
+     * @deprecated This field is obsolete.
+     */
+    rating?: Maybe<Scalars['Float']['output']>;
+    /**
+     * The number of ratings the product has received.
+     * @deprecated This field is obsolete.
+     */
+    rating_count?: Maybe<Scalars['Int']['output']>;
+    /** Indicates whether the product is available for sale. */
+    sellable?: Maybe<Scalars['Boolean']['output']>;
+    /** SEO metadata for the product. */
+    seo?: Maybe<SeoDetails>;
+    /** The short description of the product. */
+    short_description?: Maybe<Scalars['String']['output']>;
+    /**
+     * List of products marked similar to given product.
+     * @deprecated This field is obsolete.
+     */
+    similars?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Product available sizes details. */
+    sizes?: Maybe<ProductSizes>;
+    /** A list of image URLs for the product. */
+    slug: Scalars['String']['output'];
+    /** Tags associated with the product for better categorization. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * Teaser tag or short promotional phrase for the product.
+     * @deprecated This field is obsolete.
+     */
+    teaser_tag?: Maybe<Scalars['String']['output']>;
+    /**
+     * Identifiers or names of tryout versions of the product.
+     * @deprecated This field is obsolete.
+     */
+    tryouts?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /**
+     * Product type or classification.
+     * @deprecated This field is obsolete.
+     */
+    type?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the product. */
+    uid?: Maybe<Scalars['Int']['output']>;
+    /** List of product variants, each representing a specific option of the product (e.g., size, color, or material). */
+    variants?: Maybe<Array<Maybe<ProductVariant>>>;
+};
+/** Followed Product details including pricing, availability, and fulfillment information. */
+export type FollowedProductCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+/** Followed Product details including pricing, availability, and fulfillment information. */
+export type FollowedProductSizesArgs = {
+    storeId?: InputMaybe<Scalars['Int']['input']>;
 };
 /** Response object containing the count of followers for a specific item, such as a product, collection, or brand. */
 export type FollowerCount = {
@@ -4341,55 +6546,82 @@ export type FontVariants = {
 };
 /** Describes the request structure to initiate the password recovery process for the user. */
 export type ForgotPasswordRequestSchemaInput = {
-    /** Unique code to verify request. */
-    code?: InputMaybe<Scalars['String']['input']>;
-    /** Password of user. */
-    password?: InputMaybe<Scalars['String']['input']>;
+    /** Verification code or reset-link token obtained via verifyEmailForgotOTP, verifyMobileForgotOTP, or sendResetPasswordEmail. */
+    code: Scalars['String']['input'];
+    /** New password for the User. */
+    password: Scalars['String']['input'];
 };
-/** Describes the request structure to register new user. */
+/** Key-value pair used inside FormPostAction or RedirectAction. */
+export type FormField = {
+    __typename?: 'FormField';
+    /** Field name. */
+    name: Scalars['String']['output'];
+    /** Field value. */
+    value: Scalars['String']['output'];
+};
+/** Post form fields to a URL to continue payment (e.g., CCAvenue, PayUMoney). */
+export type FormPostAction = NextAction & {
+    __typename?: 'FormPostAction';
+    /** List of key-value pairs required for the form POST. */
+    fields: Array<FormField>;
+    /** Type of action (FORM_POST). */
+    type: NextActionType;
+};
+/** Describes the request structure to register a new user. Email and phone requirements may vary based on platform configuration—either email or phone or both can be mandatory. */
 export type FormRegisterRequestSchemaInput = {
-    /** Email of user. */
+    /** User's consent to the privacy policy. When true, a consent record is created with a timestamp. */
+    consent?: InputMaybe<Scalars['Boolean']['input']>;
+    /** User's email address. May be required based on platform configuration. */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** First name of the application user. */
-    first_name?: InputMaybe<Scalars['String']['input']>;
-    /** Gender of user. */
+    /** User's first name. */
+    first_name: Scalars['String']['input'];
+    /** Gender of the user. Valid values: male, female, unisex. */
     gender?: InputMaybe<Scalars['String']['input']>;
-    /** Last name of the application user. */
+    /** User's last name. */
     last_name?: InputMaybe<Scalars['String']['input']>;
-    /** Password of user. */
-    password?: InputMaybe<Scalars['String']['input']>;
-    /** Schema representing the phone details for user registration. */
+    /** User's password. */
+    password: Scalars['String']['input'];
+    /** Phone details for registration. */
     phone?: InputMaybe<FormRegisterRequestSchemaPhoneInput>;
-    /** Unique registration token of user. */
+    /** Unique registration token of the user. */
     register_token?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the phone details for user registration. */
 export type FormRegisterRequestSchemaPhoneInput = {
-    /** Country code for mobile number. */
-    country_code?: InputMaybe<Scalars['String']['input']>;
+    /** Country calling code. */
+    country_code: Scalars['String']['input'];
     /** The user's mobile number without the country code. */
-    mobile?: InputMaybe<Scalars['String']['input']>;
+    mobile: Scalars['String']['input'];
 };
-/** Details of free gift items which are received via promotion. */
+/** Free gift item associated with a promotion. */
+export type FreeGiftItem = {
+    /** Selected free gift item ID. Example: 'SKU123' */
+    item_id: Scalars['String']['input'];
+    /** Size of the selected free gift item. Example: 'L' */
+    item_size: Scalars['String']['input'];
+    /** Promotion identifier. Example: 'PROMO1' */
+    promotion_id: Scalars['String']['input'];
+};
+/** Details of free gift items received via promotion. */
 export type FreeGiftItemDetails = {
     __typename?: 'FreeGiftItemDetails';
-    /** Pricing information for the free gift article, including both the initial marked price and the final effective price after applying the product discount. */
+    /** Article price information for the free gift item. */
     article_price?: Maybe<ArticlePriceDetails>;
-    /** Available sizes for the free gift item. */
+    /** Available sizes. Example: ['S', 'M', 'L'] */
     available_sizes?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** item brand name. */
+    /** Item brand name. Example: 'Acme' */
     item_brand_name?: Maybe<Scalars['String']['output']>;
-    /** Item id. */
+    /** Item ID. Example: 987654 */
     item_id?: Maybe<Scalars['Int']['output']>;
-    /** item images URL. */
+    /** List of item image URLs. Example: ['https://cdn.example.com/img1.jpg'] */
     item_images_url?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Item name. */
+    /** Item name. Example: 'Cotton T-Shirt' */
     item_name?: Maybe<Scalars['String']['output']>;
-    /** item price details. */
+    /** Item price details. */
     item_price_details?: Maybe<ItemPriceDetails>;
-    /** item slug. */
+    /** Item slug. Example: 'cotton-tshirt' */
     item_slug?: Maybe<Scalars['String']['output']>;
-    /** Selected size for the free gift item. */
+    /** Selected size. Example: 'M' */
     size?: Maybe<Scalars['String']['output']>;
 };
 /** Details of free gift items which are received via promotion. */
@@ -4397,37 +6629,44 @@ export type FreeGiftItems = {
     __typename?: 'FreeGiftItems';
     /** Pricing information for the free gift article, including both the initial marked price and the final effective price after applying the product discount. */
     article_price?: Maybe<ArticlePriceDetails>;
-    /** Available sizes for the free gift item. */
+    /** Available sizes for the free gift item. Example: ['S', 'M', 'L'] */
     available_sizes?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Item brand name of the free gift item promotion applied on cart. */
+    /** Item brand name of the free gift item promotion applied on cart. Example: 'Acme' */
     item_brand_name?: Maybe<Scalars['String']['output']>;
-    /** Item id of the free gift item. */
+    /** Item id of the free gift item. Example: 987654 */
     item_id?: Maybe<Scalars['Int']['output']>;
-    /** Images URLs for free gift items. */
+    /** Images URLs for free gift items. Example: ['https://cdn.example.com/img1.jpg'] */
     item_images_url?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Name of the free gift item received via free gift promotion. */
+    /** Name of the free gift item received via free gift promotion. Example: 'Cotton Tote Bag' */
     item_name?: Maybe<Scalars['String']['output']>;
-    /** Item price details which inclued effective, marked, currency. */
+    /** Item price details which include effective, marked, currency. Example: { marked: { min: 299, max: 299 }, effective: { min: 0, max: 0 }, currency: 'INR' } */
     item_price_details?: Maybe<ItemPriceDetails>;
-    /** Slug for an item. */
+    /** Slug for an item. Example: 'cotton-tote-bag' */
     item_slug?: Maybe<Scalars['String']['output']>;
-    /** Selected size for the free gift item. */
+    /** Selected size for the free gift item. Example: 'M' */
     size?: Maybe<Scalars['String']['output']>;
 };
-/** Represents Freshchat integration settings for the application. */
+/** Whether a free gift item should be added or removed from the cart. */
+export declare enum FreeGiftItemsOperation {
+    /** Add a free gift item to the cart. */
+    Add = "add",
+    /** Remove a free gift item from the cart. */
+    Remove = "remove"
+}
+/** Freshchat integration settings for the sales channel. */
 export type Freshchat = {
     __typename?: 'Freshchat';
     /** Credentials required for Freshchat integration. */
-    credentials?: Maybe<FreshchatCredentials>;
-    /** Shows whether Freshchat integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: FreshchatCredentials;
+    /** Indicates whether Freshchat integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for Freshchat integration. */
 export type FreshchatCredentials = {
     __typename?: 'FreshchatCredentials';
-    /** The unique app_id of your Freshchat account for integrating Freshchat with your sales channel. */
+    /** The unique app_id of your Freshchat account, e.g. '12345678-1234-1234-1234-123456789012'. */
     app_id?: Maybe<Scalars['String']['output']>;
-    /** The unique app_key of your Freshchat account for integrating Freshchat with your sales channel. */
+    /** The unique app_key of your Freshchat account for API access. */
     app_key?: Maybe<Scalars['String']['output']>;
     /** Web token used for accessing the Freshchat APIs. */
     web_token?: Maybe<Scalars['String']['output']>;
@@ -4435,36 +6674,126 @@ export type FreshchatCredentials = {
 /** Schema for fulfilling company. */
 export type FulfillingCompany = {
     __typename?: 'FulfillingCompany';
-    /** The unique identifier for the fulfilling company. */
+    /** The unique identifier for the fulfilling company. For example, `id` can be set to 1. */
     id?: Maybe<Scalars['Int']['output']>;
-    /** The name of the fulfilling company. */
+    /** The name of the fulfilling company. For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for fulfilling store. */
 export type FulfillingStore = {
     __typename?: 'FulfillingStore';
-    /** A code associated with the store. */
+    /** A code associated with the store. For example, `code` can be set to 'sample_code'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** The identifier of the company associated with the store. */
+    /** The identifier of the company associated with the store. For example, `company_id` can be set to 1. */
     company_id?: Maybe<Scalars['Int']['output']>;
-    /** The name of the company associated with the store. */
+    /** The name of the company associated with the store. For example, `company_name` can be set to 'Sample Name'. */
     company_name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier of the store. */
+    /** The unique identifier of the store. For example, `id` can be set to 1. */
     id?: Maybe<Scalars['Int']['output']>;
-    /** The name of the store. */
+    /** The name of the store. For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
 };
-/** Represents Fynd Rewards integration settings for the application. */
+/** Fulfillment Option Details. */
+export type FulfillmentOption = {
+    __typename?: 'FulfillmentOption';
+    /** Indicates whether this fulfillment option is the default choice for customers. */
+    is_default?: Maybe<Scalars['Boolean']['output']>;
+    /** The name of the fulfillment option (e.g., 'Standard Shipping', 'Express Delivery'). */
+    name?: Maybe<Scalars['String']['output']>;
+    /** A unique identifier for the fulfillment option. */
+    slug?: Maybe<Scalars['String']['output']>;
+    /** The category or method of fulfillment (e.g., 'Pickup', 'Delivery', 'Courier'). */
+    type?: Maybe<Scalars['String']['output']>;
+};
+/** Fulfillment options define the different ways an order can be delivered or collected, such as standard delivery, express delivery, or store pickup. */
+export type FulfillmentOptionCount = {
+    __typename?: 'FulfillmentOptionCount';
+    /** Total count of available fulfillment options configured for a specific sales channel, e.g. 3. */
+    count?: Maybe<Scalars['Int']['output']>;
+};
+/** Provides list of Fulfillment Options against an app */
+export type FulfillmentOptionList = {
+    __typename?: 'FulfillmentOptionList';
+    /** Short description about the Fulfillment option */
+    description?: Maybe<Scalars['String']['output']>;
+    /** unique identifier for Fulfillment option */
+    id?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether this fulfillment option should be automatically applied when no other option is explicitly selected. */
+    is_default?: Maybe<Scalars['Boolean']['output']>;
+    /** Name of the Fulfillment Option */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Slug representing the fulfillment option. */
+    slug?: Maybe<Scalars['String']['output']>;
+    /** Type of Fulfillment option either Home Delivery or Self Pickup */
+    type?: Maybe<Scalars['String']['output']>;
+};
+/** Fulfillment Option Store Details. Contains comprehensive information about a store associated with a fulfillment option, including address, operational details, timings, and availability status. */
+export type FulfillmentOptionStore = {
+    __typename?: 'FulfillmentOptionStore';
+    /** Details about the store's address, including location coordinates and address components. Example: { address1: "OPEX", city: "Ayer Baloi", state: "Johor", country: "Malaysia", pincode: "82100" } */
+    address?: Maybe<StoreAddress>;
+    /** Average order processing time in seconds. Example: 86400 (24 hours) */
+    avg_order_processing_time?: Maybe<Scalars['Int']['output']>;
+    /** Identifier of the company to which the store belongs. Example: 67890 */
+    company_id?: Maybe<Scalars['Int']['output']>;
+    /** Custom fields associated with the store. Can contain any JSON structure. Example: { "warehouse_capacity": 1000, "special_handling": true } */
+    customfields?: Maybe<Scalars['JSON']['output']>;
+    /** Distance information from the user's location to the store, including value, unit, and calculation reason. Example: { value: 5.2, unit: "km", reason: null } */
+    distance?: Maybe<StoreDistance>;
+    /** List of holidays for the store as date range tuples [start_date, end_date]. Each tuple contains ISO 8601 date-time strings with timezone. Example: [["2024-03-14T00:00:00+05:30", "2024-03-14T23:59:59+05:30"], ["2024-12-25T00:00:00+05:30", "2024-12-25T23:59:59+05:30"]] */
+    holiday_list?: Maybe<Array<Maybe<Array<Maybe<Scalars['String']['output']>>>>>;
+    /** Indicates whether the store is currently open for operations. Example: true */
+    is_open?: Maybe<Scalars['Boolean']['output']>;
+    /** Internal name of the store. Example: "Main Warehouse - Johor" */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Custom fields related to delivery promises. Can contain duration, unit, and value information. Example: { "duration-minute": { "type": "duration", "unit": "days", "value": 10 } } */
+    promise_customfields?: Maybe<Scalars['JSON']['output']>;
+    /** Store code identifier used for internal reference. Example: "STORE_001" */
+    store_code?: Maybe<Scalars['String']['output']>;
+    /** Type of store (e.g., 'warehouse', 'retail', 'dark store'). Example: "warehouse" */
+    store_type?: Maybe<Scalars['String']['output']>;
+    /** Tags associated with the store for categorization and filtering. Example: ["express_delivery", "cold_storage"] */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Timezone of the store location in IANA timezone format. Example: "Asia/Kuala_Lumpur" */
+    timezone?: Maybe<Scalars['String']['output']>;
+    /** Store timing information including operational and order acceptance timings for each weekday. Example: { operational_timing: [{ weekday: "monday", open: true, opening: { hour: 9, minute: 0 }, closing: { hour: 18, minute: 0 } }] } */
+    timing?: Maybe<StoreTimingDetails>;
+    /** Unique identifier of the store. Example: 12345 */
+    uid?: Maybe<Scalars['Int']['output']>;
+};
+/** List of stores for a Fulfillment option */
+export type FulfillmentOptionStores = {
+    __typename?: 'FulfillmentOptionStores';
+    /** List of Stores against Fulfillment option. */
+    items?: Maybe<Array<Maybe<FulfillmentOptionStore>>>;
+    /** Pagination details for the list of stores, including current page, page size, and total items. */
+    page?: Maybe<PageInfo>;
+};
+/** List of available Fulfillment options */
+export type FulfillmentOptions = {
+    __typename?: 'FulfillmentOptions';
+    /** List of Fulfillment options. */
+    items?: Maybe<Array<Maybe<FulfillmentOption>>>;
+};
+/** Fynd Rewards integration settings for the sales channel. */
 export type FyndRewards = {
     __typename?: 'FyndRewards';
     /** Credentials required for Fynd Rewards integration. */
-    credentials?: Maybe<FyndRewardsCredentials>;
+    credentials: FyndRewardsCredentials;
 };
 /** Credentials required for Fynd Rewards integration. */
 export type FyndRewardsCredentials = {
     __typename?: 'FyndRewardsCredentials';
-    /** Public key for integrating with Fynd rewards. */
+    /** Public key for integrating with Fynd Rewards, e.g. 'pk_1234567890abcdef'. */
     public_key?: Maybe<Scalars['String']['output']>;
+};
+/** GST (Goods and Services Tax) credentials and configuration for the store. */
+export type GstCredentialsConfiguration = {
+    __typename?: 'GSTCredentialsConfiguration';
+    /** Electronic invoice generation configuration for tax compliance. */
+    e_invoice?: Maybe<EnabledStatus>;
+    /** Electronic waybill generation configuration for transportation. */
+    e_waybill?: Maybe<EnabledStatus>;
 };
 /** Geolocation details. */
 export type GeoLocation = {
@@ -4474,35 +6803,19 @@ export type GeoLocation = {
     /** Longitude details. */
     longitude?: Maybe<Scalars['Float']['output']>;
 };
-/** Geolocation details for address data. */
+/** Geolocation coordinates for an address. */
 export type GeoLocationInput = {
-    /** Latitude coordinate for address. */
+    /** Latitude. Example: 19.076 */
     latitude?: InputMaybe<Scalars['Float']['input']>;
-    /** Longitude coordinate for address. */
+    /** Longitude. Example: 72.8777 */
     longitude?: InputMaybe<Scalars['Float']['input']>;
-};
-/** Schema conatins the request paramaters for getcartDetails. */
-export type GetCartItemsRequestInput = {
-    /** Area code to fetch customer cart. */
-    areaCode?: InputMaybe<Scalars['String']['input']>;
-    /** assigned cart id. */
-    assignCardId?: InputMaybe<Scalars['Int']['input']>;
-    /** Boolean flag to specify include breakup values or not. */
-    b?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Boolean value to fetch buyNow values. */
-    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
-    c?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Boolean flag to specify include all items or not. */
-    i?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Unique id of a user cart. */
-    id?: InputMaybe<Scalars['String']['input']>;
 };
 /** Get coupon list response schema which page information and list of coupons. */
 export type GetCouponResponse = {
     __typename?: 'GetCouponResponse';
-    /** List of available coupon which can be applied on cart. */
+    /** List of available coupons which can be applied on cart. Example: [{ coupon_code: 'SAVE10' }] */
     available_coupon_list?: Maybe<Array<Maybe<Coupon>>>;
-    /** Pagination schema for get coupon list available on cart. */
+    /** Pagination info for coupons. Example: { current: 1, total: 3, has_next: true } */
     page?: Maybe<PageCoupon>;
 };
 /** Represents a request for retrieving data based on specified criteria. */
@@ -4528,6 +6841,10 @@ export type GetOneOrAllPath = {
     locality_type?: Maybe<Scalars['String']['output']>;
     /** The specific value of the locality being queried, such as the name of the city or the pincode (e.g., "Mumbai", "400093"). */
     locality_value?: Maybe<Scalars['String']['output']>;
+    /** Specifies the type of locality to be retrieved, such as city, state, or pincode (e.g., "city", "state", "pincode"). */
+    type?: Maybe<Scalars['String']['output']>;
+    /** The specific value of the locality being queried, such as the name of the city or the pincode (e.g., "Mumbai", "400093"). */
+    value?: Maybe<Scalars['String']['output']>;
 };
 /** Allows to filter results based on one or more geographic levels. */
 export type GetOneOrAllQuery = {
@@ -4541,54 +6858,62 @@ export type GetOneOrAllQuery = {
     /** The name of the state within the specified country. */
     state?: Maybe<Scalars['String']['output']>;
 };
-/** Cart share link request schema used to get the share link to share cart to any other user. This includes cart id and meta json. */
+/** Contains both UPI and Bank beneficiaries grouped separately. */
+export type GetRefundBeneficiary = {
+    __typename?: 'GetRefundBeneficiary';
+    /** List of saved Bank beneficiaries linked to the user. */
+    bank?: Maybe<Array<Maybe<BankBeneficiary>>>;
+    /** List of saved UPI beneficiaries linked to the user. */
+    upi?: Maybe<Array<Maybe<UpiBeneficiary>>>;
+};
+/** Request to generate a shareable cart link with optional metadata. */
 export type GetShareCartLinkRequestInput = {
-    /** Cart id of user cart for generating cart sharing token. */
+    /** Cart ID for generating share token. Example: '5bb521cfdc83215e1889b346' */
     id?: InputMaybe<Scalars['String']['input']>;
-    /** Staff, Ordering store or any other data. This data will be used to generate link as well as sent as shared details. */
-    meta?: InputMaybe<Scalars['JSON']['input']>;
 };
 /** Cart share link response schema which includes url and token. */
 export type GetShareCartLinkResponse = {
     __typename?: 'GetShareCartLinkResponse';
-    /** Short shareable final url which can populate shared cart items in one's cart or replaced one's cart with shared cart items. */
+    /** Short shareable final url. Example: 'https://fynd.ly/abcd1234' */
     share_url?: Maybe<Scalars['String']['output']>;
-    /** Short url unique id of the cart which is opted to share with other user. */
+    /** Short url unique id of the cart. Example: 'abcd1234' */
     token?: Maybe<Scalars['String']['output']>;
 };
-/** Gift details which includes flag for gift applied or not and gift message added by user. */
+/** Gift details including gift message and whether gift is applied. */
 export type GiftDetailInput = {
-    /** Gift message for the one while receive the delivery of the order with this message. */
+    /** Article ID on which the gift message is set. Example: '5fdc737e3c05146138192f79' */
+    article_id?: InputMaybe<Scalars['String']['input']>;
+    /** Gift message shown to the recipient. Example: 'Happy Birthday!' */
     gift_message?: InputMaybe<Scalars['String']['input']>;
-    /** Is gift applied flag which determines if this is a gift oder not. */
+    /** Whether gift is applied. Example: true */
     is_gift_applied?: InputMaybe<Scalars['Boolean']['input']>;
 };
-/** Represents Google Maps integration settings for the application. */
+/** Google Maps integration settings for the sales channel. */
 export type GoogleMap = {
     __typename?: 'GoogleMap';
     /** Credentials required for Google Maps integration. */
-    credentials?: Maybe<GoogleMapCredentials>;
-    /** Shows whether Google map integration is enabled or not. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: GoogleMapCredentials;
+    /** Indicates whether Google Maps integration is enabled or disabled. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for Google Maps integration. */
 export type GoogleMapCredentials = {
     __typename?: 'GoogleMapCredentials';
-    /** Secret API key for Google Maps. A unique identifier that authenticates requests made to Google Maps API. */
+    /** API key for Google Maps authentication, e.g. 'AIzaSyC1234567890abcdef'. */
     api_key?: Maybe<Scalars['String']['output']>;
 };
-/** Represents Google Tag Manager (GTM) integration settings for the application. */
+/** Google Tag Manager (GTM) integration settings for the sales channel. */
 export type Gtm = {
     __typename?: 'Gtm';
     /** Credentials required for GTM integration. */
-    credentials?: Maybe<GtmCredentials>;
-    /** Shows whether GTM integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: GtmCredentials;
+    /** Indicates whether GTM integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for GTM integration. */
 export type GtmCredentials = {
     __typename?: 'GtmCredentials';
-    /** Secret credential API key for GTM. */
+    /** GTM container ID for tracking, e.g. 'GTM-XXXXXXX'. */
     api_key?: Maybe<Scalars['String']['output']>;
 };
 /** Schema representing the response received upon checking if a user has set an account password. */
@@ -4597,21 +6922,11 @@ export type HasPassword = {
     /** An integer value indicating whether the user has set a password (1 for true, 0 for false). */
     result?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Configuration for the home page of the application. */
+/** Configuration for the home page of the sales channel. */
 export type HomePageFeature = {
     __typename?: 'HomePageFeature';
-    /** Shows whether order processing is enabled or not enabled. */
-    order_processing?: Maybe<Scalars['Boolean']['output']>;
-};
-/** List all the products associated with a brand, collection or category in a random order */
-export type HomeProducts = {
-    __typename?: 'HomeProducts';
-    /** List of product details displayed on the home page. */
-    items?: Maybe<Array<Maybe<ProductListingDetail>>>;
-    /** Message related to the home listing response. */
-    message?: Maybe<Scalars['String']['output']>;
-    /** Contains details about pagination info. */
-    page?: Maybe<PageInfo>;
+    /** Indicates whether order processing is enabled on the home page. */
+    order_processing: Scalars['Boolean']['output'];
 };
 /** IFSC Code response. */
 export type IfscCodeDetail = {
@@ -4626,9 +6941,9 @@ export type IfscCodeDetail = {
 /** Schema for identifiers. */
 export type Identifiers = {
     __typename?: 'Identifiers';
-    /** The European Article Number (EAN) of the item. */
+    /** The European Article Number (EAN) of the item. For example, `ean` can be set to 'value'. */
     ean?: Maybe<Scalars['String']['output']>;
-    /** The Stock Keeping Unit (SKU) code of the item. */
+    /** The Stock Keeping Unit (SKU) code of the item. For example, `sku_code` can be set to 'sample_code'. */
     sku_code?: Maybe<Scalars['String']['output']>;
 };
 /** Object containing type and values */
@@ -4647,66 +6962,54 @@ export type ImageUrls = {
     /** Image URL or path for the portrait orientation. */
     portrait?: Maybe<Media>;
 };
-/** Details of a store, including its contact information, address, and geographic coordinates. */
-export type InStockStore = {
-    __typename?: 'InStockStore';
-    /** The address details of the store. */
-    address?: Maybe<StoreAddressSerializer>;
-    /** Information about the company that owns the store. */
-    company?: Maybe<CompanyStore>;
-    /** Contact details for the store. */
-    contact_numbers?: Maybe<Array<Maybe<StorePhoneNumber>>>;
-    /** A list of departments within the store. */
-    departments?: Maybe<Array<Maybe<StoreDepartment>>>;
-    /** The manager's email address for the store. */
-    manager?: Maybe<StoreManagerSerializer>;
-    /** The name of the store. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** A unique code or identifier for the store, often used for internal reference. */
-    store_code?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for the store. */
-    uid?: Maybe<Scalars['Int']['output']>;
-};
 /** Contains the detailed address including PIN code, city, state, country, and type of address. */
 export type InformationAddress = {
     __typename?: 'InformationAddress';
-    /** Contact address of the sales channel. */
+    /** Contact address lines of the sales channel, e.g. ['123 Main Street', 'Suite 456']. */
     address_line?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Name of the city, e.g. Mumbai. */
     city?: Maybe<Scalars['String']['output']>;
     /** Name of the country, e.g. India. */
     country?: Maybe<Scalars['String']['output']>;
-    /** Contains location type and coordinates. */
+    /**
+     * Contains location type and coordinates.
+     * @deprecated This field is obsolete.
+     */
     loc?: Maybe<InformationLoc>;
-    /** Phone numbers with country codes. */
+    /** List of phone numbers with country codes. */
     phone?: Maybe<Array<Maybe<InformationPhone>>>;
-    /** 6-digit PIN Code of the city, e.g. 400001. */
+    /**
+     * 6-digit PIN Code of the city, e.g. 400001.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
+    /** The postal code of the city, e.g. '400001'. */
+    postal_code?: Maybe<Scalars['String']['output']>;
 };
 /** Contains location type and coordinates. */
 export type InformationLoc = {
     __typename?: 'InformationLoc';
-    /** 10-digit mobile number. */
-    coordinates?: Maybe<Array<Maybe<Scalars['Int']['output']>>>;
-    /** Country code for contact number, e.g. +91 (for India). */
+    /** An array containing the latitude and longitude values of the location, e.g. [19.0760, 72.8777]. */
+    coordinates?: Maybe<Array<Maybe<Scalars['Float']['output']>>>;
+    /** The type of geographic coordinate system used, e.g. 'Point' for a single point location. */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Country code and 10-digit mobile number for contact. */
+/** Country code and mobile number for contact. */
 export type InformationPhone = {
     __typename?: 'InformationPhone';
-    /** Country code for contact number, e.g. +91 (for India). */
+    /** Country code for contact number, e.g. '+91' (for India). */
     code?: Maybe<Scalars['String']['output']>;
-    /** 10-digit mobile number. */
+    /** Mobile phone number, e.g. '9876543210'. */
     number?: Maybe<Scalars['String']['output']>;
 };
 /** Details on support contacts, including phone numbers, email addresses, and support hours. */
 export type InformationSupport = {
     __typename?: 'InformationSupport';
-    /** An array of email contact details. */
+    /** A list of email contact details. */
     email?: Maybe<Array<Maybe<EmailProperties>>>;
-    /** An array of phone contact details, including country code and number. */
+    /** A list of phone contact details, including country code and number. */
     phone?: Maybe<Array<Maybe<PhoneSupport>>>;
-    /** Working hours of support team, e.g. 9 AM to 9 PM. */
+    /** Working hours of support team, e.g. '9 AM to 9 PM'. */
     timing?: Maybe<Scalars['String']['output']>;
 };
 /** Intent App. */
@@ -4732,37 +7035,46 @@ export type IntentAppErrorList = {
 /** Configuration for international shipping settings. */
 export type IntrenationalShippingFeature = {
     __typename?: 'IntrenationalShippingFeature';
-    /** International shipping is enabled or not. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether international shipping is enabled or disabled. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Schema for invoice. */
 export type Invoice = {
     __typename?: 'Invoice';
-    /** URL providing access to the invoice. */
+    /** URL providing access to the invoice. For example, `invoice_url` can be set to 'https://example.com/resource'. */
     invoice_url?: Maybe<Scalars['String']['output']>;
-    /** URL providing access to the invoice label. */
+    /** URL providing access to the invoice label. For example, `label_url` can be set to 'https://example.com/resource'. */
     label_url?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the invoice was last updated. */
+    /** The date and time when the invoice was last updated. For example, `updated_date` can be set to '2024-11-01T10:00:00Z'. */
     updated_date?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for brand within item. */
 export type ItemBrand = {
     __typename?: 'ItemBrand';
-    /** The URL of the brand's logo. */
+    /** The URL of the brand's logo. For example, `logo` can be set to 'value'. */
     logo?: Maybe<Scalars['String']['output']>;
-    /** The name of the brand. */
+    /** The name of the brand. For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
 };
 /** Details of article price added in cart. */
 export type ItemPriceDetails = {
     __typename?: 'ItemPriceDetails';
-    /** Currency of the article added in cart. */
+    /** Currency code of the article. Example: 'INR' */
     currency?: Maybe<Scalars['String']['output']>;
-    /** effective price of article added in cart. */
+    /** Effective price of the article. Example: { min: 499.0, max: 599.0 } */
     effective?: Maybe<PriceMinMax>;
-    /** marked price of article added in cart. */
+    /** Marked price of the article. Example: { min: 699.0, max: 799.0 } */
     marked?: Maybe<PriceMinMax>;
 };
+/** Types of items available. */
+export declare enum ItemTypeEnum {
+    Composite = "composite",
+    Digital = "digital",
+    PhysicalBundle = "physical_bundle",
+    Set = "set",
+    Standard = "standard",
+    VirtualBundle = "virtual_bundle"
+}
 /** JusPay config detail schema. */
 export type JusPayAggregatorConfig = {
     __typename?: 'JusPayAggregatorConfig';
@@ -4780,7 +7092,10 @@ export type JusPayAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
@@ -4790,85 +7105,94 @@ export type JusPayAggregatorConfig = {
 /** Ladder offer item  details which includes price, margin, max quantity, min quantity and type. */
 export type LadderOfferItem = {
     __typename?: 'LadderOfferItem';
-    /** Percentage value of discount. */
+    /** Percentage value of discount. Example: 10 */
     margin?: Maybe<Scalars['Int']['output']>;
-    /** Minimum quantity upto which offer is applicable. If not present that offer is applicable on all quantities. */
+    /** Maximum quantity up to which offer is applicable (optional). Example: 5 */
     max_quantity?: Maybe<Scalars['Int']['output']>;
-    /** Minimum quantity from which offer is applicable. */
+    /** Minimum quantity from which offer is applicable. Example: 2 */
     min_quantity?: Maybe<Scalars['Int']['output']>;
-    /** Ladder price details which includes currency symbol, offer price, currency code, effective and marked price. */
+    /** Ladder price details which includes currency symbol, offer price, currency code, effective and marked price. Example: { currency_code: 'INR', currency_symbol: '₹', offer_price: 499.0, effective: 549, marked: 799 } */
     price?: Maybe<LadderPrice>;
-    /** Offer type of the ladder promotion. */
+    /** Offer type of the ladder promotion. Example: 'percentage' */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** Ladder price details which includes currency symbol, offer price, currency code, effective and marked price. */
 export type LadderPrice = {
     __typename?: 'LadderPrice';
-    /** Currency code for all amounts. */
+    /** Currency code for all amounts. Example: 'INR' */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for currency of ladder price product. */
+    /** Currency symbol for currency. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** Current per unit price of product after existing deductions. */
+    /** Per unit effective price after deductions. Example: 499 */
     effective?: Maybe<Scalars['Int']['output']>;
-    /** Original price of product. */
+    /** Original price of product. Example: 799 */
     marked?: Maybe<Scalars['Int']['output']>;
-    /** Discounted per unit price for current offer object. */
+    /** Discounted per unit price for current offer. Example: 499.0 */
     offer_price?: Maybe<Scalars['Float']['output']>;
 };
-/** Ladder price offer details which included promotion id, buy rules, calculate on, offer text, discount rules, promotino group, free gift items and desription of promotino data. */
+/** Ladder price offer details which included promotion id, buy rules, calculate on, offer text, discount rules, promotion group, free gift items and description of promotion data. */
 export type LadderPriceOffer = {
     __typename?: 'LadderPriceOffer';
-    /** Buy rules of ladder price promotion applicable on product. */
+    /** Buy rules of ladder price promotion. Example: { item_criteria: { brands: [123] } } */
     buy_rules?: Maybe<Scalars['JSON']['output']>;
-    /** If this ladder offer is to be calculated on MRP or ESP price. */
+    /** Whether this offer is calculated on MRP or ESP. Example: 'MRP' */
     calculate_on?: Maybe<Scalars['String']['output']>;
-    /** Offer details including T&amp;C of ladder price promotion applicable on product. */
+    /** Offer details including T&C. Example: 'Buy 2 get 10% off' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Discount rules of ladder price promotion applicable on product. */
+    /** Discount rules of ladder price promotion. Example: [{ offer: { percentage: 10 } }] */
     discount_rules?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Details of free gift items list. */
+    /** List of free gift items. Example: [{ item_id: 987654, size: 'M' }] */
     free_gift_items?: Maybe<Array<Maybe<FreeGiftItems>>>;
-    /** ID of the promotion. */
+    /** ID of the promotion. Example: 'PROMO_L1' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Offer prices for ladder price promotion applicable on product. */
+    /** Offer prices for ladder price promotion. Example: [{ margin: 10, min_quantity: 2 }] */
     offer_prices?: Maybe<Array<Maybe<LadderOfferItem>>>;
-    /** Offer title of ladder price promotion applicable on product. */
+    /** Offer title. Example: 'Buy More Save More' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Group of ladder price promotion applicable on the product. */
+    /** Promotion group. Example: 'quantity' */
     promotion_group?: Maybe<Scalars['String']['output']>;
-    /** Datetime ISO String for promotion end date. */
+    /** Name of ladder price promotion. Example: 'Bulk Saver' */
+    promotion_name?: Maybe<Scalars['String']['output']>;
+    /** ISO datetime for promotion end date. Example: '2025-12-31T23:59:59Z' */
     valid_till?: Maybe<Scalars['String']['output']>;
 };
-/** Ladder price offer details which included promotion id, buy rules, calculate on, offer text, discount rules, promotino group, free gift items and desription of promotino data. */
+/** Ladder price offer details which included promotion id, buy rules, calculate on, offer text, discount rules, promotion group, free gift items and description of promotion data. */
 export type LadderPriceOfferDetails = {
     __typename?: 'LadderPriceOfferDetails';
-    /** Buy rules of ladder price promotion applicable on product. */
+    /** Buy rules of ladder price promotion applicable on product. Example: { cart_conditions: { cart_total: { min: 999 } } } */
     buy_rules?: Maybe<Scalars['JSON']['output']>;
-    /** Offer details including T&amp;C of ladder price promotion applicable on product. */
+    /** Additional custom attributes associated with the ladder price offer for promotional configuration and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Offer details including T&C. Example: 'Buy 2 get 10% off' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Discount rules of ladder price promotion applicable on product. */
+    /** Discount rules of ladder price promotion. Example: [{ offer: { percentage: 10 } }] */
     discount_rules?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Details of free gift items list. */
+    /** Details of free gift items list. Example: [{ item_id: 987654, size: 'M' }] */
     free_gift_items?: Maybe<Array<Maybe<FreeGiftItems>>>;
-    /** ID of the promotion. */
+    /** ID of the promotion. Example: 'PROMO_L1' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Offer title of ladder price promotion applicable on product. */
+    /** Offer title of ladder price promotion. Example: 'Buy More Save More' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Group of ladder price promotion applicable on the product. */
+    /** Group of ladder price promotion. Example: 'quantity' */
     promotion_group?: Maybe<Scalars['String']['output']>;
-    /** Name of ladder price promotion applicable on the product. */
+    /** Name of ladder price promotion. Example: 'Bulk Saver' */
     promotion_name?: Maybe<Scalars['String']['output']>;
-    /** Promotion type of the promotion which is availalbe on product. */
+    /** Promotion type available on product. Example: 'percentage' */
     promotion_type?: Maybe<Scalars['String']['output']>;
-    /** Datetime ISO String for promotion end date. */
+    /** Datetime ISO String for promotion end date. Example: '2025-12-31T23:59:59Z' */
     valid_till?: Maybe<Scalars['String']['output']>;
+};
+/** Ladder price offer details which included promotion id, buy rules, calculate on, offer text, discount rules, promotion group, free gift items and description of promotion data. */
+export type LadderPriceOfferDetailsCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Ladder price offers details which includes list of available ladder promotion on product. */
 export type LadderPriceOffers = {
     __typename?: 'LadderPriceOffers';
-    /** Available ladder promotions offers list. */
+    /** Available ladder promotion offers list. Example: [{ id: 'PROMO_L1' }] */
     available_offers?: Maybe<Array<Maybe<LadderPriceOffer>>>;
-    /** Currency info details of ladder price which includes currncy code and currency symbol. */
+    /** Currency info (code, symbol). Example: { code: 'INR', symbol: '₹' } */
     currency?: Maybe<CurrencyInfo>;
 };
 /** Details contains data related to landing page. */
@@ -4876,81 +7200,159 @@ export type LandingPage = {
     __typename?: 'LandingPage';
     /** An object representing the parameters, query, URL, and type for an action related to a page. */
     action?: Maybe<ContentAction>;
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Whether landing page is archived or not. */
+    /**
+     * Whether landing page is archived or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     archived?: Maybe<Scalars['Boolean']['output']>;
-    /** Details regarding the creator of entity. */
+    /**
+     * Details regarding the creator of entity.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<CreatedBy>;
-    /** Custom JSON object for specific use cases. */
+    /**
+     * Custom JSON object for housing additional information that may be used for custom use cases.
+     * @deprecated This field is obsolete.
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Data related to creation and updation timestamps. */
+    /**
+     * Data related to creation and updation timestamps.
+     * @deprecated This field is obsolete.
+     */
     date_meta?: Maybe<DateMeta>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** List of platforms linked to this landing page. */
+    /** List of platforms linked to this landing page. For example, ['web', 'ios', 'android']. */
     platform?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** A short, human-readable, URL-friendly identifier. */
+    /** A short, human-readable, URL-friendly identifier. For example, 'home' or 'landing-page-ios'. */
     slug?: Maybe<Scalars['String']['output']>;
 };
-/** Configuration for the landing page of the application. */
+/** Configuration for the landing page of the sales channel. */
 export type LandingPageFeature = {
     __typename?: 'LandingPageFeature';
-    /** Shows whether a guest can checkout from cart without logging in. */
-    continue_as_guest?: Maybe<Scalars['Boolean']['output']>;
-    /** Details of the page shown after successful login. */
+    /** Indicates whether a guest can checkout from cart without logging in. */
+    continue_as_guest: Scalars['Boolean']['output'];
+    /**
+     * Configuration details of the page shown after successful login.
+     * @deprecated This field is obsolete.
+     */
     launch_page?: Maybe<LaunchPage>;
-    /** Shows the text displayed over the login button. */
+    /** Text displayed on the login button, e.g. 'Login', 'Sign In', etc. */
     login_btn_text?: Maybe<Scalars['String']['output']>;
-    /** Shows whether a textbox for entering domain is available. */
+    /**
+     * Indicates whether a textbox for entering domain is available.
+     * @deprecated This field is obsolete.
+     */
     show_domain_textbox?: Maybe<Scalars['Boolean']['output']>;
-    /** Shows whether register button is available in the login/landing page. */
-    show_register_btn?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether register button is available on the login/landing page. */
+    show_register_btn: Scalars['Boolean']['output'];
 };
-/** Details of the name of an entry in other languages. */
+/** Details of the name of an entry in a specific language. */
 export type Language = {
     __typename?: 'Language';
-    /** Name of an entry in a specific language. */
+    /** Name of an entry in a specific language. For example, 'Home' in English or 'الصفحة الرئيسية' in Arabic. */
     display?: Maybe<Scalars['String']['output']>;
+};
+/** Contains all application languages data for a translations */
+export type Languages = {
+    __typename?: 'Languages';
+    /** Unique id. For example, 'lang_123456' or '67890abcdef'. */
+    _id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Application id
+     * @deprecated This field is obsolete.
+     */
+    application_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Company id
+     * @deprecated This field is obsolete.
+     */
+    company_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Created by user id
+     * @deprecated This field is obsolete.
+     */
+    created_by?: Maybe<Scalars['String']['output']>;
+    /**
+     * Created at time. For example, '2024-01-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    created_on?: Maybe<Scalars['String']['output']>;
+    /** Direction for perticular locale. For example, 'ltr' (left-to-right) or 'rtl' (right-to-left). */
+    direction?: Maybe<Scalars['String']['output']>;
+    /** Name of language visible on storefront. For example, 'English (US)' or 'हिंदी'. */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /** Default or not. For example, true or false. */
+    is_default?: Maybe<Scalars['Boolean']['output']>;
+    /** Local code for language. For example, 'en_US', 'hi_IN', or 'ar_SA'. */
+    locale?: Maybe<Scalars['String']['output']>;
+    /**
+     * Updated by user id
+     * @deprecated This field is obsolete.
+     */
+    modified_by?: Maybe<Scalars['String']['output']>;
+    /**
+     * Updated at time. For example, '2024-01-20T14:45:00Z'.
+     * @deprecated This field is obsolete.
+     */
+    modified_on?: Maybe<Scalars['String']['output']>;
+    /** Name of language. For example, 'English' or 'Hindi'. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Published or not. For example, true or false. */
+    published?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Represents the geographic coordinates of a location, typically used to specify the latitude and longitude of a store or point of interest. */
 export type LatLong = {
     __typename?: 'LatLong';
     /** An array containing the latitude and longitude values of the location. */
-    coordinates?: Maybe<Array<Maybe<Scalars['Float']['output']>>>;
+    coordinates: Array<Maybe<Scalars['Float']['output']>>;
     /** The type of geographic coordinate system used. For example, "Point" indicates a single point in a geographic coordinate system. */
-    type?: Maybe<Scalars['String']['output']>;
+    type: Scalars['String']['output'];
 };
-/** Details of the page shown after successful login. */
+/** Configuration details of the page shown after successful login. */
 export type LaunchPage = {
     __typename?: 'LaunchPage';
-    /** Type of the launch page. */
-    page_type?: Maybe<Scalars['String']['output']>;
-    /** Launch page params. It can be nullable. */
+    /** Type of the launch page, e.g. 'home', 'page', 'collection'. */
+    page_type: Scalars['String']['output'];
+    /** Launch page parameters. Can be null. */
     params?: Maybe<Scalars['JSON']['output']>;
-    /** Query related to launch page. It can be nullable. */
+    /** Query parameters related to launch page. Can be null. */
     query?: Maybe<Scalars['JSON']['output']>;
 };
 /** Object containing all legal related contents. */
-export type LeagalInformation = {
-    __typename?: 'LeagalInformation';
-    /** Application ID - Identifier for a Sales channel. */
+export type LegalInformation = {
+    __typename?: 'LegalInformation';
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent the time when data was created. */
+    /**
+     * Timestamp which represent the time when data was created. For example, '2024-01-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
     /** FAQs of an application. */
     faq?: Maybe<Array<Maybe<ApplicationLegalFaq>>>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Content for Privacy Policy page on storefront. */
+    /** Content for Privacy Policy page on storefront. For example, HTML content or plain text. */
     policy?: Maybe<Scalars['String']['output']>;
-    /** Content for Return policy page on storefront. */
+    /** Content for Return policy page on storefront. For example, HTML content or plain text. */
     returns?: Maybe<Scalars['String']['output']>;
-    /** Content for Shipping Policy page on storefront. */
+    /** Content for Shipping Policy page on storefront. For example, HTML content or plain text. */
     shipping?: Maybe<Scalars['String']['output']>;
-    /** Content for Terms and Conditions page on storefront. */
+    /** Content for Terms and Conditions page on storefront. For example, HTML content or plain text. */
     tnc?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent when was the last time when data was updated. */
+    /**
+     * Timestamp which represent when was the last time when data was updated. For example, '2024-01-20T14:45:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
 /** Defines constraints for the length of a data field. */
@@ -4964,11 +7366,11 @@ export type LengthValidation = {
 /** Contains link with title and icon. */
 export type LinkSchema = {
     __typename?: 'LinkSchema';
-    /** Hosted URL of icon image representing the business highlight. */
+    /** Hosted URL of icon image representing the link, e.g. 'https://cdn.example.com/icons/facebook.png'. */
     icon?: Maybe<Scalars['String']['output']>;
-    /** Web URL for redirecting to a related page. */
+    /** Web URL for redirecting to a related page, e.g. 'https://facebook.com/company'. */
     link?: Maybe<Scalars['String']['output']>;
-    /** Title of the business highlight, e.g. Superfast Delivery. */
+    /** Title of the link, e.g. 'Follow us on Facebook'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Link status. */
@@ -4984,9 +7386,9 @@ export type LinkStatus = {
 /** Contains information about related pages or links. */
 export type Links = {
     __typename?: 'Links';
-    /** Web URL for redirecting to a related page. */
+    /** Web URL for redirecting to a related page, e.g. 'https://example.com/about'. */
     link?: Maybe<Scalars['String']['output']>;
-    /** Name of the related page or link. */
+    /** Name of the related page or link, e.g. 'About Us'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** An object representing the configuration settings for a theme. */
@@ -4999,19 +7401,22 @@ export type ListItem = {
     /** An array of pages associated with the theme configuration. */
     page?: Maybe<Array<Maybe<PageConfig>>>;
 };
-/** Configuration for sorting product listings on the listing page. */
+/**
+ * Configuration for sorting product listings on the listing page.
+ * This object has been deprecated and will be removed in future versions.
+ */
 export type ListingPageFeature = {
     __typename?: 'ListingPageFeature';
-    /** Determines the sorting criteria for product listings on the page. */
-    sort_on?: Maybe<Scalars['String']['output']>;
+    /** Determines the sorting criteria for product listings on the page, e.g. 'price', 'popularity', 'newest'. */
+    sort_on: Scalars['String']['output'];
 };
 /** Configuration for displaying prices on product listing pages. */
 export type ListingPriceFeature = {
     __typename?: 'ListingPriceFeature';
-    /** Sorting of listing price with min or max value. Default value is min. */
-    sort?: Maybe<Scalars['String']['output']>;
-    /** Shows which price to display on PLP if one product has multiple prices (for each size), valid values are 'min', 'max', 'range'. Default value is range. */
-    value?: Maybe<Scalars['String']['output']>;
+    /** Price sorting criteria with min or max value, e.g. 'min' or 'max'. Default value is 'min'. */
+    sort: PriceSort;
+    /** Price display mode on PLP for products with multiple sizes. Valid values: 'min', 'max', 'range'. Default is 'range'. */
+    value: PriceDisplayMode;
 };
 /** Details of the name of an entry in other languages. */
 export type LocaleLanguage = {
@@ -5026,18 +7431,37 @@ export type LocaleLanguage = {
 /** Represents a collection of geographical locations, each associated with specific hierarchical data such as cities, states, or countries. */
 export type Locality = {
     __typename?: 'Locality';
-    /** Custom meta to store custom json against hierarchy. */
+    /** Specifies the code for the locality. */
+    code?: Maybe<Scalars['String']['output']>;
+    /**
+     * Custom meta to store custom json against hierarchy.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     custom_meta?: Maybe<Scalars['JSON']['output']>;
     /** User-friendly version of the geographical data, which may be more descriptive or formatted differently. */
     display_name?: Maybe<Scalars['String']['output']>;
     /** A unique identifier for the locality. */
     id?: Maybe<Scalars['String']['output']>;
+    /** Geographical latitude and longitude data. */
+    lat_long?: Maybe<PincodeLatLongData>;
     /** Representing the localities that are associated with or contained within the current locality.It provides detailed information about the parent localities, including their names, identifiers, and hierarchical relationships. */
     localities?: Maybe<Array<Maybe<LocalityParent>>>;
+    /**
+     * Specifies the meta information for the current locality.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    meta?: Maybe<Scalars['JSON']['output']>;
     /** The actual geographical data, such as country names (India), state names (Maharashtra), pin codes (400603), city names (Dubai), or local sectors (Deira). */
     name?: Maybe<Scalars['String']['output']>;
-    /** Identifiers for the parent of the current locality. */
+    /** Identifiers for the parent of the current locality. eg [city_id  state_id country_id ] for india */
     parent_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Unique Identifiers for the parent of the current locality. */
+    parent_uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Serviceability details for the country.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    serviceability?: Maybe<ServiceabilityModel>;
     /** Specifies the category of the address component, such as pincode, state, city, country, or sector. */
     type?: Maybe<Scalars['String']['output']>;
 };
@@ -5049,50 +7473,54 @@ export type LocalityConnection = {
     /** Pagination details for the list of locations, including current page, page size, and total items. */
     page?: Maybe<PageInfo>;
 };
+/** Enumeration of locality types. */
 export declare enum LocalityEnum {
+    City = "city",
     Pincode = "pincode",
-    Sector = "sector"
+    Sector = "sector",
+    State = "state"
 }
 /** Describes a parent locality within the geographical hierarchy. */
 export type LocalityParent = {
     __typename?: 'LocalityParent';
-    /** Custom meta to store custom json against hierarchy. */
+    /** Code assigned to a locality, which is unique to its immediate parent. */
+    code?: Maybe<Scalars['String']['output']>;
+    /**
+     * Custom meta to store custom json against hierarchy.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     custom_meta?: Maybe<Scalars['JSON']['output']>;
     /** User-friendly version of the geographical data, which may be more descriptive or formatted differently. */
     display_name?: Maybe<Scalars['String']['output']>;
     /** A unique identifier for the locality. */
     id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Contains meta information related to the locality.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    meta?: Maybe<Scalars['JSON']['output']>;
     /** The actual geographical data, such as country names (India), state names (Maharashtra), pin codes (400603), city names (Dubai), or local sectors (Deira). */
     name?: Maybe<Scalars['String']['output']>;
     /** Identifiers for the parent of the current locality. */
     parent_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Unique identifier for the immediate parent of the locality. */
+    parent_uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Serviceability details for the country.
+     * @deprecated Operational/coverage data; not for storefronts
+     */
+    serviceability?: Maybe<ServiceabilityModel>;
     /** Specifies the category of the address component, such as pincode, state, city, country, or sector. */
     type?: Maybe<Scalars['String']['output']>;
 };
+/** Types of localities for location classification. */
 export declare enum LocalityType {
     City = "city",
     Pincode = "pincode",
     Sector = "sector",
     State = "state"
 }
-/** Default language details for a location. */
-export type LocationDefaultCurrency = {
-    __typename?: 'LocationDefaultCurrency';
-    /** Code of the language. */
-    code?: Maybe<Scalars['String']['output']>;
-    /** The name of the currency. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** The symbol representing the currency. */
-    symbol?: Maybe<Scalars['String']['output']>;
-};
-/** Default language details for a location. */
-export type LocationDefaultLanguage = {
-    __typename?: 'LocationDefaultLanguage';
-    /** The ISO 4217 code for the currency. */
-    code?: Maybe<Scalars['String']['output']>;
-    /** The name of the currency. */
-    name?: Maybe<Scalars['String']['output']>;
-};
+/** Types of locations in the system. */
 export declare enum LocationTypeEnum {
     City = "city",
     Country = "country",
@@ -5109,7 +7537,7 @@ export type Login = {
 /** Schema representing the response received upon a successful login operation. */
 export type LoginSuccess = {
     __typename?: 'LoginSuccess';
-    /** A token used for registration purposes. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** A random uuid string used to track the send OTP response. */
     request_id?: Maybe<Scalars['String']['output']>;
@@ -5141,14 +7569,32 @@ export type LookAndFeel = {
 /** Loyalty points data for the user cart. */
 export type LoyaltyPoints = {
     __typename?: 'LoyaltyPoints';
-    /** Whether the loyalty points are applicable for the cart . */
+    /** Engage points amount applied on the cart. Example: 4034.0 */
+    amount?: Maybe<Scalars['Float']['output']>;
+    /** Whether the loyalty points are applicable for the cart. Example: 1 */
     applicable?: Maybe<Scalars['Float']['output']>;
-    /** Description for loyalty points. */
+    /** Description for loyalty points. Example: 'Points can be redeemed at checkout' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Whether the loyalty points are applied on the cart . */
+    /** Engage points that can be earned on the cart. Example: 56 */
+    earn_points?: Maybe<Scalars['Float']['output']>;
+    /** Engage points amount that can be earned on the cart. Example: 56.0 */
+    earn_points_amount?: Maybe<Scalars['Float']['output']>;
+    /** Title to show how many earn points are gained for this order. Example: 'You’ll earn 56 points' */
+    earn_title?: Maybe<Scalars['String']['output']>;
+    /** Whether loyalty points are applied on the cart. Example: true */
     is_applied?: Maybe<Scalars['Boolean']['output']>;
-    /** Total loyalty points available with user. */
+    /** Message for the applied loyalty points. Example: 'You’ll redeem 4034 points' */
+    message?: Maybe<Scalars['String']['output']>;
+    /** Engage amount applied on the cart as payment mode. Example: 200.0 */
+    mop_amount?: Maybe<Scalars['Float']['output']>;
+    /** Engage points applicable on the cart. Example: 4034 */
+    points?: Maybe<Scalars['Float']['output']>;
+    /** Unique title for reward program applicable. Example: 'Fynd Rewards' */
+    title?: Maybe<Scalars['String']['output']>;
+    /** Total loyalty points available with user. Example: 1200 */
     total?: Maybe<Scalars['Float']['output']>;
+    /** Total engage points available for the user. Example: 560 */
+    total_points?: Maybe<Scalars['Float']['output']>;
 };
 /** Represents the minimum order quantity (MOQ) requirements for an application item. */
 export type Moq = {
@@ -5177,7 +7623,10 @@ export type MSwipeAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
@@ -5228,157 +7677,239 @@ export type MetaDetail = {
 };
 /** Create Payment Link Meta. */
 export type MetaInput = {
-    /** Total amount for the transaction. */
-    amount: Scalars['String']['input'];
     /** Identifier for the card assigned to the transaction. */
     assign_card_id?: InputMaybe<Scalars['String']['input']>;
     /** Unique identifier for the shopping cart. */
     cart_id: Scalars['String']['input'];
-    /** Mode of checkout process (e.g., guest, registered user). */
+    /** Mode of checkout process (e.g., guest, registered user, self). */
     checkout_mode: Scalars['String']['input'];
     /** Postal code of the address. */
-    pincode: Scalars['String']['input'];
+    pincode?: InputMaybe<Scalars['String']['input']>;
 };
-/** Represents MoEngage integration settings for the application. */
+/** Details of the user who last modified the entity. */
+export type ModifiedBy = {
+    __typename?: 'ModifiedBy';
+    /** Unique identifier for the user who modified the entity. */
+    user_id?: Maybe<Scalars['String']['output']>;
+};
+/** MoEngage integration settings for the sales channel. */
 export type Moengage = {
     __typename?: 'Moengage';
     /** Credentials required for MoEngage integration. */
-    credentials?: Maybe<MoengageCredentials>;
-    /** Shows whether MoEngage integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: MoengageCredentials;
+    /** Indicates whether MoEngage integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for MoEngage integration. */
 export type MoengageCredentials = {
     __typename?: 'MoengageCredentials';
-    /** APP ID provided by MoEngage to identify a specific app. The app_id for your MoEngage account is available on the MoEngage Dashboard. */
+    /** App ID provided by MoEngage to identify a specific app, e.g. 'ABCDEF1234567890'. */
     app_id?: Maybe<Scalars['String']['output']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type Mutation = {
     __typename?: 'Mutation';
     /** Add a new address to their cart to save details such as name, email, contact information, and address. */
     addAddress?: Maybe<SaveAddressResponse>;
-    /** Add beneficiary details specifically for refund transactions, including account holder name, account number and bank details. */
+    /**
+     * Add a new refund beneficiary (Bank Account or UPI) for a given shipment.
+     * This mutation securely stores beneficiary details for refund processing.
+     */
+    addBeneficiary?: Maybe<AddBeneficiaryResponseDetails>;
+    /**
+     * Add beneficiary details specifically for refund transactions, including account holder name, account number and bank details.
+     * @deprecated Use addBeneficiary instead. This will be removed in future versions.
+     */
     addBeneficiaryDetails?: Maybe<RefundAccountResponse>;
-    /** Add a new email address to the user's profile. */
+    /** Add a new email address to the user's profile. This API requires email verification via OTP before the email is added to the profile. */
     addEmail?: Maybe<VerifyEmailOtpSuccess>;
     /** Add to cart request schema which has items data to be added in cart. */
     addItemsToCart?: Maybe<AddCartDetailResponse>;
-    /** Add a new mobile number to the user's profile. */
+    /** Add a new mobile number to the user's profile. This API requires mobile number verification via OTP before the number is added to the profile. */
     addMobileNumber?: Maybe<VerifyMobileOtpSuccess>;
-    /** Add bank account specifically for refunds, employing OTP verification for security. */
+    /**
+     * Add a new refund beneficiary (Bank Account or UPI) for a specific shipment.
+     * This mutation securely saves the beneficiary's bank or UPI details so refunds can be processed to their account.
+     * This is a secure, OTP-protected version of addBeneficiary, and requires successful OTP verification for enhanced protection.
+     * You must call this mutation only after verifying the OTP using verifyOtpForRefundBankDetails.
+     * @deprecated Use addRefundBeneficiaryUsingOTPSession instead. This will be removed in future versions.
+     */
     addRefundBankAccountUsingOTP?: Maybe<RefundAccountResponse>;
+    /**
+     * Add a new refund beneficiary (Bank Account or UPI) for a specific shipment.
+     * This mutation securely saves the beneficiary's bank or UPI details so refunds can be processed to their account.
+     * This is a secure, OTP-protected version of addBeneficiary. You must call this mutation only after verifying the OTP using verifyOtpForRefundBankDetails mutation.
+     */
+    addRefundBeneficiaryUsingOTPSession?: Maybe<AddBeneficiaryResponseDetails>;
     /** Apply a coupon code to the cart to trigger discounts on eligible items. */
-    applyCoupon?: Maybe<CartDetailResponse>;
-    /** Link payment card to a user account for seamless transactions. Upon successful linking, the card becomes associated with the user's profile, enabling secure and convenient payments. */
+    applyCoupon?: Maybe<CouponUpdateResponse>;
+    /** Apply loyalty points to the cart. Users can redeem their accumulated loyalty points and apply them to the items in their cart, thereby availing discounts on their current purchases. */
+    applyLoyaltyPoints?: Maybe<ApplyLoyaltyPointsResponse>;
+    /**
+     * Link payment card to a user account for seamless transactions. Upon successful linking, the card becomes associated with the user's profile, enabling secure and convenient payments.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     attachCardToCustomer?: Maybe<AttachCardsResponse>;
     /** Cancel previously generated payment link. */
     cancelPaymentLink?: Maybe<CancelPaymentLinkResponse>;
     /** Polling process to confirm the payment status. It periodically checks and updates the current status of a payment, ensuring timely and accurate confirmation of payment transactions. */
     checkAndUpdatePaymentStatus?: Maybe<PaymentStatusUpdateResponse>;
-    /** Verify and update status of a payment made through a link.Upon successful verification and update, the response includes details about the aggregator name, payment status, and whether retrying the process is required. */
+    /**
+     * Verify and update status of a payment made through a link.Upon successful verification and update, the response includes details about the aggregator name, payment status, and whether retrying the process is required.
+     * @deprecated This is deprecated use checkAndUpdatePaymentStatus instead. This will be removed in a future release.
+     */
     checkAndUpdatePaymentStatusPaymentLink?: Maybe<PaymentStatusUpdateResponse>;
     /** Enhanced version of checkout process that supports multiple mode of payment(MOP). */
     checkoutCart?: Maybe<CartCheckoutResponse>;
-    /** Initiate the creation of an order handler for processing payments through a link. */
+    /** Complete a file upload and get the final uploaded file details. */
+    completeUpload?: Maybe<CompleteUploadData>;
+    /**
+     * Initiates the creation of an order handler for processing payments via a payment link.
+     * @deprecated Use createPaymentLinkOrder instead. This will be removed in future versions.
+     */
     createOrderHandlerPaymentLink?: Maybe<CreateOrderUserResponse>;
     /** Create new payment link for transactions. */
     createPaymentLink?: Maybe<CreatePaymentLinkResponse>;
+    /** Initiates the creation of an order handler for processing payments via a payment link. */
+    createPaymentLinkOrder?: Maybe<CreateOrderUserResponse>;
     /** Create an order and payment on the aggregator side. */
     createPaymentOrder?: Maybe<PaymentOrderDetails>;
     /** Creates a shortened version of a given URL for easier sharing. */
     createShortLink?: Maybe<ShortLinkDetail>;
     /** Create a new customer ticket for a user query. */
     createTicket?: Maybe<SupportTicket>;
-    /** Initiate the onboarding process for payment services, providing personal, business, and device information, along with marketplace details, to enable customer registration and credit availability. */
+    /**
+     * Initiate the onboarding process for payment services, providing personal, business, and device information, along with marketplace details, to enable customer registration and credit availability.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     customerOnboard?: Maybe<CustomerOnboardingResponse>;
+    /** Delete an existing refund beneficiary from the user’s account using the beneficiary ID. */
+    deleteBeneficiary?: Maybe<ResponseMessage>;
     /** Delete all items from the user's cart and resets it to its initial state, providing a clean slate for new selections. */
     deleteCart?: Maybe<DeleteCartDetailResponse>;
     /** Delete email from profile. */
     deleteEmail?: Maybe<LoginSuccess>;
     /** Delete mobile number from profile. */
     deleteMobileNumber?: Maybe<LoginSuccess>;
-    /** Verify OTP sent to mobile/email and delete the user's account. */
+    /** Verify OTP sent to mobile/email and permanently delete the user's account. This API requires OTP verification for security before account deletion. */
     deleteUser?: Maybe<DeleteUserSuccess>;
-    /** Delete payment card from the user's account. */
+    /**
+     * Delete payment card from the user's account.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     deleteUserCard?: Maybe<DeleteCardsResponse>;
-    /** Delink the wallet. */
+    /**
+     * Delink the wallet.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     delinkWallet?: Maybe<WalletResponse>;
-    /** Enable/Disable a particular refund transfer mode based on the request body parameters, indicating whether the mode should be enabled or disabled. */
+    /**
+     * Enable/Disable a particular refund transfer mode based on the request body parameters, indicating whether the mode should be enabled or disabled.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     enableOrDisableRefundTransferMode?: Maybe<UpdateRefundTransferModeResponse>;
-    /** Add a product, brand, or item to the user's followed list by collection Id. */
+    /** Add a product, brand, or collection to the user's personal follow list for tracking and notifications. */
     followById?: Maybe<FollowPostResponse>;
-    /** Reset a password using the code sent on email or sms the login. */
+    /** Complete the password reset and log the user in using a valid verification code or reset-link token obtained via verifyEmailForgotOTP, verifyMobileForgotOTP, or sendResetPasswordEmail. */
     forgotPassword?: Maybe<LoginSuccess>;
-    /** Generates a QR code for the application for easy sharing. */
+    /**
+     * Generates a QR code for the application for easy sharing.
+     * @deprecated This is deprecated. Use getUrlQRCode instead. This will be removed in a future release.
+     */
     getApplicationQRCode?: Maybe<QrCodeResp>;
     /** Generate a unique shareable link for the customer's cart for a specific sales channel. This link enables easy sharing of the cart contents with other users, facilitating collaborative shopping experiences. */
     getCartShareLink?: Maybe<GetShareCartLinkResponse>;
-    /** Generates a QR code for a specific product collection using its slug. */
+    /**
+     * Generates a QR code for a specific product collection using its slug.
+     * @deprecated This is deprecated. Use getUrlQRCode instead. This will be removed in a future release.
+     */
     getCollectionQRCodeBySlug?: Maybe<QrCodeResp>;
-    /** Reset cookie of ordering store. */
-    getOrderingStoreCookie?: Maybe<SuccessMessageResponse>;
-    /** Creates a QR code for a specific product identified by its slug. */
+    /**
+     * Creates a QR code for a specific product identified by its slug.
+     * @deprecated This is deprecated. Use getUrlQRCode instead. This will be removed in a future release.
+     */
     getProductQRCodeBySlug?: Maybe<QrCodeResp>;
+    /**
+     * Retrieve the list of refund beneficiaries (Bank or UPI) associated
+     * with a given order and shipment. This query requires an active OTP session for security.
+     * Optional filtering can be applied using `filterBy` to restrict results
+     * to beneficiaries directly linked to either the order or the shipment.
+     */
+    getRefundBeneficiariesUsingOTPSession?: Maybe<GetRefundBeneficiary>;
     /** Converts a given URL into a scannable QR code. */
     getUrlQRCode?: Maybe<QrCodeResp>;
     /** Initiate the payment procedure for an order. Upon successful initiation, it returns a  details including the success status, aggregator information, payment method, status, merchant order ID aggregator order, polling URL, timeout, virtual ID, Razorpay payment ID, customer ID, and device ID. */
     initialisePayment?: Maybe<PaymentInitializationResponse>;
     /** Begin payment process for an order by initializing it through a payment link.Upon successful initialization, the response includes details about the payment status, aggregator details, order IDs, polling URL for status updates, and other relevant information. */
     initialisePaymentPaymentLink?: Maybe<PaymentInitializationResponse>;
-    /** Verify the linking of wallet using OTP for further processing of payment. */
+    /**
+     * Verify the linking of wallet using OTP for further processing of payment.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     linkWallet?: Maybe<WalletResponse>;
-    /** Enable ios users to log in to the system using their apple id. */
+    /** Enable iOS users to log in to the system using their Apple ID. */
     loginWithAppleIOS?: Maybe<AuthSuccess>;
-    /** Allow login using an email and password combination. */
+    /** Allow login using an email address and password combination. Users must provide valid credentials to authenticate and access their account. */
     loginWithEmailAndPassword?: Maybe<LoginSuccess>;
-    /** Enable users to log in to the system using their facebook accounts. */
+    /** Enable users to log in to the system using their Facebook accounts. */
     loginWithFacebook?: Maybe<AuthSuccess>;
-    /** Enable website users to log in to the system using their google accounts. */
+    /** Enable website users to log in to the system using their Google accounts. */
     loginWithGoogle?: Maybe<AuthSuccess>;
-    /** Enable android users to log in to the system using their facebook accounts. */
+    /** Enable Android users to log in to the system using their Facebook accounts. */
     loginWithGoogleAndroid?: Maybe<AuthSuccess>;
-    /** Enable ios users to log in to the system using their facebook accounts. */
+    /** Enable iOS users to log in to the system using their Google accounts. */
     loginWithGoogleIOS?: Maybe<AuthSuccess>;
-    /** Allow users to log in using a one-time password sent to their mobile. */
+    /** Allow users to log in using a one-time password (OTP) sent to their mobile number via SMS. This API initiates the OTP login process by sending an OTP to the provided mobile number. */
     loginWithOTP?: Maybe<SendOtpResponse>;
-    /** Login user using a token for authentication. */
+    /**
+     * Login user using a pre-issued authentication token. This API allows users to authenticate using a valid token without providing username/password.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     loginWithToken?: Maybe<LoginSuccess>;
-    /** Enable new users to register using a form. */
+    /** Enable new users to register using a registration form. This API creates a new user account with the provided details and may require email/mobile verification based on platform configuration. */
     registerWithForm?: Maybe<RegisterFormSuccess>;
     /** Delete an existing customer address from the system. */
     removeAddress?: Maybe<DeleteAddressResponse>;
     /** Remove an applied coupon from the customer's cart, thereby removing the associated discount from the cart total. */
-    removeCoupon?: Maybe<CartDetailResponse>;
-    /** Delete store cookie. */
-    removeOrderingStoreCookie?: Maybe<SuccessMessageResponse>;
-    /** Render HTML for a payment aggregator page. */
+    removeCoupon?: Maybe<CouponUpdateResponse>;
+    /**
+     * Renders HTML content for a payment aggregator page.
+     * StoreOS-specific API for integrating the Fynd Mode of Payment (MOP) page.
+     * Call after createOrderHandlerPaymentLink, using the returned base64_html as input.
+     * This mutation decodes and returns the actual HTML string required to display and redirect to the payment aggregator interface.
+     */
     renderHTML?: Maybe<RenderHtmlResponse>;
     /** Resend or cancel payment link that have been initiated but may require modification or cancellation for various reasons, ensuring flexibility and control in payment processing. */
     resendOrCancelPayment?: Maybe<ResendOrCancelPaymentResponse>;
     /** Resend an existing payment link to the user to complete the payment. */
     resendPaymentLink?: Maybe<ResendPaymentLinkResponse>;
-    /** Reset a password using the code sent on email or sms. */
+    /** Complete the password reset and log the user in using a valid verification code or reset-link token obtained via verifyEmailForgotOTP, verifyMobileForgotOTP, or sendResetPasswordEmail. */
     resetForgotPassword?: Maybe<ResetForgotPasswordSuccess>;
     /** Select an address from the saved customer addresses and validates the availability of items in the cart. Additionally, it verifies and updates the delivery promise based on the selected address. */
-    selectAddress?: Maybe<CartDetailResponse>;
+    selectAddress?: Maybe<SelectAddressResponse>;
     /** Select a preferred payment mode from available options during the cart checkout process to securely and efficiently complete their transaction. */
-    selectPaymentMode?: Maybe<CartDetailResponse>;
+    selectPaymentMode?: Maybe<SelectPaymentModeResponse>;
     /** Send a one-time password to the user's email for verification when resetting a forgotten password. */
     sendForgotOTPOnEmail?: Maybe<EmailOtpSuccess>;
     /** Send a one-time password to the user's mobile for verification when resetting a forgotten password. */
     sendForgotOTPOnMobile?: Maybe<OtpSuccess>;
-    /** Send a one-time password to the user's email for verification. */
+    /** Send a one-time password (OTP) to the user's email address for verification purposes. The OTP can be used for login, registration, or profile updates. */
     sendOTPOnEmail?: Maybe<EmailOtpSuccess>;
-    /** Send a one-time password to the user's mobile for verification. */
+    /** Send a one-time password (OTP) to the user's mobile number via SMS for verification purposes. The OTP can be used for login, registration, or profile updates. */
     sendOTPOnMobile?: Maybe<OtpSuccess>;
-    /** Send OTP to the customer for shipment verification. */
+    /** Send OTP to the customer for shipment verification. Used for refund bank details verification. */
     sendOtpForRefundBankDetails?: Maybe<SendOtpToCustomerResponse>;
     /** Send a password reset link to the user's email. */
     sendResetPasswordEmail?: Maybe<ResetPasswordSuccess>;
-    /** Send a password reset link to the user's mobile. */
+    /**
+     * Send a password reset link to the user's mobile.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     sendResetPasswordMobile?: Maybe<ResetPasswordSuccess>;
     /** Validate password reset link code. */
     sendResetToken?: Maybe<ResetPasswordSuccess>;
+    /** Sends an OTP to the customer associated with the given shipment ID. Supports different event types like refund_bank_details or customer_ndr. */
+    sendShipmentOtpToCustomer?: Maybe<SendOtpToCustomerResponse>;
     /** Send a verification link to a newly added email address. */
     sendVerificationLinkToEmail?: Maybe<SendEmailVerifyLinkSuccess>;
     /** Send a verification link to a newly added mobile number. */
@@ -5387,14 +7918,25 @@ export type Mutation = {
     setEmailAsPrimary?: Maybe<LoginSuccess>;
     /** Set a mobile number as the primary contact for the user. */
     setMobileNumberAsPrimary?: Maybe<LoginSuccess>;
-    /** Create user-entered data from a custom form for processing. */
+    /** Generate signed URLs for accessing private files with an expiry time. */
+    signUrls?: Maybe<SignUrlResult>;
+    /** Initiate a new file upload and retrieve upload URL */
+    startUpload?: Maybe<StartUploadData>;
+    /** Capture response submitted by the user for a custom form (e.g., feedback form) created by the sales channel owner. */
     submitCustomForm?: Maybe<SubmitCustomFormResponse>;
-    /** Remove a followed item, brand, or product using its collection ID. */
+    /** Submits a delivery reattempt request for a specific shipment. Used when delivery fails and customer wants to reschedule. */
+    submitDeliveryReattemptRequest?: Maybe<DeliveryReattemptRequestResponse>;
+    /** Remove a product, brand, or collection from the user's follow list to stop tracking. */
     unfollowById?: Maybe<FollowPostResponse>;
-    /** Customer can modify the details of a previously saved addresses. */
+    /** Customer can modify the details of a previously saved address. */
     updateAddress?: Maybe<UpdateAddressResponse>;
     /** Update cart. Customers can modify added product attributes such as quantity and size, as well as remove items from the cart. */
     updateCart?: Maybe<UpdateCartDetailResponse>;
+    /**
+     * Update cart. Customers can adjust the cart breakup by applying or removing store credits as needed.
+     * @deprecated This mutation is obsolete
+     */
+    updateCartBreakup?: Maybe<Cart>;
     /** Update metadata associated with a cart, which includes customer preferences, delivery instructions, or any special requirements related to the cart items. */
     updateCartMeta?: Maybe<CartMetaResponse>;
     /** Merge or replace shared cart items with existing cart. */
@@ -5405,51 +7947,78 @@ export type Mutation = {
     updateDefaultBeneficiary?: Maybe<SetDefaultBeneficiaryResponse>;
     /** Allow user to change their password. */
     updatePassword?: Maybe<VerifyEmailSuccess>;
-    /** Allow users to modify and update their profile details. */
+    /** Allow users to modify and update their profile details including personal information, contact details, and preferences. This API supports partial updates of user profile data. */
     updateProfile?: Maybe<ProfileEditSuccess>;
-    /** Update current status of a specific shipment using its shipment ID. Supports both partial and full transition as per the configured settings. */
+    /** Update current status of a specific shipment using its shipment ID. Supports both partial and full transition as per the configured settings. For example, update shipment status from 'bag_confirmed' to 'bag_packed'. */
     updateShipmentStatus?: Maybe<ShipmentApplicationStatusResponse>;
     /** Update user attributes. */
     updateUserAttributes?: Maybe<UserAttributes>;
     /** Validate addresses using specific templates customized for each country and tailored to various business scenarios. This validation ensures that the data conforms to the information currently stored in the system. */
     validateAddress?: Maybe<ValidateAddressResponse>;
+    /** Validate customer eligibility and show credit summary. */
+    validateCustomerAndCreditSummary?: Maybe<CreditAndCustomerValidation>;
     /** Validate if a Virtual Payment Address (VPA) is valid for processing payments and returns the validation result.is_valid boolean value indicating whether the VPA is valid for payments. */
     validateVPA?: Maybe<ValidateVpaResponse>;
-    /** Verify the payment status and charge from the customer's BNPL (Buy Now, Pay Later) account after order confirmation. */
+    /**
+     * Verify the payment status and charge from the customer's BNPL (Buy Now, Pay Later) account after order confirmation.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     verifyAndChargePayment?: Maybe<ChargeCustomerResponse>;
-    /** Verify if the user is eligible for pay-later payment from the payment aggregator side using the customer's phone number. */
+    /**
+     * Verify if the user is eligible for pay-later payment from the payment aggregator side using the customer's phone number.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     verifyCustomerForPayment?: Maybe<ValidateCustomerResponse>;
     /** Verify user email with a code sent within a link sent to their email. */
     verifyEmail?: Maybe<VerifyEmailSuccess>;
     /** Verify one-time password sent to user's email for resetting a forgotten password. */
     verifyEmailForgotOTP?: Maybe<VerifyForgotOtpSuccess>;
-    /** Verify one-time password sent to user's email. */
+    /** Verify the one-time password (OTP) sent to the user's email address. This API validates the OTP and completes the email verification process. */
     verifyEmailOTP?: Maybe<VerifyOtpSuccess>;
     /** Verify user mobile with a code sent within a link sent to their mobile. */
     verifyMobile?: Maybe<VerifyEmailSuccess>;
     /** Verify one-time password sent to user's mobile for resetting a forgotten password. */
     verifyMobileForgotOTP?: Maybe<VerifyForgotOtpSuccess>;
-    /** Verify one-time password sent to user's mobile. */
+    /** Verify the one-time password (OTP) sent to the user's mobile number via SMS. This API validates the OTP and completes the verification process. */
     verifyMobileOTP?: Maybe<VerifyOtpSuccess>;
-    /** Verify the OTP provided by the user and adds a bank beneficiary for refund processing. */
+    /**
+     * Verify the OTP provided by the user and adds a bank beneficiary for refund processing.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     verifyOtpAndAddBeneficiaryForBank?: Maybe<AddBeneficiaryViaOtpVerificationResponse>;
-    /** Verify OTP provided by the user and adds a wallet beneficiary. */
+    /**
+     * Verify OTP provided by the user and adds a wallet beneficiary.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     verifyOtpAndAddBeneficiaryForWallet?: Maybe<WalletOtpResponse>;
-    /** Verify OTP sent by customer. */
+    /** Verify OTP sent by customer. Used to verify OTP for refund bank details. */
     verifyOtpForRefundBankDetails?: Maybe<VerifyOtpResponse>;
-    /** Link wallet for the aggregator for processing of payment. */
+    /**
+     * Verifies the OTP submitted by the customer for a specific shipment.
+     * Supported values include:
+     * - `refund_bank_details`: OTP is sent to verify the customer's bank details before processing a refund.
+     * - `customer_ndr`: OTP is sent to confirm redelivery instructions or preferences after a failed delivery attempt.
+     */
+    verifyShipmentOtpFromCustomer?: Maybe<VerifyOtpResponse>;
+    /**
+     * Link wallet for the aggregator for processing of payment.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     walletLinkInitiate?: Maybe<WalletResponse>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationAddAddressArgs = {
     address2Input?: InputMaybe<Address2Input>;
 };
-export type MutationAddBeneficiaryDetailsArgs = {
-    addBeneficiaryDetailsRequestInput?: InputMaybe<AddBeneficiaryDetailsRequestInput>;
+/** Mutation operations for user management and profile updates. */
+export type MutationAddBeneficiaryArgs = {
+    addBeneficiaryInput?: InputMaybe<AddBeneficiaryInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationAddEmailArgs = {
     editEmailRequestSchemaInput?: InputMaybe<EditEmailRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationAddItemsToCartArgs = {
     addCartRequestInput?: InputMaybe<AddCartRequestInput>;
     areaCode?: InputMaybe<Scalars['String']['input']>;
@@ -5457,387 +8026,546 @@ export type MutationAddItemsToCartArgs = {
     id?: InputMaybe<Scalars['String']['input']>;
     includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
     includeBreakup?: InputMaybe<Scalars['Boolean']['input']>;
-    orderType?: InputMaybe<Scalars['String']['input']>;
+    includeCartCalculation?: InputMaybe<Scalars['Boolean']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationAddMobileNumberArgs = {
     editMobileRequestSchemaInput?: InputMaybe<EditMobileRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationAddRefundBankAccountUsingOtpArgs = {
     addBeneficiaryDetailsOTPRequestInput?: InputMaybe<AddBeneficiaryDetailsOtpRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationAddRefundBeneficiaryUsingOtpSessionArgs = {
+    addBeneficiaryInput?: InputMaybe<AddBeneficiaryInput>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationApplyCouponArgs = {
     applyCouponRequestInput?: InputMaybe<ApplyCouponRequestInput>;
-    b?: InputMaybe<Scalars['Boolean']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
-    cartType?: InputMaybe<Scalars['String']['input']>;
-    i?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
-    p?: InputMaybe<Scalars['Boolean']['input']>;
+    includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
+    includePriceBreakup?: InputMaybe<Scalars['Boolean']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationApplyLoyaltyPointsArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    cartId?: InputMaybe<Scalars['String']['input']>;
+    includeBreakup?: InputMaybe<Scalars['Boolean']['input']>;
+    includeItems?: InputMaybe<Scalars['Boolean']['input']>;
+    redeemPoints: RedeemLoyaltyPoints;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationAttachCardToCustomerArgs = {
     attachCardRequestInput?: InputMaybe<AttachCardRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCancelPaymentLinkArgs = {
     cancelOrResendPaymentLinkRequestInput?: InputMaybe<CancelOrResendPaymentLinkRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCheckAndUpdatePaymentStatusArgs = {
     paymentStatusUpdateRequestInput?: InputMaybe<PaymentStatusUpdateRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCheckAndUpdatePaymentStatusPaymentLinkArgs = {
     paymentStatusUpdateRequestInput?: InputMaybe<PaymentStatusUpdateRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCheckoutCartArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cartCheckoutDetailRequestInput?: InputMaybe<CartCheckoutDetailRequestInput>;
-    cartType?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationCompleteUploadArgs = {
+    completeUploadReqInput: CompleteUploadReqInput;
+    namespace: FileStorageNamespace;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationCreateOrderHandlerPaymentLinkArgs = {
     createOrderUserRequestInput?: InputMaybe<CreateOrderUserRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCreatePaymentLinkArgs = {
     createPaymentLinkRequestInput?: InputMaybe<CreatePaymentLinkRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationCreatePaymentLinkOrderArgs = {
+    createOrderUserRequestInput?: InputMaybe<CreateOrderUserRequestInput>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationCreatePaymentOrderArgs = {
     paymentOrderInput?: InputMaybe<PaymentOrderInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCreateShortLinkArgs = {
     shortLinkReqInput?: InputMaybe<ShortLinkReqInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCreateTicketArgs = {
     addTicketPayloadInput?: InputMaybe<AddTicketPayloadInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationCustomerOnboardArgs = {
     customerOnboardingRequestInput?: InputMaybe<CustomerOnboardingRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationDeleteBeneficiaryArgs = {
+    deleteBeneficiary?: InputMaybe<DeleteBeneficiaryInput>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationDeleteCartArgs = {
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationDeleteEmailArgs = {
-    active: Scalars['Boolean']['input'];
     email: Scalars['String']['input'];
-    platform?: InputMaybe<Scalars['String']['input']>;
-    primary: Scalars['Boolean']['input'];
-    verified: Scalars['Boolean']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationDeleteMobileNumberArgs = {
-    active: Scalars['Boolean']['input'];
     countryCode: Scalars['String']['input'];
     phone: Scalars['String']['input'];
-    platform?: InputMaybe<Scalars['String']['input']>;
-    primary: Scalars['Boolean']['input'];
-    verified: Scalars['Boolean']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationDeleteUserArgs = {
     deleteApplicationUserRequestSchemaInput?: InputMaybe<DeleteApplicationUserRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationDeleteUserCardArgs = {
     deletehCardRequestInput?: InputMaybe<DeletehCardRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationDelinkWalletArgs = {
     walletDelinkRequestSchemaInput?: InputMaybe<WalletDelinkRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationEnableOrDisableRefundTransferModeArgs = {
     updateRefundTransferModeRequestInput?: InputMaybe<UpdateRefundTransferModeRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationFollowByIdArgs = {
     collectionId: Scalars['String']['input'];
     collectionType: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationForgotPasswordArgs = {
     forgotPasswordRequestSchemaInput?: InputMaybe<ForgotPasswordRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationGetCartShareLinkArgs = {
     getShareCartLinkRequestInput?: InputMaybe<GetShareCartLinkRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationGetCollectionQrCodeBySlugArgs = {
     slug: Scalars['String']['input'];
 };
-export type MutationGetOrderingStoreCookieArgs = {
-    orderingStoreSelectRequestInput?: InputMaybe<OrderingStoreSelectRequestInput>;
-};
+/** Mutation operations for user management and profile updates. */
 export type MutationGetProductQrCodeBySlugArgs = {
     slug: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationGetRefundBeneficiariesUsingOtpSessionArgs = {
+    filterBy?: InputMaybe<FilterByEnum>;
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationGetUrlQrCodeArgs = {
     url: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationInitialisePaymentArgs = {
     paymentInitializationRequestInput?: InputMaybe<PaymentInitializationRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationInitialisePaymentPaymentLinkArgs = {
     paymentInitializationRequestInput?: InputMaybe<PaymentInitializationRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLinkWalletArgs = {
     walletVerifyRequestSchemaInput?: InputMaybe<WalletVerifyRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithAppleIosArgs = {
     oAuthRequestAppleSchemaInput?: InputMaybe<OAuthRequestAppleSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithEmailAndPasswordArgs = {
     passwordLoginRequestSchemaInput?: InputMaybe<PasswordLoginRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithFacebookArgs = {
     oAuthRequestSchemaInput?: InputMaybe<OAuthRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithGoogleArgs = {
     oAuthRequestSchemaInput?: InputMaybe<OAuthRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithGoogleAndroidArgs = {
     oAuthRequestSchemaInput?: InputMaybe<OAuthRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithGoogleIosArgs = {
     oAuthRequestSchemaInput?: InputMaybe<OAuthRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithOtpArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendOtpRequestSchemaInput?: InputMaybe<SendOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationLoginWithTokenArgs = {
     tokenRequestBodySchemaInput?: InputMaybe<TokenRequestBodySchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationRegisterWithFormArgs = {
     formRegisterRequestSchemaInput?: InputMaybe<FormRegisterRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationRemoveAddressArgs = {
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationRemoveCouponArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationRenderHtmlArgs = {
     renderHTMLRequestInput?: InputMaybe<RenderHtmlRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationResendOrCancelPaymentArgs = {
     resendOrCancelPaymentRequestInput?: InputMaybe<ResendOrCancelPaymentRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationResendPaymentLinkArgs = {
     cancelOrResendPaymentLinkRequestInput?: InputMaybe<CancelOrResendPaymentLinkRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationResetForgotPasswordArgs = {
     forgotPasswordRequestSchemaInput?: InputMaybe<ForgotPasswordRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSelectAddressArgs = {
-    b?: InputMaybe<Scalars['Boolean']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cartId?: InputMaybe<Scalars['String']['input']>;
-    i?: InputMaybe<Scalars['Boolean']['input']>;
+    includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
+    includePriceBreakup?: InputMaybe<Scalars['Boolean']['input']>;
     selectCartAddressRequestInput?: InputMaybe<SelectCartAddressRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSelectPaymentModeArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
     updateCartPaymentRequestInput?: InputMaybe<UpdateCartPaymentRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendForgotOtpOnEmailArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendEmailForgotOtpRequestSchemaInput?: InputMaybe<SendEmailForgotOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendForgotOtpOnMobileArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendMobileForgotOtpRequestSchemaInput?: InputMaybe<SendMobileForgotOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendOtpOnEmailArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendEmailOtpRequestSchemaInput?: InputMaybe<SendEmailOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendOtpOnMobileArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendMobileOtpRequestSchemaInput?: InputMaybe<SendMobileOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendOtpForRefundBankDetailsArgs = {
     orderId?: InputMaybe<Scalars['String']['input']>;
     shipmentId?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendResetPasswordEmailArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendResetPasswordEmailRequestSchemaInput?: InputMaybe<SendResetPasswordEmailRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendResetPasswordMobileArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendResetPasswordMobileRequestSchemaInput?: InputMaybe<SendResetPasswordMobileRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendResetTokenArgs = {
     codeRequestBodySchemaInput?: InputMaybe<CodeRequestBodySchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationSendShipmentOtpToCustomerArgs = {
+    eventType?: InputMaybe<ShipmentOtpEventType>;
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationSendVerificationLinkToEmailArgs = {
     editEmailRequestSchemaInput?: InputMaybe<EditEmailRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSendVerificationLinkToMobileArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     sendVerificationLinkMobileRequestSchemaInput?: InputMaybe<SendVerificationLinkMobileRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSetEmailAsPrimaryArgs = {
     editEmailRequestSchemaInput?: InputMaybe<EditEmailRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationSetMobileNumberAsPrimaryArgs = {
     sendVerificationLinkMobileRequestSchemaInput?: InputMaybe<SendVerificationLinkMobileRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationSignUrlsArgs = {
+    signUrlInput: SignUrlInput;
+};
+/** Mutation operations for user management and profile updates. */
+export type MutationStartUploadArgs = {
+    namespace: FileStorageNamespace;
+    startUploadReqInput: StartUploadReqInput;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationSubmitCustomFormArgs = {
     customFormSubmissionPayloadInput?: InputMaybe<CustomFormSubmissionPayloadInput>;
     slug: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationSubmitDeliveryReattemptRequestArgs = {
+    deliveryReattemptRequestInput?: InputMaybe<DeliveryReattemptRequestInput>;
+    shipmentId: Scalars['String']['input'];
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationUnfollowByIdArgs = {
     collectionId: Scalars['String']['input'];
     collectionType: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateAddressArgs = {
     address2Input?: InputMaybe<Address2Input>;
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateCartArgs = {
     areaCode?: InputMaybe<Scalars['String']['input']>;
-    b?: InputMaybe<Scalars['Boolean']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
-    cartType?: InputMaybe<Scalars['String']['input']>;
-    i?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
-    orderType?: InputMaybe<Scalars['String']['input']>;
+    includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
+    includeCartCalculation?: InputMaybe<Scalars['Boolean']['input']>;
+    includePriceBreakup?: InputMaybe<Scalars['Boolean']['input']>;
     updateCartRequestInput?: InputMaybe<UpdateCartRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationUpdateCartBreakupArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    id?: InputMaybe<Scalars['String']['input']>;
+    includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
+    includePriceBreakup?: InputMaybe<Scalars['Boolean']['input']>;
+    updateCartBreakupRequestInput?: InputMaybe<UpdateCartBreakupRequestInput>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateCartMetaArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cartMetaRequestInput?: InputMaybe<CartMetaRequestInput>;
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateCartWithSharedItemsArgs = {
     action: ActionEnum;
     token: Scalars['String']['input'];
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateCommunicationConsentArgs = {
     communicationConsentReqInput: CommunicationConsentReqInput;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateDefaultBeneficiaryArgs = {
     setDefaultBeneficiaryRequestInput?: InputMaybe<SetDefaultBeneficiaryRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdatePasswordArgs = {
     updatePasswordRequestSchemaInput?: InputMaybe<UpdatePasswordRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateProfileArgs = {
     editProfileRequestSchemaInput?: InputMaybe<EditProfileRequestSchemaInput>;
-    platform?: InputMaybe<Scalars['String']['input']>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateShipmentStatusArgs = {
     shipmentId: Scalars['String']['input'];
     updateShipmentStatusRequestInput: UpdateShipmentStatusRequestInput;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationUpdateUserAttributesArgs = {
     updateUserAttributesRequestSchemaInput?: InputMaybe<UpdateUserAttributesRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationValidateAddressArgs = {
     countryIsoCode?: InputMaybe<Scalars['String']['input']>;
     templateName?: InputMaybe<TemplateNameEnum>;
     validateAddressRequestInput?: InputMaybe<ValidateAddressRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationValidateCustomerAndCreditSummaryArgs = {
+    customerAndCreditSummary?: InputMaybe<CustomerAndCreditSummary>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationValidateVpaArgs = {
     validateVPARequestInput?: InputMaybe<ValidateVpaRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyAndChargePaymentArgs = {
     chargeCustomerRequestInput?: InputMaybe<ChargeCustomerRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyCustomerForPaymentArgs = {
     validateCustomerRequestInput?: InputMaybe<ValidateCustomerRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyEmailArgs = {
     codeRequestBodySchemaInput?: InputMaybe<CodeRequestBodySchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyEmailForgotOtpArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     verifyEmailForgotOtpRequestSchemaInput?: InputMaybe<VerifyEmailForgotOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyEmailOtpArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     verifyEmailOtpRequestSchemaInput?: InputMaybe<VerifyEmailOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyMobileArgs = {
     codeRequestBodySchemaInput?: InputMaybe<CodeRequestBodySchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyMobileForgotOtpArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     verifyMobileForgotOtpRequestSchemaInput?: InputMaybe<VerifyMobileForgotOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyMobileOtpArgs = {
-    platform?: InputMaybe<Scalars['String']['input']>;
     verifyOtpRequestSchemaInput?: InputMaybe<VerifyOtpRequestSchemaInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyOtpAndAddBeneficiaryForBankArgs = {
     addBeneficiaryViaOtpVerificationRequestInput?: InputMaybe<AddBeneficiaryViaOtpVerificationRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyOtpAndAddBeneficiaryForWalletArgs = {
     walletOtpRequestInput?: InputMaybe<WalletOtpRequestInput>;
 };
+/** Mutation operations for user management and profile updates. */
 export type MutationVerifyOtpForRefundBankDetailsArgs = {
     orderId?: InputMaybe<Scalars['String']['input']>;
     shipmentId?: InputMaybe<Scalars['String']['input']>;
     verifyOtpInput?: InputMaybe<VerifyOtpInput>;
 };
+/** Mutation operations for user management and profile updates. */
+export type MutationVerifyShipmentOtpFromCustomerArgs = {
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
+    verifyOtpInput?: InputMaybe<VerifyOtpInput>;
+};
+/** Mutation operations for user management and profile updates. */
 export type MutationWalletLinkInitiateArgs = {
     walletLinkRequestSchemaInput?: InputMaybe<WalletLinkRequestSchemaInput>;
 };
 /** Basic information which provides basic info like uid of any entity like brand or seller and name of the entity. */
 export type NameInformation = {
     __typename?: 'NameInformation';
-    /** Name of entities like brand or seller. */
+    /** Name of the entity (brand or seller). Example: 'Fynd Retail' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of entities like brand or seller. */
+    /** Unique identifier of the entity. Example: 2001 */
     uid?: Maybe<Scalars['Int']['output']>;
 };
 /** Data related to navigation links. */
 export type Navigation = {
     __typename?: 'Navigation';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
-    /** Whether navigation is archived or not. */
+    /**
+     * Whether navigation is archived or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     archived?: Maybe<Scalars['Boolean']['output']>;
-    /** Details regarding the creator of entity. */
+    /**
+     * Details regarding the creator of entity.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<CreatedBy>;
-    /** Details related to resource creation and updation. */
+    /**
+     * Details related to resource creation and updation.
+     * @deprecated This field is obsolete.
+     */
     date_meta?: Maybe<DateMeta>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of the navigation link. */
+    /** Name of the navigation link. For example, 'Main Menu' or 'Footer Navigation'. */
     name?: Maybe<Scalars['String']['output']>;
     /** List of all navigations links and relevant details. */
     navigation?: Maybe<Array<Maybe<NavigationReference>>>;
     /** Details regarding the orientation on which the navigation is to be applied. */
     orientation?: Maybe<Orientation>;
-    /** Details regarding the platforms for which this navigation is to applied on. */
+    /** Details regarding the platforms for which this navigation is to applied on. For example, ['web', 'ios', 'android']. */
     platform?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** A short, human-readable, URL-friendly identifier. */
+    /** A short, human-readable, URL-friendly identifier. For example, 'main-menu' or 'footer-nav'. */
     slug?: Maybe<Scalars['String']['output']>;
-    /** A hardcoded key for internally managing navigation versions. */
+    /**
+     * A hardcoded key for internally managing navigation versions.
+     * @deprecated This field is obsolete.
+     */
     version?: Maybe<Scalars['Float']['output']>;
+};
+/** Navigation action configuration for page routing and user interactions. */
+export type NavigationAction = {
+    __typename?: 'NavigationAction';
+    /**
+     * Represents the custom json values of a product brand.
+     * @deprecated _custom_json is deprecated. Use custom_config instead.
+     */
+    _custom_json?: Maybe<Scalars['JSON']['output']>;
+    /** Navigation action configuration for page routing and user interactions. */
+    action?: Maybe<PageActionDetail>;
+    /** Represents the custom config values of a product brand. */
+    custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** It contains detailed information about the sales channel. */
+    description?: Maybe<Scalars['String']['output']>;
+    /**
+     * Unique identifier of the product brand.
+     * @deprecated This field is obsolete.
+     */
+    id?: Maybe<Scalars['String']['output']>;
+    /** Media object representing the logo of the product brand. */
+    logo?: Maybe<Media>;
+    /** Name of the product brand. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the product brand. */
+    uid?: Maybe<Scalars['Int']['output']>;
 };
 /** Details related to navigation link. */
 export type NavigationReference = {
     __typename?: 'NavigationReference';
-    /** Details regarding the authorization level to access the navigation item. */
+    /** Details regarding the authorization level to access the navigation item. For example, ['public', 'authenticated']. */
     acl?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Schema to define the Action Object. */
     action?: Maybe<ContentAction>;
-    /** Whether navigation is active or not. */
+    /** Whether navigation is active or not. For example, true or false. */
     active?: Maybe<Scalars['Boolean']['output']>;
-    /** Display name of the navigation link. */
+    /** Display name of the navigation link. For example, 'Home' or 'Products'. */
     display?: Maybe<Scalars['String']['output']>;
-    /** URL of an image associated with a navigation link. */
+    /** URL of an image associated with a navigation link. For example, 'https://cdn.example.com/icons/home.png'. */
     image?: Maybe<Scalars['String']['output']>;
     /** Details of name of an entry in other languages. */
     locale_language?: Maybe<LocaleLanguage>;
-    /** Number denoting the position of navigation link. */
+    /** Number denoting the position of navigation link. For example, 1, 2, or 3. */
     sort_order?: Maybe<Scalars['Int']['output']>;
     /** List of sub links and details under a navigation. */
     sub_navigation?: Maybe<Array<Maybe<NavigationReference>>>;
-    /** List of tags under a navigation link. */
+    /** List of tags under a navigation link. For example, ['featured', 'new']. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Type of action to be taken e.g, page. */
+    /** Type of action to be taken e.g, page. For example, 'page', 'link', or 'category'. */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** List of navigation items. */
@@ -5848,16 +8576,44 @@ export type Navigations = {
     /** Data related to pagination. */
     page?: Maybe<PageInfo>;
 };
+/** An object containing the date range within which a delivery can be reattempted. */
+export type NdrDeliveryWindow = {
+    __typename?: 'NdrDeliveryWindow';
+    /** The date until which the delivery of a shipment can be reattempted. For example, '2024-11-10'. */
+    end_date?: Maybe<Scalars['String']['output']>;
+    /** A list of dates to be excluded when selecting a delivery reattempt date. For example, ['2024-11-07']. */
+    excluded_dates?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** The date from which the delivery of a shipment can be reattempted. For example, '2024-11-06'. */
+    start_date?: Maybe<Scalars['String']['output']>;
+};
+/** Non-Delivery Report related info, for example the payload shown when a delivery attempt fails. */
+export type NdrDetails = {
+    __typename?: 'NdrDetails';
+    /** A range of dates in between which delivery can be reattempted. For example, { start_date: '2024-11-06', end_date: '2024-11-10' }. */
+    allowed_delivery_window?: Maybe<NdrDeliveryWindow>;
+    /** Additional comments provided by the customer while rescheduling the delivery. For example, 'Please attempt after 7 PM'. */
+    customer_remarks?: Maybe<Scalars['String']['output']>;
+    /** Any extra notes or observations added by the delivery partner at the time of a failed delivery attempt. For example, 'Gate locked'. */
+    delivery_partner_remarks?: Maybe<Scalars['String']['output']>;
+    /** The specific date on which the courier partner is expected to reattempt delivery of the shipment. For example, '2024-11-08'. */
+    delivery_scheduled_date?: Maybe<Scalars['String']['output']>;
+    /** The reason recorded by the courier or delivery partner for the failed delivery attempt. For example, 'Customer unavailable'. */
+    failure_reason?: Maybe<Scalars['String']['output']>;
+    /** A list of fields that are not allowed to be updated while filling a new address in the NDR form. For example, ['pincode', 'city']. */
+    non_editable_address_fields?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Indicates whether to show NDR form or not. For example, true when customer needs to update address. */
+    show_ndr_form?: Maybe<Scalars['Boolean']['output']>;
+};
 /** Schema for nested tracking details. */
 export type NestedTrackingDetails = {
     __typename?: 'NestedTrackingDetails';
-    /** Indicates whether the tracking event is the current or active status. */
+    /** Indicates whether the tracking event is the current or active status. For example, `is_current` can be set to true. */
     is_current?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates whether the tracking event has passed or occurred. */
+    /** Indicates whether the tracking event has passed or occurred. For example, `is_passed` can be set to true. */
     is_passed?: Maybe<Scalars['Boolean']['output']>;
-    /** The status of the tracking event. */
+    /** The status of the tracking event. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
-    /** The time associated with the tracking event. */
+    /** The time associated with the tracking event. For example, `time` can be set to '2024-11-01T10:00:00Z'. */
     time?: Maybe<Scalars['String']['output']>;
 };
 /** Represents the net quantity of a product, including its unit of measurement and value. */
@@ -5868,6 +8624,16 @@ export type NetQuantity = {
     /** The value of the net quantity of the product. */
     value?: Maybe<Scalars['Float']['output']>;
 };
+/** Describes the next action required for completing the payment. */
+export type NextAction = {
+    /** Type of action. */
+    type: NextActionType;
+};
+/** Enum for next action type. */
+export declare enum NextActionType {
+    FormPost = "FORM_POST",
+    Redirect = "REDIRECT"
+}
 /** The `Schedule` schema defines the timing and details for recurring or one-time tasks. It includes information on when the job should start and end, the frequency of the task, and any additional metadata. This schema helps in scheduling jobs or tasks based on specified timings and durations. */
 export type NextSchedule = {
     __typename?: 'NextSchedule';
@@ -5876,94 +8642,140 @@ export type NextSchedule = {
     /** The start time of the live discount. */
     start?: Maybe<Scalars['String']['output']>;
 };
-/** Describes the request structure to login or register in ios app using apple account credentials. */
+/** Describes the request structure to login or register in an iOS app using Apple account credentials. Requires user_identifier, identity_token, and optional profile information. */
 export type OAuthRequestAppleSchemaInput = {
-    /** Schema representing the oauth token details for apple login. */
-    oauth?: InputMaybe<OAuthRequestAppleSchemaOauthInput>;
-    /** Schema representing the profile information of the user for apple login. */
-    profile?: InputMaybe<OAuthRequestAppleSchemaProfileInput>;
-    /** Unique user identifier. */
-    user_identifier?: InputMaybe<Scalars['String']['input']>;
+    /** OAuth token details for Apple login. */
+    oauth: OAuthRequestAppleSchemaOauthInput;
+    /** User profile details for Apple login. */
+    profile: OAuthRequestAppleSchemaProfileInput;
+    /** Unique user identifier from Apple (e.g., 000119.6f9a75abd756451fa2adee13d004d4f8.0606). */
+    user_identifier: Scalars['String']['input'];
 };
-/** Schema representing the oauth token details for apple login. */
+/** Schema representing the OAuth token details for Apple login. */
 export type OAuthRequestAppleSchemaOauthInput = {
-    /** The identity token issued by apple. */
-    identity_token?: InputMaybe<Scalars['String']['input']>;
+    /** Apple identity token. */
+    identity_token: Scalars['String']['input'];
 };
-/** Schema representing the profile information of the user for apple login. */
+/** Schema representing the profile information of the user for Apple login. */
 export type OAuthRequestAppleSchemaProfileInput = {
-    /** The first name of the user. */
+    /** User's first name. */
     first_name?: InputMaybe<Scalars['String']['input']>;
-    /** The full name of the user. */
+    /** User's full name. */
     full_name?: InputMaybe<Scalars['String']['input']>;
-    /** The last name of the user. */
+    /** User's last name. */
     last_name?: InputMaybe<Scalars['String']['input']>;
 };
-/** Describes the request structure to login or register using facebook/google account credentials. */
+/** Describes the request structure to login or register using Facebook/Google account credentials. Different providers require different OAuth2 tokens: Facebook uses access_token, Google Web uses token (ID token), Google Android uses refresh_token. */
 export type OAuthRequestSchemaInput = {
-    /** Boolean to specify if the user is signed in . */
-    is_signed_in?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Schema representing the oauth2 token details. */
-    oauth2?: InputMaybe<OAuthRequestSchemaOauth2Input>;
-    /** Schema representing the profile information of the user. */
-    profile?: InputMaybe<OAuthRequestSchemaProfileInput>;
+    /** OAuth2 token details. */
+    oauth2: OAuthRequestSchemaOauth2Input;
+    /** User profile information from the provider. */
+    profile: OAuthRequestSchemaProfileInput;
 };
-/** Schema representing the oauth2 token details. */
+/** Schema representing the OAuth2 token details. */
 export type OAuthRequestSchemaOauth2Input = {
-    /** The access token issued by the oauth2 provider. */
+    /** OAuth2 access token. */
     access_token?: InputMaybe<Scalars['String']['input']>;
-    /** The expiry time of the access token in milliseconds since epoch. */
+    /** Access token expiry time in milliseconds since epoch. */
     expiry?: InputMaybe<Scalars['Int']['input']>;
-    /** The refresh token issued by the oauth2 provider. */
+    /** OAuth2 refresh token. */
     refresh_token?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the profile information of the user. */
 export type OAuthRequestSchemaProfileInput = {
-    /** The email address of the user. */
+    /** User's email address. */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** The first name of the user. */
+    /** User's first name. */
     first_name?: InputMaybe<Scalars['String']['input']>;
-    /** The full name of the user. */
+    /** User's full name. */
     full_name?: InputMaybe<Scalars['String']['input']>;
-    /** The unique identifier of the user. */
-    id?: InputMaybe<Scalars['String']['input']>;
-    /** The url of the user's profile picture. */
+    /** Unique identifier of the user. */
+    id: Scalars['String']['input'];
+    /** URL of the user's profile picture. */
     image?: InputMaybe<Scalars['String']['input']>;
-    /** The last name of the user. */
+    /** User's last name. */
     last_name?: InputMaybe<Scalars['String']['input']>;
 };
 /** Offer Item Details, This consists of margin percentage, price, quantity, offer type and offer price. */
 export type OfferItem = {
     __typename?: 'OfferItem';
-    /** Whether offer discount is auto applied in cart. */
+    /** Whether offer discount is auto applied in cart. Example: true */
     auto_applied?: Maybe<Scalars['Boolean']['output']>;
-    /** Is true for best offer from all offers present for all sellers. */
+    /** True if best offer among all sellers. Example: true */
     best?: Maybe<Scalars['Boolean']['output']>;
-    /** Percentage value of discount. */
+    /** Percentage value of discount. Example: 15 */
     margin?: Maybe<Scalars['Int']['output']>;
-    /** Offer price details of the item includes effective price, selling price, currency and max price. */
+    /** Offer price details including effective, selling, currency, and max price. Example: { effective: 499, currency_code: 'INR', currency_symbol: '₹' } */
     price?: Maybe<OfferPrice>;
-    /** Quantity on which offer is applicable. */
+    /** Quantity on which offer is applicable. Example: 2 */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** Total price of offer quantity with discount. */
+    /** Total price of offer quantity with discount. Example: 998.0 */
     total?: Maybe<Scalars['Float']['output']>;
-    /** Type of the offer. */
+    /** Type of the offer. Example: 'bulk' */
     type?: Maybe<Scalars['String']['output']>;
 };
+/** Mode of the offer. */
+export declare enum OfferMode {
+    /** Coupon offer mode. */
+    Coupon = "coupon",
+    /** Promotion offer mode. */
+    Promotion = "promotion"
+}
 /** Offer price details of the item includes effective price, selling price, currency and max price. */
 export type OfferPrice = {
     __typename?: 'OfferPrice';
-    /** Discounted per unit price for current offer object. */
+    /** Discounted per unit price for current offer object. Example: 499.0 */
     bulk_effective?: Maybe<Scalars['Float']['output']>;
     /** The currency code for an offer price is the three-letter code that corresponds to the currency in which the offer price is denominated. */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for currency. */
+    /** Currency symbol for currency. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
     /** The "effective price" is the actual price paid by the consumer after accounting for product discounts. It represents the true cost of a product or service after all adjustments have been made. */
     effective?: Maybe<Scalars['Int']['output']>;
     /** The price at which the product is sold to the end consumer, typically the original price before discounts. */
     marked?: Maybe<Scalars['Int']['output']>;
 };
+/** Type of offer or promotion. */
+export declare enum OfferType {
+    /** Amount-based offer. */
+    Amount = "amount",
+    /** Buy One Get One offer. */
+    Bogo = "bogo",
+    /** Bundle amount percentage offer. */
+    BundleAmountPercentage = "bundle_amount_percentage",
+    /** Bundle price amount offer. */
+    BundlePriceAmount = "bundle_price_amount",
+    /** Bundle price percentage offer. */
+    BundlePricePercentage = "bundle_price_percentage",
+    /** Cashback offer. */
+    Cashback = "cashback",
+    /** Contract price offer. */
+    ContractPrice = "contract_price",
+    /** Custom offer type. */
+    Custom = "custom",
+    /** External price adjustment discount offer. */
+    ExternalPriceAdjustmentDiscount = "external_price_adjustment_discount",
+    /** Fixed price offer. */
+    FixedPrice = "fixed_price",
+    /** Fixed unit price offer. */
+    FixedUnitPrice = "fixed_unit_price",
+    /** Free gift items offer. */
+    FreeGiftItems = "free_gift_items",
+    /** Free item discount absolute offer. */
+    FreeItemDiscountAbsolute = "free_item_discount_absolute",
+    /** Free items offer. */
+    FreeItems = "free_items",
+    /** Free non-sellable items offer. */
+    FreeNonSellableItems = "free_non_sellable_items",
+    /** Item-based discount offer. */
+    ItemBasedDiscount = "item_based_discount",
+    /** Ladder price offer. */
+    LadderPrice = "ladder_price",
+    /** Percentage-based offer. */
+    Percentage = "percentage",
+    /** Shipping price offer. */
+    ShippingPrice = "shipping_price"
+}
 /** Customer onboarding response. */
 export type OnboardSummary = {
     __typename?: 'OnboardSummary';
@@ -5982,89 +8794,109 @@ export type OnboardSummary = {
     /** Description of status. */
     status_remark?: Maybe<Scalars['String']['output']>;
 };
+/** Operations that can be performed on items. */
 export declare enum Operation {
     RemoveItem = "remove_item",
     UpdateItem = "update_item"
 }
-/** Order details. */
+/** Order details. For example, an order could include shipments 16736576489251696245 placed on 2023-01-14 06:17:37. */
 export type Order = {
     __typename?: 'Order';
-    /** A List containing details of bags available for reorder. */
+    /** A list containing details of bags available for reorder. For example, [{ item_id: 95988, quantity: 1 }]. */
     bags_for_reorder?: Maybe<Array<Maybe<BagsForReorder>>>;
-    /** A List containing the breakup of various charges and discounts. */
-    breakup_values?: Maybe<Array<Maybe<OrderBreakupValues>>>;
-    /** An Array of object containing order charges details. */
+    /** A list containing the breakup of various charges and discounts, such as shipping, tax, and coupon adjustments. For example, `breakup_values` can be set to [a OrderBreakupValue object]. */
+    breakup_values?: Maybe<Array<Maybe<OrderBreakupValue>>>;
+    /** Order-level charges breakdown applied to this order. For example, [{ name: 'shipping', amount: 40.0 }]. */
     charges?: Maybe<Array<Maybe<PriceAdjustmentCharge>>>;
-    /** The GSTIN code for the shipment. */
+    /** The currency associated with the order. For example, { currency_code: 'INR', currency_symbol: '₹' }. */
+    currency?: Maybe<CurrencySchema>;
+    /** The GSTIN code of the user who placed the order. For example, '27ABCDE1234F1Z5'. */
     gstin_code?: Maybe<Scalars['String']['output']>;
-    /** An object containing additional metadata for the order. */
+    /** Metadata for the order used for tracking and analytics. For example, { source: 'ios_app', campaign: 'diwali_sale' }. */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** The date and time when the order was created. */
+    /**
+     * The date and time when the order was created. For example, '2023-01-14 06:17:37'.
+     * @deprecated This field is obsolete.
+     */
     order_created_time?: Maybe<Scalars['String']['output']>;
-    /** The timestamp when the order was created. */
+    /** The timestamp when the order was created. For example, '2023-01-14T06:17:37Z'. */
     order_created_ts?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the order. */
+    /** The unique identifier for the order. For example, 'FY63C1FBA80195F734C0'. */
     order_id?: Maybe<Scalars['String']['output']>;
-    /** A List containing details of individual shipments within the order. */
+    /** A list containing details of individual shipments within the order. For example, [{ shipment_id: '16736576489251696245', status: 'credit_note_generated' }]. */
     shipments?: Maybe<Array<Maybe<OrderShipment>>>;
-    /** The total number of shipments in the order. */
+    /** The total number of shipments in the order. For example, 1, 2, or 3. */
     total_shipments_in_order?: Maybe<Scalars['Int']['output']>;
-    /** User Info. */
+    /**
+     * User info such as name, email, and phone. For example, `user_info` can be set to a UserInfo object.
+     * @deprecated This field is obsolete.
+     */
     user_info?: Maybe<UserInfo>;
 };
 /** Schema for applied free articles. */
 export type OrderAppliedFreeArticles = {
     __typename?: 'OrderAppliedFreeArticles';
-    /** The unique identifier for the article. */
+    /** The unique identifier for the article. For example, `article_id` can be set to '507f1f77bcf86cd799439011'. */
     article_id?: Maybe<Scalars['String']['output']>;
-    /** An object containing details about the free gift item. */
+    /** An object containing details about the free gift item. For example, `free_gift_item_details` can be set to { key: 'value' }. */
     free_gift_item_details?: Maybe<Scalars['JSON']['output']>;
-    /** The identifier for the parent item to which this free article is related. */
+    /** The identifier for the parent item to which this free article is related. For example, `parent_item_identifier` can be set to '507f1f77bcf86cd799439011'. */
     parent_item_identifier?: Maybe<Scalars['String']['output']>;
-    /** The quantity of the free article. */
+    /** The quantity of the free article. For example, `quantity` can be set to 99.99. */
     quantity?: Maybe<Scalars['Float']['output']>;
 };
-/** Bag details. */
+/** Bag details representing each bag/article inside a shipment. */
 export type OrderBags = {
     __typename?: 'OrderBags';
-    /** An array containing information about applied promotions. */
+    /** An array containing information about applied promotions. For example, [{ promo_id: 'PROMO10', amount: 100.0 }]. */
     applied_promos?: Maybe<Array<Maybe<AppliedPromos>>>;
-    /** Order bags article details. */
+    /** Order bags article details, for example article metadata and attributes. For example, `article` can be set to a Article object. */
     article?: Maybe<Article>;
-    /** Indicates if the shipment can be canceled. */
+    /** Bundle details containing information about the bundle. For example, `bundle_details` can be set to a BundleDetails object. */
+    bundle_details?: Maybe<BundleDetails>;
+    /** Indicates if the shipment can be canceled. For example, false when dispatched. */
     can_cancel?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates if the item can be returned. */
+    /** Indicates if the item can be returned. For example, true for returnable apparel. */
     can_return?: Maybe<Scalars['Boolean']['output']>;
-    /** Bags charges details. */
+    /** Bags charges details. For example, [{ name: 'gift_wrap', amount: 30.0 }]. */
     charges?: Maybe<Array<Maybe<PriceAdjustmentCharge>>>;
-    /** The code of the currency used. */
+    /** The code of the currency used. For example, 'INR'. */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** The symbol of the currency used. */
+    /** The symbol of the currency used. For example, '₹'. */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** An object containing the current status of the item. */
+    /** An object containing the current status of the item. For example, { status: 'delivered' }. */
     current_status?: Maybe<CurrentStatus>;
-    /** The date and time when the item is expected to be delivered . */
+    /** Additional custom attributes associated with the order bag for extended order information and tracking metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** The date and time when the item is expected to be delivered. For example, '2024-11-05T18:00:00Z'. */
     delivery_date?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the item is expected to be delivered. */
+    /** The date and time when the item is expected to be delivered. For example, `financial_breakup` can be set to [a FinancialBreakup object]. */
     financial_breakup?: Maybe<Array<Maybe<FinancialBreakup>>>;
-    /** The unique identifier for the order item. */
+    /** The unique identifier for the order item. For example, 21500347. */
     id?: Maybe<Scalars['Int']['output']>;
-    /** An object containing details about the item. */
+    /** Indicates if the item is a bundle item. For example, true for bundle SKU. */
+    is_bundle_item?: Maybe<Scalars['Boolean']['output']>;
+    /** An object containing details about the item. For example, { name: 'Cotton Shirt' }. */
     item?: Maybe<OrderItem>;
-    /** The line number of the item in the order. */
+    /** The line number of the item in the order. For example, 1. */
     line_number?: Maybe<Scalars['Int']['output']>;
-    /** An object containing metadata for the item. */
+    /** An object containing metadata for the item. For example, { personalization: true }. */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** An object containing details of parent promotional bags. */
+    /** An object containing details of parent promotional bags. For example, { parent_bag_id: 10 }. */
     parent_promo_bags?: Maybe<Scalars['JSON']['output']>;
-    /** An object containing price details for the item. */
+    /** An object containing price details for the item. For example, { price_effective: 999.0 }. */
     prices?: Maybe<Prices>;
-    /** The quantity of the item. */
+    /** The quantity of the item. For example, 2. */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** The last date and time by which the item can be returned. */
+    /** The last date and time by which the item can be returned. For example, '2024-11-20T23:59:59Z'. */
     returnable_date?: Maybe<Scalars['String']['output']>;
-    /** The identifier for the seller. */
+    /** The identifier for the seller. For example, '85'. */
     seller_identifier?: Maybe<Scalars['String']['output']>;
+};
+/** Bag details representing each bag/article inside a shipment. */
+export type OrderBagsCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Order Beneficiary Details. */
 export type OrderBeneficiaryDetail = {
@@ -6074,197 +8906,309 @@ export type OrderBeneficiaryDetail = {
     /** Show Beneficiary details on UI or not. */
     show_beneficiary_details?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Breakup details of various charges and discounts. */
-export type OrderBreakupValues = {
-    __typename?: 'OrderBreakupValues';
-    /** The international currency code representing the currency used for the value. */
+/** Value breakdown of the order, contains the details of the breakup value for the order. */
+export type OrderBreakupValue = {
+    __typename?: 'OrderBreakupValue';
+    /** The international currency code representing the currency used for the value. For example, 'INR', 'USD', or 'EUR'. */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Symbol representing the currency used for the value. */
+    /** Symbol representing the currency used for the value. For example, '₹', '$', or '€'. */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** The name of the entity as it should be displayed. */
+    /** The name of the entity as it should be displayed. For example, 'Subtotal' or 'Shipping Charges'. */
     display?: Maybe<Scalars['String']['output']>;
-    /** The official name of the entity. */
+    /** The slug identifier of the entity. For example, 'subtotal' or 'delivery_charge'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The numerical value associated with the entity. */
+    /** Array of nested breakup values that can contain further sub-values (recursive structure) */
+    sub_values?: Maybe<Array<OrderBreakupValue>>;
+    /** The numerical value associated with the entity in the currency of the order. For example, 1000.50 or 150.00. */
     value?: Maybe<Scalars['Float']['output']>;
 };
-/** Order listing details. */
+/** Order listing details, for example the response of an order history page. */
 export type OrderConnection = {
     __typename?: 'OrderConnection';
-    /** An array containing the order statuses. */
+    /** Filter options available for the order listings. For example, [{ value: 1, display: 'Placed' }]. */
     filters?: Maybe<OrderFilters>;
-    /** List of orders, each containing detailed information about individual orders and their respective shipments. */
+    /** List of orders, each containing detailed information about individual orders and their respective shipments. For example, [{ order_id: 'FY123' }]. */
     items?: Maybe<Array<Maybe<Order>>>;
-    /** Page Configuration. */
+    /** Pagination configuration such as current page and total items. For example, `page` can be set to a OrderPageInfo object. */
     page?: Maybe<OrderPageInfo>;
 };
 /** Configuration options for order-related features, such as enabling the 'buy again' option. */
 export type OrderFeature = {
     __typename?: 'OrderFeature';
-    /** Allow buy again option for order. Default value is false. */
-    buy_again?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether 'buy again' option is allowed for orders. Default value is false. */
+    buy_again: Scalars['Boolean']['output'];
+    /** When set to false, orders will not be accepted on the sales channel */
+    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Reason for disabling order acceptance. This will be shown to the user when orders are not being accepted. */
+    message?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for order filters. */
 export type OrderFilters = {
     __typename?: 'OrderFilters';
-    /** An array containing the order statuses. */
+    /** An array containing the order statuses. For example, `statuses` can be set to [a OrderStatus object]. */
     statuses?: Maybe<Array<Maybe<OrderStatus>>>;
 };
 /** Schema for item. */
 export type OrderItem = {
     __typename?: 'OrderItem';
-    /** An object containing various attributes of the item. */
+    /** An object containing various attributes of the item. For example, `attributes` can be set to { key: 'value' }. */
     attributes?: Maybe<Scalars['JSON']['output']>;
-    /** An object containing brand information. */
+    /** An object containing brand information. For example, `brand` can be set to a ItemBrand object. */
     brand?: Maybe<ItemBrand>;
-    /** The code or SKU of the item. */
+    /** The code or SKU of the item. For example, `code` can be set to 'sample_code'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier of the item. */
-    id?: Maybe<Scalars['Float']['output']>;
-    /** An array of URLs pointing to images of the item. */
+    /** The unique identifier of the item. For example, `id` can be set to 9. */
+    id?: Maybe<Scalars['Int']['output']>;
+    /** An array of URLs pointing to images of the item. For example, `image` can be set to ['value']. */
     image?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** An array of level 1 categories the item belongs. */
+    /** An array of level 1 categories the item belongs. For example, `l1_categories` can be set to ['value']. */
     l1_categories?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** An array of level 2 categories the item belongs to. */
+    /** An array of level 2 categories the item belongs to. For example, `l2_categories` can be set to ['value']. */
     l2_categories?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** The level 3 category name. */
+    /** ID representing the level 2 category classification of the item. For example, `l2_category_id` can be set to 1. */
+    l2_category_id?: Maybe<Scalars['Int']['output']>;
+    /** The level 3 category name. For example, `l3_category_name` can be set to 'Sample Name'. */
     l3_category_name?: Maybe<Scalars['String']['output']>;
-    /** The name of the ite. */
+    /** The name of the ite. For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** An object containing brand information. */
+    /** An object containing brand information. For example, `seller_identifier` can be set to '507f1f77bcf86cd799439011'. */
     seller_identifier?: Maybe<Scalars['String']['output']>;
-    /** The size of the item. */
+    /** The size of the item. For example, `size` can be set to 'value'. */
     size?: Maybe<Scalars['String']['output']>;
-    /** A unique key or identifier for the item slug. */
+    /** A unique key or identifier for the item slug. For example, `slug_key` can be set to 'value'. */
     slug_key?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for order's pagination. */
 export type OrderPageInfo = {
     __typename?: 'OrderPageInfo';
-    /** Specifies the current page number. It helps in identifying the position within the paginated results. */
+    /** Specifies the current page number. It helps in identifying the position within the paginated results. For example, 1, 2, or 3. */
     current?: Maybe<Scalars['Int']['output']>;
-    /** Indicates whether there is a next page available. It is true if a next page exists and false if the current page is the last one. */
+    /** Indicates whether there is a next page available. It is true if a next page exists and false if the current page is the last one. For example, true or false. */
     has_next?: Maybe<Scalars['Boolean']['output']>;
-    /** Total number of items available across all pages. It provides a count of all the items that match the query criteria, regardless of pagination. */
+    /** Total number of items available across all pages. It provides a count of all the items that match the query criteria, regardless of pagination. For example, 50, 100, or 250. */
     item_total?: Maybe<Scalars['Int']['output']>;
-    /** Represents the number of items on the current page. It indicates how many items are included in each page of the paginated response. */
+    /** Represents the number of items on the current page. It indicates how many items are included in each page of the paginated response. For example, 10, 20, or 50. */
     size?: Maybe<Scalars['Int']['output']>;
-    /** Specifies the current page number. It helps in identifying the position within the paginated results. */
+    /** Specifies the current page number. It helps in identifying the position within the paginated results. For example, 'number' or 'cursor'. */
     type?: Maybe<Scalars['String']['output']>;
+};
+/** Average order processing time configuration. */
+export type OrderProcessingTime = {
+    __typename?: 'OrderProcessingTime';
+    /** Duration value for average order processing time (e.g., 2, 5, 10). */
+    duration?: Maybe<Scalars['Int']['output']>;
+    /** Unit of time for the duration (e.g., 'hours', 'days', 'minutes'). */
+    duration_type?: Maybe<Scalars['String']['output']>;
 };
 /** Contains Metadata for the order. */
 export type OrderRequest = {
     __typename?: 'OrderRequest';
-    /** Metadata for the order. */
+    /** Metadata for the order. For example, { source: 'storefront', app_version: '8.4.2' }. */
     meta?: Maybe<Scalars['JSON']['output']>;
 };
 /** Shipment details. */
 export type OrderShipment = {
     __typename?: 'OrderShipment';
-    /** The airway bill number for the shipment. */
+    /** External shipment ID provided by the sales channel or the extension. For example, 'Ajio16526' */
+    affiliate_shipment_id?: Maybe<Scalars['String']['output']>;
+    /** The airway bill number for the shipment. For example, '8802086113909'. */
     awb_no?: Maybe<Scalars['String']['output']>;
-    /** An array containing details about the individual bags in the shipment. */
+    /** An array containing details about the individual bags in the shipment. For example, [{ line_number: 1, quantity: 2 }]. */
     bags?: Maybe<Array<Maybe<OrderBags>>>;
-    /** Indicates if there are any beneficiary details. */
+    /** Indicates if there are any beneficiary details. For example, true when refund beneficiary exists. */
     beneficiary_details?: Maybe<Scalars['Boolean']['output']>;
-    /** Billing details for the order shipment */
+    /** Billing details for the order shipment, such as billing address records. For example, `billing_address` can be set to a BillingAddress object. */
     billing_address?: Maybe<BillingAddress>;
-    /** An array containing the breakup of various charges and discounts. */
-    breakup_values?: Maybe<Array<Maybe<OrderBreakupValues>>>;
-    /** An object containing details about the breakability of the shipment. */
+    /** An array containing the breakup of various charges and discounts, such as shipping, tax, and promo adjustments. For example, `breakup_values` can be set to [a OrderBreakupValue object]. */
+    breakup_values?: Maybe<Array<Maybe<OrderBreakupValue>>>;
+    /** An object containing details about the breakability of the shipment. For example, { can_break: true }. */
     can_break?: Maybe<Scalars['JSON']['output']>;
-    /** Indicates if the shipment can be canceled. */
+    /** Indicates if the shipment can be canceled. For example, false once shipped. */
     can_cancel?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates if the shipment can be returned. */
+    /** Indicates if the shipment can be returned. For example, true within the return window. */
     can_return?: Maybe<Scalars['Boolean']['output']>;
-    /** Order charges information. */
+    /** Order charges information. For example, [{ name: 'packaging', amount: 20.0 }]. */
     charges?: Maybe<Array<Maybe<PriceAdjustmentCharge>>>;
-    /** Any comments related to the shipment. */
+    /** Any comments related to the shipment. For example, 'Gift wrap requested'. */
     comment?: Maybe<Scalars['String']['output']>;
-    /** An object containing custom metadata for the shipment. */
+    /** Schema for credit note. For example, {'credit_note_id': 'creidte-note-001', 'credit_note_url': ''} */
+    credit_note?: Maybe<CreditNote>;
+    /** An object containing custom metadata for the shipment. For example, { campaign: 'diwali' }. */
     custom_meta?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** An object containing the delivery address details. */
+    /** An object containing the delivery address details. For example, { city: 'Mumbai', pincode: '400001' }. */
     delivery_address?: Maybe<DeliveryAddress>;
-    /** The expected delivery date. */
+    /** The expected delivery date. For example, '2024-11-05'. */
     delivery_date?: Maybe<Scalars['String']['output']>;
-    /** The name of the delivery partner. */
+    /** The name of the delivery partner. For example, 'fyndr'. */
     dp_name?: Maybe<Scalars['String']['output']>;
-    /** Fulfilling company details. */
+    /** Fulfilling company details. For example, { id: 12, name: 'Fynd Logistics' }. */
     fulfilling_company?: Maybe<FulfillingCompany>;
-    /** Store fulfilling the shipment. */
+    /** Store fulfilling the shipment. For example, { id: 1001, name: 'Mumbai DC' }. */
     fulfilling_store?: Maybe<FulfillingStore>;
-    /** The GSTIN code for the shipment. */
+    /** Fulfillment option, for example 'home-delivery' or 'store-pickup'. For example, `fulfillment_option` can be set to a FulfillmentOption object. */
+    fulfillment_option?: Maybe<FulfillmentOption>;
+    /** The GSTIN code for the shipment. For example, '27ABCDE1234F1Z5'. */
     gstin_code?: Maybe<Scalars['String']['output']>;
-    /** Schema for invoice. */
+    /** Schema for invoice, for example to provide invoice download URLs. For example, `invoice` can be set to a Invoice object. */
     invoice?: Maybe<Invoice>;
-    /** The URL for customer support or help. */
+    /** Indicates whether refund configuration is enabled for the sales channel; if disabled, no refund options are shown, and if enabled, the applicable refund modes are displayed. */
+    is_refund_config_enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Client-defined shipment-level metadata. The structure is flexible and interpretation is the client’s responsibility. */
+    meta?: Maybe<Scalars['JSON']['output']>;
+    /** An object containing Non-Delivery Report (NDR) related details. For example, { show_ndr_form: true }. */
+    ndr_details?: Maybe<NdrDetails>;
+    /** The URL for customer support or help. For example, 'https://support.example.com/help'. */
     need_help_url?: Maybe<Scalars['String']['output']>;
-    /** Metadata for the order. */
+    /** Metadata for the order. For example, { platform: 'android' }. */
     order?: Maybe<OrderRequest>;
-    /** The unique identifier for the order. */
+    /** The unique identifier for the order. For example, 'FY63C1FBA80195F734C0'. */
     order_id?: Maybe<Scalars['String']['output']>;
-    /** The type of order. */
-    order_type?: Maybe<Scalars['String']['output']>;
-    /** An object containing payment details. */
+    /** Order type of the shipment (e.g., 'PickAtStore', 'HomeDelivery','Digital). Example: 'HomeDelivery' */
+    order_type?: Maybe<OrderTypeEnum>;
+    /** An object containing payment details. For example, { mode: 'ONLINE', amount: 1499.0 }. */
     payment?: Maybe<ShipmentPayment>;
-    /** Payment information for the order shipment */
+    /** Payment information for the order shipment, for example a list of COD and prepaid splits. For example, `payment_info` can be set to [a ShipmentPaymentInfo object]. */
     payment_info?: Maybe<Array<Maybe<ShipmentPaymentInfo>>>;
-    /** Different prices related to the shipment(refund_amount, discount, etc). */
+    /** Different prices related to the shipment (refund_amount, discount, etc). For example, { discount: 100.0 }. */
     prices?: Maybe<Prices>;
-    /** An object containing promise details for delivery. */
+    /** An object containing promise details for delivery. For example, { timestamp: { min: '2024-11-05', max: '2024-11-07' } }. */
     promise?: Maybe<Promise>;
-    /** An object containing details of any refunds. */
+    /** An array containing the breakup of various charges and discounts and refund amount. */
+    refund_breakup_values?: Maybe<Array<Maybe<OrderBreakupValue>>>;
+    /** An object containing details of any refunds. For example, { amount: 500.0 }. */
     refund_details?: Maybe<Scalars['JSON']['output']>;
-    /** An object containing metadata about the return process. */
+    /** An object containing Refund Mode details. */
+    refund_modes?: Maybe<Array<Maybe<RefundModeData>>>;
+    /** An object containing metadata about the return process. For example, { return_mode: 'pickup' }. */
     return_meta?: Maybe<Scalars['JSON']['output']>;
-    /** The last date by which the item can be returned. */
+    /** The last date by which the item can be returned. For example, '2024-11-20'. */
     returnable_date?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the shipment was created. */
+    /**
+     * The date and time when the shipment was created. For example, '2023-01-14T06:17:37Z'.
+     * @deprecated This field is obsolete.
+     */
     shipment_created_at?: Maybe<Scalars['String']['output']>;
-    /** The timestamp when the shipment was created. */
+    /**
+     * The timestamp when the shipment was created. For example, '2023-01-14T06:17:37Z'.
+     * @deprecated This field is obsolete.
+     */
     shipment_created_ts?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the shipment. */
+    /** The unique identifier for the shipment. For example, '16736576489251696245'. */
     shipment_id?: Maybe<Scalars['String']['output']>;
-    /** An object containing the current status of the shipment. */
+    /** An object containing the current status of the shipment. For example, { title: 'Credit Note Generated', value: 'credit_note_generated' }. */
     shipment_status?: Maybe<ShipmentStatus>;
-    /** Indicates if the download invoice option should be shown. */
+    /** Indicates if the download invoice option should be shown. For example, true for prepaid orders. */
     show_download_invoice?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates if the track link should be shown. */
+    /** Indicates if the track link should be shown. For example, true once AWB is assigned. */
     show_track_link?: Maybe<Scalars['Boolean']['output']>;
-    /** An object containing size information for the items in the shipment. */
+    /** An object containing size information for the items in the shipment. For example, { sizes: ['M','L'] }. */
     size_info?: Maybe<Scalars['JSON']['output']>;
-    /** The total number of bags in the shipment. */
+    /** The total number of bags in the shipment. For example, 3. */
     total_bags?: Maybe<Scalars['Int']['output']>;
-    /** An object containing the total details of the shipment. */
+    /** An object containing the total details of the shipment. For example, { total_price: 2499.0 }. */
     total_details?: Maybe<ShipmentTotalDetails>;
-    /** The URL for tracking the shipment. */
+    /** The URL for tracking the shipment. For example, 'https://track.example.com/SHIP123'. */
     track_url?: Maybe<Scalars['String']['output']>;
-    /** An array containing details of the tracking history of the shipment. */
+    /** An array containing details of the tracking history of the shipment. For example, [{ status: 'Out for Delivery', time: '2024-11-05T07:45:00Z' }]. */
     tracking_details?: Maybe<Array<Maybe<TrackingDetails>>>;
-    /** The tracking number for the shipment. */
+    /** The tracking number for the shipment. For example, 'TRACK987654321'. */
     traking_no?: Maybe<Scalars['String']['output']>;
-    /** User information for the shipment. */
+    /** User information for the shipment. For example, { first_name: 'John', last_name: 'Doe', mobile: '9876543210', email: 'user@example.com' }. */
     user_info?: Maybe<ShipmentUserInfo>;
 };
 /** Status of the order. */
 export type OrderStatus = {
     __typename?: 'OrderStatus';
-    /** The text to display. */
+    /** The text to display. For example, `display` can be set to 'value'. */
     display?: Maybe<Scalars['String']['output']>;
-    /** Indicates whether this option is currently selected. */
+    /** Indicates whether this option is currently selected. For example, `is_selected` can be set to true. */
     is_selected?: Maybe<Scalars['Boolean']['output']>;
-    /** The value representing the selection. */
+    /** The value representing the selection. For example, `value` can be set to 1. */
     value?: Maybe<Scalars['Int']['output']>;
 };
-/** Represents the selection details of an ordering store. */
-export type OrderingStoreSelectInput = {
-    /** Ordering store unique uid. It is required. */
-    uid: Scalars['Int']['input'];
+/** Order tags used to identify specific types of orders, including visual and filterable attributes. */
+export type OrderTagInput = {
+    /** Display text for the order tag (e.g., 'Bestseller'). */
+    display_text: Scalars['String']['input'];
+    /** Unique slug identifier for the tag (used for internal tagging or filtering). */
+    slug: Scalars['String']['input'];
 };
-/** Request object to select an ordering store. */
-export type OrderingStoreSelectRequestInput = {
-    /** Represents the selection details of an ordering store. */
-    ordering_store: OrderingStoreSelectInput;
+/** Order acceptance timings for each weekday. */
+export type OrderTiming = {
+    __typename?: 'OrderTiming';
+    /** Store closing time. */
+    closing?: Maybe<Time>;
+    /** Whether the store is open on this day. */
+    open?: Maybe<Scalars['Boolean']['output']>;
+    /** Store opening time. */
+    opening?: Maybe<Time>;
+    /** Day of the week (e.g., Monday). */
+    weekday?: Maybe<Scalars['String']['output']>;
+};
+/** Order transaction list response. */
+export type OrderTransactionDetail = {
+    __typename?: 'OrderTransactionDetail';
+    /** List of transactions ordered by created_on ascending. */
+    items?: Maybe<Array<Maybe<OrderTransactionItem>>>;
+    /** Whether the request was successful. */
+    success?: Maybe<Scalars['Boolean']['output']>;
+};
+/** A single transaction entry for an order. */
+export type OrderTransactionItem = {
+    __typename?: 'OrderTransactionItem';
+    /** Transaction amount. */
+    amount?: Maybe<Scalars['Float']['output']>;
+    /** Transaction creation timestamp (ISO 8601). */
+    created_on?: Maybe<Scalars['String']['output']>;
+    /** Payment mode logo URL. Small logo if available, falls back to large. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** Payment mode name (e.g. UPI, Card, COD). */
+    payment_mode?: Maybe<Scalars['String']['output']>;
+    /** Latest transaction status (e.g. complete, pending, failed, cancelled). */
+    status?: Maybe<Scalars['String']['output']>;
+    /** Merchant transaction ID (merchant_transaction_id). */
+    transaction_id?: Maybe<Scalars['String']['output']>;
+};
+/** Types of order types available. */
+export declare enum OrderTypeEnum {
+    Digital = "Digital",
+    HomeDelivery = "HomeDelivery",
+    PickAtStore = "PickAtStore"
+}
+/** Specifies the sales or interaction channels where the attribute is applicable. */
+export declare enum OrderingChannel {
+    /** Used in the GoFynd mobile app or ecosystem. */
+    Gofynd = "gofynd",
+    /** Used at physical kiosks for customer interaction or ordering. */
+    Kiosk = "kiosk",
+    /** Used when selling through marketplace integrations (e.g., Amazon, Flipkart). */
+    Marketplace = "marketplace",
+    /** Used for Open Network for Digital Commerce (ONDC) integration. */
+    Ondc = "ondc",
+    /** Used in Scan & Go services, where customers scan items and checkout themselves. */
+    ScanGo = "scan_go",
+    /** Used with smart trolley systems in physical retail spaces. */
+    SmartTrolley = "smart_trolley",
+    /** Used for social commerce platforms (e.g., Instagram, WhatsApp). */
+    SocialCommerce = "social_commerce",
+    /** Used in in-store Point-of-Sale (PoS) systems running on Store OS. */
+    StoreOsPos = "store_os_pos",
+    /** Used on the customer-facing storefront (website or app). */
+    Storefront = "storefront",
+    /** Used in Uniket (B2B wholesale or distribution platform). */
+    Uniket = "uniket"
+}
+/**
+ * Represents an ordering source that can be associated with a sales channel.
+ * Ordering sources define the origin or platform from which orders are placed,
+ * enabling tracking and differentiation of orders based on their source.
+ */
+export type OrderingSources = {
+    __typename?: 'OrderingSources';
+    /** Unique identifier slug for the ordering source. Used to reference and identify the source programmatically. */
+    key: Scalars['String']['output'];
+    /** Human-readable display name of the ordering source. Shown in UI for easy identification by users. */
+    name: Scalars['String']['output'];
 };
 /** Details regarding the orientation on which the navigation is to be applied. */
 export type Orientation = {
@@ -6283,7 +9227,7 @@ export type OtpSuccess = {
     message?: Maybe<Scalars['String']['output']>;
     /** The user's mobile number without the country code. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** A token used for completing the registration process. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** A random uuid string used to track the OTP send response. */
     request_id?: Maybe<Scalars['String']['output']>;
@@ -6306,20 +9250,23 @@ export type OutstandingOrderDetail = {
     /** Response is successful or not. */
     success: Scalars['Boolean']['output'];
 };
-/** Details of the individual who owns or manages the application, including their contact details. */
+/** Details of the individual who owns or manages the sales channel, including their contact details. */
 export type OwnerInfo = {
     __typename?: 'OwnerInfo';
     /** List of email addresses of the owner. */
     emails?: Maybe<Array<Maybe<UserEmail>>>;
-    /** First name of the owner. */
+    /** First name of the owner, e.g. 'John'. */
     first_name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier (24-digit Mongo Object ID) of owner info. */
+    /**
+     * The unique identifier of owner info.
+     * @deprecated This field is obsolete.
+     */
     id?: Maybe<Scalars['String']['output']>;
-    /** Last name of the owner. */
+    /** Last name of the owner, e.g. 'Doe'. */
     last_name?: Maybe<Scalars['String']['output']>;
     /** List of phone numbers of the owner. */
     phone_numbers?: Maybe<Array<Maybe<PhoneNumber>>>;
-    /** Hosted URL of profile pic. */
+    /** Hosted URL of owner's profile picture, e.g. 'https://cdn.example.com/profile.jpg'. */
     profile_pic?: Maybe<Scalars['String']['output']>;
 };
 /** Ownership details of the promotion who burns the cash. */
@@ -6348,12 +9295,12 @@ export type PageAction = {
     /** Type of action to be taken e.g, page. */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Schema to define the Action Object. */
+/** Navigation action configuration for page routing and user interactions. */
 export type PageActionDetail = {
     __typename?: 'PageActionDetail';
-    /** Represents the page details used for rendering. */
+    /** Page routing details including URL parameters, query strings, and navigation metadata. */
     page?: Maybe<ActionPageDetail>;
-    /** Type of action to be taken e.g, page. */
+    /** Type of navigation action to execute, e.g. 'page', 'popup', 'external', 'deep_link'. */
     type?: Maybe<Scalars['String']['output']>;
 };
 /** Page configuration object. */
@@ -6367,15 +9314,15 @@ export type PageConfig = {
 /** Pagination schema for get coupon list available on cart. */
 export type PageCoupon = {
     __typename?: 'PageCoupon';
-    /** Current page number. */
+    /** Current page number. Example: 1 */
     current?: Maybe<Scalars['Int']['output']>;
-    /** Denotes if next page of coupon is available. */
+    /** Whether next page is available. Example: true */
     has_next?: Maybe<Scalars['Boolean']['output']>;
-    /** Denotes if previous page of the coupon is available. */
+    /** Whether previous page is available. Example: false */
     has_previous?: Maybe<Scalars['Boolean']['output']>;
-    /** Total pages of coupon availalbe. */
+    /** Total pages available. Example: 5 */
     total?: Maybe<Scalars['Int']['output']>;
-    /** Total coupons are available for the cart. */
+    /** Total coupons available for the cart. Example: 23 */
     total_item_count?: Maybe<Scalars['Int']['output']>;
 };
 /** An object representing theme page detail. */
@@ -6438,7 +9385,7 @@ export type PageSeo = {
     /** The unique identifier for the object. */
     _id?: Maybe<Scalars['String']['output']>;
     /** An array representing breadcrumb navigation, where each item provides information about a step in the navigation path. */
-    breadcrumb?: Maybe<Array<Maybe<SeObreadcrumb>>>;
+    breadcrumbs?: Maybe<Array<Maybe<SeObreadcrumb>>>;
     /** The canonical url of the page. */
     canonical_url?: Maybe<Scalars['String']['output']>;
     /** The SEO description of the page. */
@@ -6475,6 +9422,8 @@ export type PageSectionMetaAttributes = {
     __typename?: 'PageSectionMetaAttributes';
     /** A key-value pair object containing metadata attributes for the section. */
     attributes?: Maybe<Scalars['JSON']['output']>;
+    /** A key-value pair object containing canvas attributes for the section. */
+    canvas?: Maybe<CanvasItem>;
 };
 /** An object representing a section of the page. Each section can contain various attributes and elements that contribute to the page's content. */
 export type PageSections = {
@@ -6488,8 +9437,70 @@ export type PageSections = {
     /** An object containing preset configurations for the section. */
     preset?: Maybe<SectionPreset>;
     /** An object containing various properties associated with the section. */
-    props?: Maybe<SectionProps>;
+    props?: Maybe<Scalars['JSON']['output']>;
 };
+/**
+ * Page types for the `seoMarkupSchemas` query (both the `pageTypes` input and
+ * the serialized `page_type` output). Values mirror the storefront route
+ * taxonomy (FDK `AVAILABLE_PAGE_TYPE`), which the resolver maps to the REST
+ * page_type with a generic CAPS_UNDERSCORE ⇄ kebab-lowercase transform — e.g.
+ * PROFILE_EMAIL → profile-email. The convex SEO schema model's stored values
+ * must use the same singular form so output serialization round-trips.
+ */
+export declare enum PageType {
+    AboutUs = "ABOUT_US",
+    Addresses = "ADDRESSES",
+    Blog = "BLOG",
+    Brand = "BRAND",
+    Brands = "BRANDS",
+    Cards = "CARDS",
+    Cart = "CART",
+    CartDelivery = "CART_DELIVERY",
+    CartPayment = "CART_PAYMENT",
+    CartReview = "CART_REVIEW",
+    Categories = "CATEGORIES",
+    Category = "CATEGORY",
+    Collection = "COLLECTION",
+    Collections = "COLLECTIONS",
+    ContactUs = "CONTACT_US",
+    Custom = "CUSTOM",
+    External = "EXTERNAL",
+    Faq = "FAQ",
+    Form = "FORM",
+    Freshchat = "FRESHCHAT",
+    Home = "HOME",
+    LocateUs = "LOCATE_US",
+    Login = "LOGIN",
+    NotificationSettings = "NOTIFICATION_SETTINGS",
+    Orders = "ORDERS",
+    OrderStatus = "ORDER_STATUS",
+    Page = "PAGE",
+    Policy = "POLICY",
+    Product = "PRODUCT",
+    Products = "PRODUCTS",
+    ProductRequest = "PRODUCT_REQUEST",
+    Profile = "PROFILE",
+    ProfileBasic = "PROFILE_BASIC",
+    ProfileCompany = "PROFILE_COMPANY",
+    ProfileEmail = "PROFILE_EMAIL",
+    ProfileLoyaltyRewards = "PROFILE_LOYALTY_REWARDS",
+    ProfileOrderShipment = "PROFILE_ORDER_SHIPMENT",
+    ProfilePhone = "PROFILE_PHONE",
+    RateUs = "RATE_US",
+    ReferEarn = "REFER_EARN",
+    Register = "REGISTER",
+    RequestReattempt = "REQUEST_REATTEMPT",
+    ReturnPolicy = "RETURN_POLICY",
+    Sections = "SECTIONS",
+    Settings = "SETTINGS",
+    SharedCart = "SHARED_CART",
+    ShippingPolicy = "SHIPPING_POLICY",
+    SinglePageCheckout = "SINGLE_PAGE_CHECKOUT",
+    Tnc = "TNC",
+    TrackOrder = "TRACK_ORDER",
+    Wishlist = "WISHLIST"
+}
+/** Different types of pages in the application. */
 export declare enum PageTypes {
     Custom = "custom",
     Sections = "sections",
@@ -6503,6 +9514,7 @@ export type PageUserPredicate = {
     /** True if the user is authenticated. */
     authenticated?: Maybe<Scalars['Boolean']['output']>;
 };
+/** Visibility settings for page items. */
 export declare enum PageVisibilityOfItem {
     Pdp = "pdp"
 }
@@ -6520,14 +9532,12 @@ export type Params = {
     /** The unique identifier for the product grouping. */
     slug?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
-/** Describes the request structure to login or register using an email address and password. */
+/** Describes the request structure to login or register using an email address and password. Both username (email) and password are required. */
 export type PasswordLoginRequestSchemaInput = {
-    /** Captcha_code for sending password login request. */
-    captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Password of user. */
-    password?: InputMaybe<Scalars['String']['input']>;
-    /** Username of user. */
-    username?: InputMaybe<Scalars['String']['input']>;
+    /** User's password. */
+    password: Scalars['String']['input'];
+    /** Username (email address or mobile number). */
+    username: Scalars['String']['input'];
 };
 /** Get payment details. */
 export type Payment = {
@@ -6542,10 +9552,11 @@ export type Payment = {
     check_credit?: Maybe<CreditDetail>;
     /** Get summary of the customer's credit information, including details such as merchant customer reference ID, status, balance, limit, due amount, used amount, due date, days overdue, total due amount, and a repayment URL. */
     customer_credit_summary?: Maybe<UserCredit>;
-    /** Get Epaylater payment banner details. It provides information about the banner's display status, along with relevant messages and the user's registration status. */
+    /**
+     * Get Epaylater payment banner details. It provides information about the banner's display status, along with relevant messages and the user's registration status.
+     * @deprecated Deprecated epaylater aggregator.
+     */
     epay_later_banner_details?: Maybe<EpaylaterBanner>;
-    /** Get details of orders with outstanding payments. */
-    outstanding_order_details?: Maybe<OutstandingOrderDetail>;
     /** Get details of orders that have been paid for, including shipment ID, order ID, due date, payment date, amount, and transaction ID, based on the aggregator merchant user ID. */
     paid_order_details?: Maybe<OutstandingOrderDetail>;
     /** List payment modes available for a given payment link. */
@@ -6577,10 +9588,6 @@ export type PaymentCustomer_Credit_SummaryArgs = {
     aggregator?: InputMaybe<Scalars['String']['input']>;
 };
 /** Get payment details. */
-export type PaymentOutstanding_Order_DetailsArgs = {
-    aggregator?: InputMaybe<Scalars['String']['input']>;
-};
-/** Get payment details. */
 export type PaymentPaid_Order_DetailsArgs = {
     aggregator?: InputMaybe<Scalars['String']['input']>;
 };
@@ -6601,9 +9608,9 @@ export type PaymentCouponValidate = {
     __typename?: 'PaymentCouponValidate';
     /** Coupon validity schema which includes coupon title, coupon code, next validation flag, valid flag, error display message and discount of coupon. */
     coupon_validity?: Maybe<CouponValidity>;
-    /** Payment mode valid message for coupon. */
+    /** Payment mode valid message for coupon. Example: 'Applicable on CARD only' */
     message?: Maybe<Scalars['String']['output']>;
-    /** Success flag of coupon payment mode validity API response. */
+    /** Success flag of coupon payment mode validity API response. Example: true */
     success: Scalars['Boolean']['output'];
 };
 /** Contains details for default payment selection */
@@ -6616,6 +9623,11 @@ export type PaymentDefaultSelection = {
     /** Decide if the default payment mode will skip the payment options page altogether or just be preferred on the Frontend. */
     skip?: Maybe<Scalars['Boolean']['output']>;
 };
+/** Payment flow types available for a Payment Options */
+export declare enum PaymentFlow {
+    Custom = "custom",
+    Standard = "standard"
+}
 /** Aggregator Route. */
 export type PaymentFlowDetail = {
     __typename?: 'PaymentFlowDetail';
@@ -6627,35 +9639,57 @@ export type PaymentFlowDetail = {
     payment_flow?: Maybe<Scalars['String']['output']>;
     /** Payment flow data. */
     payment_flow_data?: Maybe<Scalars['JSON']['output']>;
+    /** Split payment configuration associated with this payment flow. */
+    split_configuration?: Maybe<SplitConfigurationDetail>;
+    /** Type of the aggregator. */
+    type?: Maybe<Scalars['String']['output']>;
 };
 /** Payment flow object. */
 export type PaymentFlows = {
     __typename?: 'PaymentFlows';
-    /** Ajio Dhan Payment flow object. */
+    /**
+     * Ajio Dhan Payment flow object.
+     * @deprecated Deprecated ajiodhan aggregator.
+     */
     ajiodhan?: Maybe<PaymentFlowDetail>;
     /** BQR Razorpay Payment flow object. */
     bqr_razorpay?: Maybe<PaymentFlowDetail>;
     /** CCAvenue Payment flow object. */
     ccavenue?: Maybe<PaymentFlowDetail>;
-    /** ePayLater Payment flow object. */
+    /**
+     * ePayLater Payment flow object.
+     * @deprecated Deprecated epaylater aggregator.
+     */
     epaylater?: Maybe<PaymentFlowDetail>;
     /** Fynd Payment flow object. */
     fynd?: Maybe<PaymentFlowDetail>;
-    /** JioPay Payment flow object. */
+    /**
+     * JioPay Payment flow object.
+     * @deprecated Deprecated jiopay aggregator.
+     */
     jiopay?: Maybe<PaymentFlowDetail>;
     /** Juspay Payment flow object. */
     juspay?: Maybe<PaymentFlowDetail>;
-    /** Mswipe Payment flow object. */
+    /**
+     * Mswipe Payment flow object.
+     * @deprecated Deprecated mswipe aggregator.
+     */
     mswipe?: Maybe<PaymentFlowDetail>;
     /** PayUbiz Payment flow object. */
     payubiz?: Maybe<PaymentFlowDetail>;
     /** Razorpay Payment flow object. */
     razorpay?: Maybe<PaymentFlowDetail>;
-    /** Rupifi Payment flow object. */
+    /**
+     * Rupifi Payment flow object.
+     * @deprecated Deprecated rupifi aggregator.
+     */
     rupifi?: Maybe<PaymentFlowDetail>;
     /** Simpl Payment flow object. */
     simpl?: Maybe<PaymentFlowDetail>;
-    /** Stripe Payment flow object. */
+    /**
+     * Stripe Payment flow object.
+     * @deprecated Deprecated stripe aggregator.
+     */
     stripe?: Maybe<PaymentFlowDetail>;
     /** UPI Razorpay Payment flow object. */
     upi_razorpay?: Maybe<PaymentFlowDetail>;
@@ -6666,9 +9700,9 @@ export type PaymentInitializationRequestInput = {
     aggregator: Scalars['String']['input'];
     /** Payable amount. */
     amount: Scalars['Int']['input'];
-    /** Customer valid mobile number. */
+    /** Customer valid mobile number without country code. */
     contact: Scalars['String']['input'];
-    /** Currency code. */
+    /** Currency code. Example: INR */
     currency: Scalars['String']['input'];
     /** Payment gateway customer id. */
     customer_id: Scalars['String']['input'];
@@ -6676,55 +9710,77 @@ export type PaymentInitializationRequestInput = {
     device_id?: InputMaybe<Scalars['String']['input']>;
     /** Customer valid email. */
     email: Scalars['String']['input'];
-    /** Unique fynd order id. */
+    /** Unique fynd order id. Example: FY692D2AC45171FB895B */
     merchant_order_id: Scalars['String']['input'];
-    /** Payment method. */
+    /** Payment method. Example: UPI, QR */
     method: Scalars['String']['input'];
-    /** Payment gateway order id. */
+    /** Payment gateway order id. Example: order_RmEfzG8cYBme5d */
     order_id: Scalars['String']['input'];
-    /** Payment gateway payment id. */
-    razorpay_payment_id?: InputMaybe<Scalars['String']['input']>;
     /** Payment polling timeout if not received response. */
     timeout?: InputMaybe<Scalars['Int']['input']>;
-    /** Customer vpa address. */
-    vpa?: InputMaybe<Scalars['String']['input']>;
 };
 /** Payment Initialization Response. */
 export type PaymentInitializationResponse = {
     __typename?: 'PaymentInitializationResponse';
     /** Payment gateway name. */
     aggregator: Scalars['String']['output'];
-    /** Payment order id. */
+    /** Order ID assigned by the payment gateway's aggregator. */
     aggregator_order_id?: Maybe<Scalars['String']['output']>;
     /** Payable amount. */
     amount?: Maybe<Scalars['Int']['output']>;
-    /** Bharat qr image url. */
+    /**
+     * Bharat qr image url.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     bqr_image?: Maybe<Scalars['String']['output']>;
-    /** Currency code. */
+    /**
+     * Currency code. Example: INR
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     currency?: Maybe<Scalars['String']['output']>;
-    /** Payment gateway customer id. */
+    /**
+     * Payment gateway customer id.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     customer_id?: Maybe<Scalars['String']['output']>;
-    /** EDC machine Unique Identifier. */
+    /**
+     * EDC machine Unique Identifier.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     device_id?: Maybe<Scalars['String']['output']>;
-    /** Order id. */
+    /** Order id. Example: FY692D2AC45171FB895B */
     merchant_order_id: Scalars['String']['output'];
-    /** Payment method. */
-    method: Scalars['String']['output'];
+    /**
+     * Payment method. Example: UPI, QR
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    method?: Maybe<Scalars['String']['output']>;
     /** Polling url. */
     polling_url: Scalars['String']['output'];
-    /** Payment  id. */
+    /**
+     * Payment  id.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     razorpay_payment_id?: Maybe<Scalars['String']['output']>;
-    /** Status of payment. */
-    status?: Maybe<Scalars['String']['output']>;
+    /** Status of the payment. */
+    status: PaymentStatusUpdateResponseStatus;
+    /**
+     * Status code of the payment.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    status_code?: Maybe<Scalars['String']['output']>;
     /** Response is successful or not. */
     success: Scalars['Boolean']['output'];
-    /** Timeout. */
+    /** Timeout in seconds. */
     timeout?: Maybe<Scalars['Int']['output']>;
     /** UPI poll url. */
     upi_poll_url?: Maybe<Scalars['String']['output']>;
     /** Payment virtual address. */
     virtual_id?: Maybe<Scalars['String']['output']>;
-    /** Customer vpa address. */
+    /**
+     * Customer vpa address.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     vpa?: Maybe<Scalars['String']['output']>;
 };
 /** Get Payment Link Response. */
@@ -6757,30 +9813,32 @@ export type PaymentLinkDetail = {
     /** Polling Payment Link Response. */
     polling_payment_link?: Maybe<PollingPaymentLinkDetail>;
 };
-/** Payment meta detail includes merchant code, type, payment gateway, and payment identifier. */
+/** Payment meta including merchant code, type, gateway, and identifier. */
 export type PaymentMetaInput = {
-    /** Merchant code of the payment mode selected to do the payment. */
+    /** Merchant code. Example: 'ICICI' */
     merchant_code?: InputMaybe<Scalars['String']['input']>;
-    /** Payment gateway used to do the payment. */
+    /** Payment gateway. Example: 'Razorpay' */
     payment_gateway?: InputMaybe<Scalars['String']['input']>;
-    /** Payment identifier of the payment mode selected to do the payment. */
+    /** Payment identifier. Example: 'pay_abc123' */
     payment_identifier?: InputMaybe<Scalars['String']['input']>;
-    /** Type of card if payment mode is card to do the payment. */
+    /** Card type for card payments (e.g., DEBIT, CREDIT). Example: 'DEBIT' */
     type?: InputMaybe<Scalars['String']['input']>;
 };
-/** Payment method details used to make the payment includes data like payment meta, payment mode, payment name, amout, and payment extra identifiers. */
+/** Payment method details including meta, mode, name, amount, and extra identifiers. */
 export type PaymentMethodInput = {
-    /** Amount of the payment mode to be paid. */
+    /** Amount to be paid using this method. Example: 499.0 */
     amount?: InputMaybe<Scalars['Float']['input']>;
-    /** Payment mode of payment method used to make payment. */
+    /** Payment mode (e.g., COD, NB, CARD, UPI). Example: 'UPI' */
     mode: Scalars['String']['input'];
-    /** Name of the payment mode used to make payment. */
+    /** Display name of the payment method. Example: 'Google Pay' */
     name?: InputMaybe<Scalars['String']['input']>;
-    /** Payment name of payment method used to make payment. */
+    /** Payment type/category. Example: 'required' */
     payment?: InputMaybe<Scalars['String']['input']>;
-    /** Payment extra identifier for the payment mode to do the payment. */
+    /** Extra identifiers for payment. Example: { upi_vpa: 'name@upi' } */
     payment_extra_identifiers?: InputMaybe<Scalars['JSON']['input']>;
-    /** Payment meta detail includes merchant code, type, payment gateway, and payment identifier. */
+    /** Payment identifier from gateway. Example: 'pay_abc123' */
+    payment_identifier?: InputMaybe<Scalars['String']['input']>;
+    /** Payment meta (merchant code, type, gateway, identifier). */
     payment_meta: PaymentMetaInput;
 };
 /** Create Order User Payment Method schema. */
@@ -6820,7 +9878,7 @@ export type PaymentModeList = {
     card_issuer?: Maybe<Scalars['String']['output']>;
     /** Name printed on the card. */
     card_name?: Maybe<Scalars['String']['output']>;
-    /** Card number mentioned on the card. */
+    /** Card number displayed in its masked format. */
     card_number?: Maybe<Scalars['String']['output']>;
     /** Reference identifier for the card. */
     card_reference?: Maybe<Scalars['String']['output']>;
@@ -6828,6 +9886,8 @@ export type PaymentModeList = {
     card_token?: Maybe<Scalars['String']['output']>;
     /** Type of the card (e.g., debit, credit). */
     card_type?: Maybe<Scalars['String']['output']>;
+    /** COD Charges. */
+    cod_charges?: Maybe<Scalars['Float']['output']>;
     /** Limit for Cash on Delivery (COD) transactions. */
     cod_limit?: Maybe<Scalars['Float']['output']>;
     /** Maximum limit per order for COD transactions. */
@@ -6866,12 +9926,22 @@ export type PaymentModeList = {
     name?: Maybe<Scalars['String']['output']>;
     /** User-defined name for the card. */
     nickname?: Maybe<Scalars['String']['output']>;
+    /** Indicates if this payment option is eligible for coupling with other payment options, allowing the user to make multi-method of payment (MOP) transactions. */
+    partial_payment_allowed?: Maybe<Scalars['Boolean']['output']>;
+    /** Amount remaining to be paid across future splits. */
+    remaining_amount?: Maybe<Scalars['Float']['output']>;
     /** Remaining available limit on the card. */
     remaining_limit?: Maybe<Scalars['Float']['output']>;
+    /** Number of split payments remaining to be made for this order. */
+    remaining_splits?: Maybe<Scalars['Int']['output']>;
     /** Number of retry attempts. */
     retry_count?: Maybe<Scalars['Int']['output']>;
     /** Timeout duration for transactions. */
     timeout?: Maybe<Scalars['Int']['output']>;
+    /** Total amount to be paid across all splits. */
+    total_amount?: Maybe<Scalars['Float']['output']>;
+    /** Total number of split payments configured for this order. */
+    total_splits?: Maybe<Scalars['Int']['output']>;
 };
 /** Single payment option with flow and split values. */
 export type PaymentModeRouteDetail = {
@@ -6888,6 +9958,8 @@ export type PaymentModeRouteDetail = {
 /** Payment option and flow object. */
 export type PaymentOptionDetails = {
     __typename?: 'PaymentOptionDetails';
+    /** Aggregator Details. */
+    aggregator_details: Array<Maybe<AggregatorRouteDetail>>;
     /** Details for default payment selection */
     payment_default_selection?: Maybe<PaymentDefaultSelection>;
     /** Payment flow object. */
@@ -6959,43 +10031,43 @@ export type PaymentOrderMethodsInput = {
     /** Payment type i.e. Required / Blocked. */
     payment?: InputMaybe<Scalars['String']['input']>;
 };
-/** Payment Default Selection Schema. */
+/** Payment default selection configuration. */
 export type PaymentSelectionLock = {
     __typename?: 'PaymentSelectionLock';
-    /** Default Selection Payment Mode. */
+    /** Default payment mode selected. Example: 'CARD' */
     default_options?: Maybe<Scalars['String']['output']>;
-    /** Denotes if default payment selection is enable. */
+    /** Whether default payment selection is enabled. Example: false */
     enabled?: Maybe<Scalars['Boolean']['output']>;
-    /** Identifier for Payment Mode. */
+    /** Payment mode identifier. Example: 'pay_abc123' */
     payment_identifier?: Maybe<Scalars['String']['output']>;
 };
 /** Payment Status Update Request. */
 export type PaymentStatusUpdateRequestInput = {
-    /** Payment gateway name. */
+    /** Name of the payment aggregator (see payment_options.payment_option.aggregator_name from the paymentModeRoutes query). Example: UPI_Razorpay */
     aggregator: Scalars['String']['input'];
     /** Payable amount. */
     amount: Scalars['Int']['input'];
-    /** Customer valid mobile number. */
+    /** Customer 10 digit valid mobile number. */
     contact: Scalars['String']['input'];
-    /** Currency code. */
+    /** Currency code. Example: INR */
     currency: Scalars['String']['input'];
-    /** Payment gateway customer id. */
+    /** Payment gateway customer id eg cust_RmEfyKmzkMzPUr */
     customer_id: Scalars['String']['input'];
     /** EDC machine Unique Identifier. */
     device_id?: InputMaybe<Scalars['String']['input']>;
     /** Customer valid email. */
     email: Scalars['String']['input'];
-    /** Unique fynd order id. */
+    /** Unique fynd order id eg FY692D2AC45171FB895B */
     merchant_order_id: Scalars['String']['input'];
-    /** Unique fynd transaction id. */
+    /** Unique fynd transaction id eg TR692D2BC451FA77D8GF */
     merchant_transaction_id: Scalars['String']['input'];
-    /** Payment method. */
+    /** Payment method eg UPI */
     method: Scalars['String']['input'];
-    /** Payment gateway order id. */
+    /** Payment gateway order id eg order_RmEfzG8cYBme5d */
     order_id: Scalars['String']['input'];
-    /** Status of payment. */
-    status: Scalars['String']['input'];
-    /** Customer vpa address. */
+    /** Customer virtual id for QR. Example: qr_Rh6w6bT7erCqvC */
+    virtual_id?: InputMaybe<Scalars['String']['input']>;
+    /** Customer vpa address eg. success@razopray */
     vpa?: InputMaybe<Scalars['String']['input']>;
 };
 /** Payment status update response. */
@@ -7003,15 +10075,24 @@ export type PaymentStatusUpdateResponse = {
     __typename?: 'PaymentStatusUpdateResponse';
     /** Payment gateway name. */
     aggregator_name: Scalars['String']['output'];
-    /** Redirect url. */
+    /** If payment status is success or failed, frontend should redirects the user to this url */
     redirect_url?: Maybe<Scalars['String']['output']>;
-    /** Response is successful or not. */
+    /**
+     * If the payment does not complete in 10 minutes, the order is marked as failed and the retry flag is set to true.
+     * This notifies the frontend to prompt the user to retry the payment by generating a new QR code.
+     */
     retry: Scalars['Boolean']['output'];
-    /** Payment status. */
-    status: Scalars['String']['output'];
+    /** Payment status. Possible values: pending, success, failed. */
+    status: PaymentStatusUpdateResponseStatus;
     /** Response is successful or not. */
-    success?: Maybe<Scalars['Boolean']['output']>;
+    success: Scalars['Boolean']['output'];
 };
+/** Possible payment status */
+export declare enum PaymentStatusUpdateResponseStatus {
+    Failed = "failed",
+    Pending = "pending",
+    Success = "success"
+}
 /** PayUMoney config detail schema. */
 export type PayuMoneyAggregatorConfig = {
     __typename?: 'PayuMoneyAggregatorConfig';
@@ -7029,18 +10110,15 @@ export type PayuMoneyAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
     /** Payment gateway verify payment api endpoint. */
     verify_api?: Maybe<Scalars['String']['output']>;
-};
-/** Configuration for the PCR feature. */
-export type PcrFeature = {
-    __typename?: 'PcrFeature';
-    /** Allow staff selection. Default value is false. */
-    staff_selection?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Component or field of the KYC form. */
 export type PersonalInfoInput = {
@@ -7080,7 +10158,10 @@ export type PersonalInfoInput = {
 /** Object representing a user's phone number, including its active status, whether it's the primary number, verification status, and the phone number itself. */
 export type PhoneNumber = {
     __typename?: 'PhoneNumber';
-    /** Current phone number is active or not active. */
+    /**
+     * Current phone number is active or not active.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     active?: Maybe<Scalars['Boolean']['output']>;
     /** Country code, e.g. +91. */
     country_code?: Maybe<Scalars['Int']['output']>;
@@ -7094,13 +10175,13 @@ export type PhoneNumber = {
 /** Details related to phone contact of SPOC. */
 export type PhoneProperties = {
     __typename?: 'PhoneProperties';
-    /** International dial Code. */
+    /** International dial Code. For example, '+91' or '+1'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** Name of the Contact SPOC. */
+    /** Name of the Contact SPOC. For example, 'Customer Support' or 'Sales Team'. */
     key?: Maybe<Scalars['String']['output']>;
-    /** Phone Number. */
+    /** Phone Number. For example, '9876543210' or '18001234567'. */
     number?: Maybe<Scalars['String']['output']>;
-    /** Denotes the type of phone number. */
+    /** Denotes the type of phone number. For example, 'mobile' or 'landline'. */
     phone_type?: Maybe<PhoneTypeEnum>;
 };
 /** Details related to phone contact of SPOC. */
@@ -7114,54 +10195,54 @@ export type PhoneSchema = {
 /** Contact number with country code and phone number. */
 export type PhoneSupport = {
     __typename?: 'PhoneSupport';
-    /** Code of the ordering store (usually same as Store Code). */
+    /** Country code for contact number, e.g. '+91' (for India). */
     code?: Maybe<Scalars['String']['output']>;
-    /** Additional identifier or key for the contact number. */
+    /** Additional identifier or key for the contact number, e.g. 'support' or 'sales'. */
     key?: Maybe<Scalars['String']['output']>;
-    /** 10-digit mobile number. */
+    /** Mobile phone number, e.g. '9876543210'. */
     number?: Maybe<Scalars['String']['output']>;
 };
+/** Types of phone numbers supported. */
 export declare enum PhoneTypeEnum {
     PhoneNumber = "phone_number",
     Tollfree = "tollfree"
 }
-/** Provides information about address hierarchy . */
-export type PincodeDetails = {
-    __typename?: 'PincodeDetails';
-    /** User-friendly version of the geographical data, which may be more descriptive or formatted differently. */
-    display_name?: Maybe<Scalars['String']['output']>;
-    /** The name of the packaging. */
+/** Store details for pickup orders including location and availability information. */
+export type PickupStoreDetail = {
+    __typename?: 'PickupStoreDetail';
+    /** The full address of the store. Example: '12, MIDC Rd, Andheri East, Mumbai' */
+    address?: Maybe<Scalars['String']['output']>;
+    /** The distance between the store and the customer's location. Example: 2.5 */
+    distance?: Maybe<Scalars['Float']['output']>;
+    /** The name of the store or pickup location. Example: 'Fynd Andheri' */
     name?: Maybe<Scalars['String']['output']>;
-    /** Indicates the specific type of locality hierarchy the pincode belongs to (e.g., city, state, country). */
-    sub_type?: Maybe<Scalars['String']['output']>;
-    /** This field stands for "Unique Identifier," a unique value assigned to each instance to ensure differentiation and reference. */
-    uid?: Maybe<Scalars['String']['output']>;
+    /** The postal code of the store's location. Example: '400059' */
+    pincode?: Maybe<Scalars['String']['output']>;
+    /** The store's operational hours for each day of the week. Example: [{ weekday: 'Monday', opening: { hour: 9, minute: 0 }, closing: { hour: 21, minute: 0 }, open: true }] */
+    store_hours?: Maybe<Array<Maybe<StoreHours>>>;
+    /** A unique identifier for the store. Example: 2001 */
+    store_id?: Maybe<Scalars['Int']['output']>;
 };
 /** Provides geographical information for a pincode. */
 export type PincodeLatLongData = {
     __typename?: 'PincodeLatLongData';
-    /** Contains the latitude and longitude values representing the precise location. The format is usually an array with two values: [longitude, latitude]. */
+    /** Latitude and longitude as [longitude, latitude], e.g. [72.854, 19.115]. */
     coordinates?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Specifies the type of geographical feature or data, typically "Point" for coordinates in geographic data systems. */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Provides metadata about a specific pincode. */
-export type PincodeMetaData = {
-    __typename?: 'PincodeMetaData';
-    /** A unique identifier used within the system to track or reference the specific zone associated with the pincode. */
-    internal_zone_id?: Maybe<Scalars['Int']['output']>;
-    /**
-     * Geographical region to which the pincode belongs,
-     * often used to categorize or group pincodes for regional management or postal purposes.
-     */
-    zone?: Maybe<Scalars['String']['output']>;
-};
 /** Schema representing the platform sales channel authentication configuration. */
 export type PlatformConfig = {
     __typename?: 'PlatformConfig';
-    /** Is the application config active or not. */
+    /**
+     * Is the application config active or not.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     active?: Maybe<Scalars['Boolean']['output']>;
-    /** When was the application platform config document was created. */
+    /**
+     * When was the application platform config document was created.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
     /** Any consent you want a user to know while deleting the account. */
     delete_account_consent?: Maybe<DeleteAccountConsent>;
@@ -7175,9 +10256,9 @@ export type PlatformConfig = {
     display?: Maybe<Scalars['String']['output']>;
     /** Information of the flashcard like text colour, text and background color of text. */
     flash_card?: Maybe<FlashCard>;
-    /** Forgot password option to be given or not to application user. */
+    /** Forgot password option to be given or not to user. */
     forgot_password?: Maybe<Scalars['Boolean']['output']>;
-    /** Unique document id of the platform config. */
+    /** Unique document ID of the platform config. */
     id?: Maybe<Scalars['String']['output']>;
     /** Login option to be provided with password or OTP either both. */
     login?: Maybe<Login>;
@@ -7201,15 +10282,21 @@ export type PlatformConfig = {
     skip_captcha?: Maybe<Scalars['Boolean']['output']>;
     /** Whether to skip the login or not. */
     skip_login?: Maybe<Scalars['Boolean']['output']>;
-    /** Information whether application social logins like facebook, google etc are enabled or disabled. */
+    /** Information whether application social logins like Facebook, Google etc are enabled or disabled. */
     social?: Maybe<Social>;
-    /** Application credentials like client id and secret for social logins. */
+    /** Application credentials like client ID and secret for social logins. */
     social_tokens?: Maybe<SocialTokens>;
     /** Text to be shown at the top of the flash card like login to fynd, login to tira. */
     subtext?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the configuration was last updated. */
+    /**
+     * The date and time when the configuration was last updated.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** Version of the document. */
+    /**
+     * Version of the document.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     version?: Maybe<Scalars['Float']['output']>;
 };
 /** Describes how polling will be done for the created tickets. */
@@ -7266,90 +10353,127 @@ export type Price = {
     /** The minimum price for the product across stores. */
     min?: Maybe<Scalars['Float']['output']>;
 };
+/** Details about price adjustment charges applied to orders. */
 export type PriceAdjustmentCharge = {
     __typename?: 'PriceAdjustmentCharge';
-    /** Charges amount */
+    /** Charges amount. For example, `amount` can be set to a ChargeAmount object. */
     amount?: Maybe<ChargeAmount>;
-    /** Code defined for charge */
+    /** Code defined for charge. For example, `code` can be set to 'sample_code'. */
     code?: Maybe<Scalars['String']['output']>;
-    /** Contains distribution logic for price adjustment. */
+    /** Contains distribution logic for price adjustment. For example, `distribution_logic` can be set to a ChargeDistributionLogic object. */
     distribution_logic?: Maybe<ChargeDistributionLogic>;
-    /** Display name for charge (charge is unique by the name) */
+    /** Display name for charge (charge is unique by the name). For example, `name` can be set to 'Sample Name'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Type defined for charge */
+    /** Type defined for charge. For example, `type` can be set to 'shipping'. */
     type?: Maybe<Scalars['String']['output']>;
 };
+/**
+ * Price display mode on PLP (Product Listing Page) for products with multiple sizes.
+ * Valid values are min, max, or range.
+ */
+export declare enum PriceDisplayMode {
+    /** Display the maximum (highest) price among the available sizes. */
+    Max = "max",
+    /** Display the minimum (lowest) price among the available sizes. */
+    Min = "min",
+    /** Display the full price range (lowest to highest) across sizes. */
+    Range = "range"
+}
 /** Price of single quantity product for seller currency and customer currency. */
 export type PriceInfo = {
     __typename?: 'PriceInfo';
-    /** Price before promotion and coupon amount applied for calculation. */
+    /** Price before promotion/coupon (add-on). Example: 0.0 */
     add_on?: Maybe<Scalars['Float']['output']>;
-    /** Currency code for all amounts. */
+    /** Currency code for all amounts. Example: 'INR' */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol for currency. */
+    /** Currency symbol for currency. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** Current per unit price of product after existing deductions. */
+    /** Net discount applied on product, contains total discount amount including promotions, coupons and engage discount [excluding inventory discount]. */
+    discount?: Maybe<Scalars['Float']['output']>;
+    /** Price of the product after applying inventory discount and before applying promotion, coupon and engage discount. Example: 499.0 */
     effective?: Maybe<Scalars['Float']['output']>;
-    /** Original price of product. */
+    /** Final price of the product in cart after applying all discounts such as promotion, coupon and engage discount. */
+    final_price?: Maybe<Scalars['Float']['output']>;
+    /** Original MRP of product. Example: 799.0 */
     marked?: Maybe<Scalars['Float']['output']>;
-    /** Selling price of the product. */
+    /** Selling price of the product. Example: 549.0 */
     selling?: Maybe<Scalars['Float']['output']>;
 };
+/** Price range information showing minimum and maximum values for cart items. */
 export type PriceMinMax = {
     __typename?: 'PriceMinMax';
-    /** Max price of article added in user cart. */
+    /** Maximum price. Example: 799.0 */
     max?: Maybe<Scalars['Float']['output']>;
-    /** Min price of article added in user cart. */
+    /** Minimum price. Example: 499.0 */
     min?: Maybe<Scalars['Float']['output']>;
 };
+/** Sorting options for product prices. */
+export declare enum PriceSort {
+    /** Sort by the maximum (highest) price first. */
+    Max = "max",
+    /** Sort by the minimum (lowest) price first. Default option. */
+    Min = "min"
+}
+/** Defines the strategy type available for a sales channel. */
+export declare enum PriceStrategy {
+    /** Applies prices set in the price factory */
+    PriceFactory = "price_factory",
+    /** (default) Applies store-level pricing */
+    StorePrices = "store_prices"
+}
 /** Schema for prices. */
 export type Prices = {
     __typename?: 'Prices';
-    /** Indicates if the refund amount was added to Fynd Cash. */
+    /** Indicates if the refund amount was added to Fynd Cash. For example, `added_to_fynd_cash` can be set to true. */
     added_to_fynd_cash?: Maybe<Scalars['Boolean']['output']>;
-    /** The total amount paid by the customer. */
+    /** The total amount paid by the customer. Calculated as price_effective + cod_charges + delivery_charge + article_charge - coupon_effective_discount - promotion_effective_discount - referral_credits - cashback - gift_card_amount - employee_discount - loyalty_discount (must be non-negative). */
     amount_paid?: Maybe<Scalars['Float']['output']>;
-    /** The rounded-off amount paid by the customer. */
+    /** The rounded-off amount paid by the customer. For example, `amount_paid_roundoff` can be set to 2499.5. */
     amount_paid_roundoff?: Maybe<Scalars['Float']['output']>;
-    /** The total amount that needs to be collected from the customer. */
+    /** Net amount that needs to be collected: price_effective + cod_charges + delivery_charge - coupon_effective_discount - promotion_effective_discount - referral_credits - cashback - customer credit note - gift card - employee_discount - loyalty_discount - sodexo (where applicable). */
     amount_to_be_collected?: Maybe<Scalars['Float']['output']>;
-    /** The amount calculated by the brand. */
+    /** The amount paid to the brand after subtracting all seller-funded discounts. It represents the brand’s net receivable calculated as: BCA = price_effective - coupon_effective_discount (seller) - promotion_effective_discount (seller). */
     brand_calculated_amount?: Maybe<Scalars['Float']['output']>;
-    /** The cashback amount earned. */
+    /** The cashback amount earned. For example, `cashback` can be set to 99.99. */
     cashback?: Maybe<Scalars['Float']['output']>;
-    /** The amount of cashback applied. */
+    /** The amount of cashback applied. For example, `cashback_applied` can be set to 99.99. */
     cashback_applied?: Maybe<Scalars['Float']['output']>;
-    /** The cash on delivery charges, if applicable. */
+    /** The cash on delivery charges, if applicable. For example, `cod_charges` can be set to 99.99. */
     cod_charges?: Maybe<Scalars['Float']['output']>;
-    /** The effective discount from coupons. */
+    /** The effective discount from coupons. If `coupon_effective_discount` is provided, the accompanying coupon_json payload must not be empty. */
     coupon_effective_discount?: Maybe<Scalars['Float']['output']>;
-    /** The value of the coupon applied. */
+    /** The value of the coupon applied. For example, `coupon_value` can be set to 2499.5. */
     coupon_value?: Maybe<Scalars['Float']['output']>;
-    /** The code of the currency used. */
+    /** The code of the currency used. For example, `currency_code` can be set to 'sample_code'. */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** The symbol of the currency used. */
+    /** The symbol of the currency used. For example, `currency_symbol` can be set to 'INR'. */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** The delivery charge for the order. */
+    /** The delivery charge for the order. Included in amount_paid and amount_to_be_collected calculations. */
     delivery_charge?: Maybe<Scalars['Float']['output']>;
-    /** The discount applied to the item. */
+    /** Discount = price_marked (MRP) - price_effective; cannot be negative. */
     discount?: Maybe<Scalars['Float']['output']>;
-    /** The amount of Fynd credits used. */
+    /**
+     * The amount of Fynd credits used. For example, `fynd_credits` can be set to 99.99.
+     * @deprecated This field is obsolete.
+     */
     fynd_credits?: Maybe<Scalars['Float']['output']>;
-    /** The GST tax percentage applied. */
+    /** The GST tax percentage applied. For example, `gst_tax_percentage` can be set to 0.18. */
     gst_tax_percentage?: Maybe<Scalars['Float']['output']>;
-    /** The effective price after all adjustments. */
+    /** Amount reduced from the payable price when the customer applies loyalty program points while placing the order; also impacts amount_paid and amount_to_be_collected. */
+    loyalty_discount?: Maybe<Scalars['Float']['output']>;
+    /** The effective price after all adjustments; must not exceed price_marked/MRP. */
     price_effective?: Maybe<Scalars['Float']['output']>;
-    /** The original marked price of the item. */
+    /** The original marked price (MRP) of the item; must be greater than or equal to price_effective. */
     price_marked?: Maybe<Scalars['Float']['output']>;
-    /** The effective discount from promotions. */
+    /** The effective discount from promotions (seller/marketplace) used in BCA and collection calculations. */
     promotion_effective_discount?: Maybe<Scalars['Float']['output']>;
-    /** The amount refunded to the customer. */
+    /** The amount refunded to the customer. For example, `refund_amount` can be set to 2499.5. */
     refund_amount?: Maybe<Scalars['Float']['output']>;
-    /** The amount credited for refund . */
+    /** The amount credited for refund . For example, `refund_credit` can be set to 99.99. */
     refund_credit?: Maybe<Scalars['Float']['output']>;
-    /** The transfer price of the item. */
+    /** The transfer price of the item. For example, `transfer_price` can be set to 2499.5. */
     transfer_price?: Maybe<Scalars['Float']['output']>;
-    /** The value of the goods before tax and other charges. */
+    /** Value of Good (VOG). VOG = brand_calculated_amount - GST amount (e.g., gst_fee or summed taxes). */
     value_of_good?: Maybe<Scalars['Float']['output']>;
 };
 /** Denotes the priority of ticket. */
@@ -7362,35 +10486,53 @@ export type Priority = {
     /** Describes the priority of the tickets created by the form. */
     key: PriorityEnum;
 };
+/** Priority levels for various operations. */
 export declare enum PriorityEnum {
     High = "high",
     Low = "low",
     Medium = "medium",
     Urgent = "urgent"
 }
+/** Schema representing privacy policy consent information */
+export type PrivacyPolicyConsent = {
+    __typename?: 'PrivacyPolicyConsent';
+    /** When the consent was last updated */
+    updated_at?: Maybe<Scalars['String']['output']>;
+    /** Whether the user has consented to the privacy policy */
+    value?: Maybe<Scalars['Boolean']['output']>;
+};
 /** Detailed information about a product. */
 export type Product = {
     __typename?: 'Product';
-    /** Represents Action Object. */
+    /** Navigation action configuration for page routing and user interactions. */
     action?: Maybe<PageActionDetail>;
     /** A dictionary of product attributes. */
     attributes?: Maybe<Scalars['JSON']['output']>;
     /** Brand associated with the product. */
-    brand?: Maybe<ProductBrand>;
+    brand?: Maybe<NavigationAction>;
     /** List of product categories associated with the product. */
-    categories?: Maybe<Array<Maybe<ProductBrand>>>;
+    categories?: Maybe<Array<Maybe<NavigationAction>>>;
     /** Represents a mapping of product categories at different levels. */
     category_map?: Maybe<ProductCategoryMap>;
+    /**
+     * Identifier for the product channel.
+     * @deprecated This field is obsolete.
+     */
+    channel?: Maybe<Scalars['String']['output']>;
     /** Color of the product, if applicable. */
     color?: Maybe<Scalars['String']['output']>;
+    /** The country of origin for the product. */
+    country_of_origin?: Maybe<Scalars['String']['output']>;
     /** Custom JSON object for additional product data. */
     custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** Additional custom attributes associated with the product for extended product information and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
     /** Custom metadata fields associated with the product. */
     custom_meta?: Maybe<Array<Maybe<CustomMetaFields>>>;
     /** Schema to define manufacturing time(MTO) for a product that needs to be sold before manufacturing. */
     custom_order?: Maybe<ProductDetailCustomOrder>;
     /** Department to which the product belongs. */
-    department?: Maybe<ProductDepartment>;
+    department: ProductDepartment;
     /** The long description of the product. */
     description?: Maybe<Scalars['String']['output']>;
     /** Discount applied to the product, if any. */
@@ -7401,10 +10543,17 @@ export type Product = {
     has_variant?: Maybe<Scalars['Boolean']['output']>;
     /** A list of highlights for the product. */
     highlights?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** List of seller identifiers for the product. */
+    identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** The nature of the product's images. */
     image_nature?: Maybe<Scalars['String']['output']>;
     /** Indicates whether the product can be sold as an individual product. */
     is_dependent?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Indicates if the product is available for tryout.
+     * @deprecated This field is obsolete.
+     */
+    is_tryout?: Maybe<Scalars['Boolean']['output']>;
     /** The item code of the product. */
     item_code?: Maybe<Scalars['String']['output']>;
     /** This field describes the type of item, indicating the category or nature of the product. Possible values are Standard, Composite, Wet, Digital. */
@@ -7417,18 +10566,24 @@ export type Product = {
     name?: Maybe<Scalars['String']['output']>;
     /** Represents the net quantity of a product, including its unit of measurement and value. */
     net_quantity?: Maybe<NetQuantity>;
+    /** No of boxes required to pack the product. */
+    no_of_boxes?: Maybe<Scalars['Int']['output']>;
     /** Price details of the product. */
     price?: Maybe<ProductListingPriceDetails>;
     /** List of bundle/product grouping slugs mapped to the product. */
     product_group_tag?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Date and time when the product was made available online. */
     product_online_date?: Maybe<Scalars['String']['output']>;
+    /** Meta data for promotions associated with the product. */
+    promo_meta?: Maybe<Scalars['JSON']['output']>;
     /** The rating of the product. */
     rating?: Maybe<Scalars['Float']['output']>;
     /** The number of ratings the product has received. */
     rating_count?: Maybe<Scalars['Int']['output']>;
+    /** Indicates whether the product is available for sale. */
+    sellable?: Maybe<Scalars['Boolean']['output']>;
     /** SEO metadata for the product. */
-    seo?: Maybe<ProductSeo>;
+    seo?: Maybe<SeoDetails>;
     /** The short description of the product. */
     short_description?: Maybe<Scalars['String']['output']>;
     /** List of products marked similar to given product. */
@@ -7443,12 +10598,20 @@ export type Product = {
     teaser_tag?: Maybe<Scalars['String']['output']>;
     /** Identifiers or names of tryout versions of the product. */
     tryouts?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Product type or classification. */
+    /**
+     * Product type or classification.
+     * @deprecated This field is obsolete.
+     */
     type?: Maybe<Scalars['String']['output']>;
     /** Unique identifier for the product. */
     uid?: Maybe<Scalars['Int']['output']>;
-    /** Details of product variants. */
+    /** List of product variants, each representing a specific option of the product (e.g., size, color, or material). */
     variants?: Maybe<Array<Maybe<ProductVariant>>>;
+};
+/** Detailed information about a product. */
+export type ProductCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Detailed information about a product. */
 export type ProductSizesArgs = {
@@ -7457,94 +10620,104 @@ export type ProductSizesArgs = {
 /** Schema of Action Object to render the product. */
 export type ProductAction = {
     __typename?: 'ProductAction';
-    /** Action query schema which includes list of product slugs. */
+    /** Redirection Page details from item in cart. */
+    page?: Maybe<ProductActionPage>;
+    /** Action query schema which includes list of product slugs. Example: { product_slug: ['cotton-tshirt'] } */
     query?: Maybe<ActionQuery>;
-    /** Type of action. */
+    /** Type of action. Example: 'navigate' */
     type?: Maybe<Scalars['String']['output']>;
-    /** Url of the product to render the product . */
+    /** URL of the product to render. Example: 'https://example.com/p/cotton-tshirt' */
     url?: Maybe<Scalars['String']['output']>;
+};
+/** Redirection Page details from item in cart */
+export type ProductActionPage = {
+    __typename?: 'ProductActionPage';
+    /** Parameters of the redirection page. Example: { slug: ['cotton-tshirt'] } */
+    params?: Maybe<ProductActionParams>;
+    /** Entity of page to be redirected on click. Example: 'product' */
+    type?: Maybe<Scalars['String']['output']>;
+};
+/** Parameters of the redirection page */
+export type ProductActionParams = {
+    __typename?: 'ProductActionParams';
+    /** URL-friendly identifiers for the products. Example: ['cotton-tshirt'] */
+    slug?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** Product store information of the product added in cart. */
 export type ProductArticle = {
     __typename?: 'ProductArticle';
-    /** Field to update custom json of the article in cart. */
+    /** Custom JSON at article level. Example: { gift_wrap: true } */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Meta details of the article added from cart. */
+    /** Meta details of the article from cart. Example: { source: 'cart-page' } */
     cart_item_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Field to update extra meta of the article in cart. */
+    /** Extra metadata for the article. Example: { color: 'Red' } */
     extra_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Gift card detail if gift card applied to the product which indicates gift price, gift applicable flag and display message for the gift. */
+    /** Flag to indicate the item as a separate line in cart. Example: false */
+    force_new_line_item?: Maybe<Scalars['Boolean']['output']>;
+    /** Selected Fulfillment Option Details. */
+    fulfillment_option?: Maybe<FulfillmentOption>;
+    /** Gift card details if applied (price, applicable flag, message). Example: { price: 500, applicable: true } */
     gift_card?: Maybe<Scalars['JSON']['output']>;
-    /** Unique identifier of the article. */
+    /** Unique identifier of the article. Example: { uid: 'ART123' } */
     identifier?: Maybe<Scalars['JSON']['output']>;
     /** Whether the product can be purchased as a gift. It is true if the product is available for gifting and false otherwise. */
     is_gift_visible?: Maybe<Scalars['Boolean']['output']>;
-    /** Article meta data. */
+    /** Index of the article in cart. Example: 0 */
+    item_index?: Maybe<Scalars['Int']['output']>;
+    /** Article metadata. Example: { bundle: false } */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** Quantity of the product which will specially manufactured as not available in stock. */
+    /** Make-to-order quantity if not in stock. Example: 1 */
     mto_quantity?: Maybe<Scalars['Int']['output']>;
-    /** Fields to determine parent product of the product. */
+    /** Parent product identifiers. Example: { parent_item_id: 111 } */
     parent_item_identifiers?: Maybe<Scalars['JSON']['output']>;
-    /** Article level price details which includes base and converted prices of article. */
+    /** Provides details about a store where customers can pick up their orders. */
+    pickup_store_detail?: Maybe<PickupStoreDetail>;
+    /** Article level price details including base and converted prices. Example: { base: { effective: 499 }, converted: { effective: 499 } } */
     price?: Maybe<ArticlePriceInfo>;
-    /** List fot the unique identifier for the product grouping. */
+    /** List of product grouping tags. Example: ['bundle', 'set'] */
     product_group_tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Quantity of the article added in cart. */
+    /** Quantity of the article added in cart. Example: 2 */
     quantity?: Maybe<Scalars['Int']['output']>;
     /** Basic information which provides basic info like uid of any entity like brand or seller and name of the entity. */
     seller?: Maybe<NameInformation>;
-    /** List of identifiers used by sellers for the product size. */
+    /** Seller identifier used for the product size. Example: 'SELLER-001' */
     seller_identifier?: Maybe<Scalars['String']['output']>;
-    /** Size of the article added in cart. */
+    /** Size of the article added in cart. Example: 'M' */
     size?: Maybe<Scalars['String']['output']>;
     /** Store information of the store which includes store name, store id and store code. */
     store?: Maybe<StoreInfo>;
-    /** A list of article tags. */
+    /** A list of article tags. Example: ['express-eligible'] */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Type of the data sent in response. Possible value is article. */
+    /** Type of the data sent in response. Example: 'article' */
     type?: Maybe<Scalars['String']['output']>;
-    /** This unique identifier is assigned to the specific article. This represents item x size x location. */
+    /** Unique identifier for item × size × location. Example: 'line_abc123' */
     uid?: Maybe<Scalars['String']['output']>;
 };
 /** Availability information of the product like deliverable, out of stock, valid product etc. */
 export type ProductAvailability = {
     __typename?: 'ProductAvailability';
-    /** Product sizes availability. */
+    /** Product sizes availability. Example: [{ value: 'M', display: 'Medium', is_available: true }] */
     available_sizes?: Maybe<Array<Maybe<ProductSizeDetailsCart>>>;
-    /** Deliverable flag denotes if the product is deliverable or not. */
+    /** Whether the product is deliverable. Example: true */
     deliverable?: Maybe<Scalars['Boolean']['output']>;
-    /** Valid flag for the product if the product added in cart is valid to place the order. */
+    /** Whether the product is valid to place the order. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Quantity of the product available on other store. */
+    /** Quantity available in other stores. Example: 5 */
     other_store_quantity?: Maybe<Scalars['Int']['output']>;
-    /** Denotes if the product is available in stock. */
+    /** Whether the product is in stock. Example: true */
     out_of_stock?: Maybe<Scalars['Boolean']['output']>;
-    /** All sizes of the product. */
+    /** All available sizes. Example: ['S', 'M', 'L', 'XL'] */
     sizes?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 /** Product sizes availability. */
 export type ProductAvailabilitySize = {
     __typename?: 'ProductAvailabilitySize';
-    /** Display size of the product. */
+    /** Display size of the product. Example: 'Medium' */
     display?: Maybe<Scalars['String']['output']>;
-    /** Available flag for the size of the product if that is available. */
+    /** Available flag for this size. Example: true */
     is_available?: Maybe<Scalars['Boolean']['output']>;
-    /** Actual value of the size. */
+    /** Actual value of the size. Example: 'M' */
     value?: Maybe<Scalars['String']['output']>;
-};
-/** Represents the details of a product brand. */
-export type ProductBrand = {
-    __typename?: 'ProductBrand';
-    /** Schema to define the Action Object. */
-    action?: Maybe<PageActionDetail>;
-    /** It contains detailed information about the sales channel. */
-    description?: Maybe<Scalars['String']['output']>;
-    /** Media object representing the logo of the product brand. */
-    logo?: Maybe<Media>;
-    /** Name of the product brand. */
-    name?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for the product brand. */
-    uid?: Maybe<Scalars['Int']['output']>;
 };
 /** Represents list of bundles/product groupings. */
 export type ProductBundle = {
@@ -7556,35 +10729,41 @@ export type ProductBundle = {
 export type ProductCategoryMap = {
     __typename?: 'ProductCategoryMap';
     /** Detailing Level 1 Category Action Object. */
-    l1?: Maybe<ProductBrand>;
+    l1?: Maybe<NavigationAction>;
     /** Detailing Level 2 Category Action Object. */
-    l2?: Maybe<ProductBrand>;
+    l2?: Maybe<NavigationAction>;
     /** Detailing Level 3 Category Action Object. */
-    l3?: Maybe<ProductBrand>;
+    l3?: Maybe<NavigationAction>;
 };
-/** Response schema for comparing products with additional metadata. */
+/** Configuration for the Product Change Request feature. */
+export type ProductChangeRequestFeatureConfiguration = {
+    __typename?: 'ProductChangeRequestFeatureConfiguration';
+    /** Indicates whether staff selection is allowed for PCR. Default value is false. */
+    staff_selection: Scalars['Boolean']['output'];
+};
+/** Product comparison response with metadata and comparison attributes. */
 export type ProductCompareDetails = {
     __typename?: 'ProductCompareDetails';
-    /** Metadata about attributes used for comparing products. */
+    /** Metadata about attributes used for product comparison like specifications, features, and pricing. */
     attributes_metadata?: Maybe<Array<Maybe<Attribute>>>;
-    /** List of product details for comparison. */
+    /** Array of products being compared with their details and specifications. */
     items?: Maybe<Array<Maybe<Product>>>;
-    /** Subtitle or additional description for the comparison. */
+    /** Additional description or context for the comparison, e.g. 'Compare specifications and features'. */
     subtitle?: Maybe<Scalars['String']['output']>;
-    /** Title or name of the comparison. */
+    /** Main title for the comparison, e.g. 'iPhone 14 vs Samsung Galaxy S23', 'Laptop Comparison'. */
     title?: Maybe<Scalars['String']['output']>;
 };
 /** Represents the response for a product listing query, including product details, filters, pagination, and sorting options. */
 export type ProductConnection = {
     __typename?: 'ProductConnection';
     /** List of filters available for refining the product listings. */
-    filters?: Maybe<ProductFilters>;
+    filters?: Maybe<Array<Maybe<ProductFilters>>>;
     /** List of product details included in the response. */
     items: Array<ProductListingDetail>;
     /** Pagination details for the product listings. */
     page: PageInfo;
     /** List of sorting options available for the product listings. */
-    sort_on?: Maybe<ProductSortOn>;
+    sort_on?: Maybe<Array<Maybe<ProductSortOn>>>;
 };
 /** Represents a department with its associated details. */
 export type ProductDepartment = {
@@ -7608,16 +10787,28 @@ export type ProductDetailCustomOrder = {
     /** The unit of time required for manufacturing is defined in hours or days. */
     manufacturing_time_unit?: Maybe<Scalars['String']['output']>;
 };
-/** Configuration for product detail features in the application. */
+/** Configuration for product detail features in the sales channel. */
 export type ProductDetailFeature = {
     __typename?: 'ProductDetailFeature';
-    /** Indicates whether customers can request for a product. Default value is false. */
+    /**
+     * Indicates whether customers can request for a product. Default value is false.
+     * @deprecated This field is obsolete.
+     */
     request_product?: Maybe<Scalars['Boolean']['output']>;
-    /** Shows whether the customers can choose the seller on PDP. */
+    /**
+     * Indicates whether customers can choose the seller on PDP.
+     * @deprecated This field is obsolete.
+     */
     seller_selection?: Maybe<Scalars['Boolean']['output']>;
-    /** Configuration to show similar products, other products from same seller, other products in same category, other products in same price range, etc. */
+    /**
+     * Configuration to show similar products, other products from same seller, category, price range, etc.
+     * @deprecated This field is obsolete.
+     */
     similar?: Maybe<Array<Maybe<SimilarListItem>>>;
-    /** Allow user to update product meta. Default value is true. */
+    /**
+     * Indicates whether users can update product metadata. Default value is true.
+     * @deprecated This field is obsolete.
+     */
     update_product_meta?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Detailed information about a product. */
@@ -7678,7 +10869,7 @@ export type ProductFilters = {
 export type ProductFiltersKey = {
     __typename?: 'ProductFiltersKey';
     /** Display name or label for the filter key. */
-    display: Scalars['String']['output'];
+    display?: Maybe<Scalars['String']['output']>;
     /** Type or category of the filter key (e.g., range, multivalued). */
     kind?: Maybe<Scalars['String']['output']>;
     /** URL or path to the logo associated with the filter key. */
@@ -7696,15 +10887,17 @@ export type ProductFiltersValue = {
     /** Currency symbol for the price type filters. */
     currency_symbol?: Maybe<Scalars['String']['output']>;
     /** Display name or label for the filter value. */
-    display: Scalars['String']['output'];
+    display?: Maybe<Scalars['String']['output']>;
     /** Format in which the filter value is displayed. */
     display_format?: Maybe<Scalars['String']['output']>;
     /** Whether this filter value is currently selected. */
-    is_selected: Scalars['Boolean']['output'];
+    is_selected?: Maybe<Scalars['Boolean']['output']>;
+    /** Logo representing the product or associated data. */
+    logo?: Maybe<Media>;
     /** Maximum value of the filter range. */
-    max?: Maybe<Scalars['Int']['output']>;
+    max?: Maybe<Scalars['Float']['output']>;
     /** Minimum value for the range filter. */
-    min?: Maybe<Scalars['Int']['output']>;
+    min?: Maybe<Scalars['Float']['output']>;
     /** Format used for the filter value in queries. */
     query_format?: Maybe<Scalars['String']['output']>;
     /** The maximum value selected by the user for range filter. */
@@ -7719,6 +10912,8 @@ export type ProductGroupedAttribute = {
     __typename?: 'ProductGroupedAttribute';
     /** A list of product attributes within this group. */
     details?: Maybe<Array<Maybe<DetailAttribute>>>;
+    /** The id of the attribute group. */
+    id?: Maybe<Scalars['String']['output']>;
     /** The title or name of the attribute group. */
     title?: Maybe<Scalars['String']['output']>;
 };
@@ -7729,22 +10924,37 @@ export type ProductGroupingDetails = {
     _id?: Maybe<Scalars['String']['output']>;
     /** The choice of the product grouping. */
     choice?: Maybe<Scalars['JSON']['output']>;
-    /** The ID of the company that owns the product grouping. */
+    /**
+     * The ID of the company that owns the product grouping.
+     * @deprecated This field is obsolete.
+     */
     company_id?: Maybe<Scalars['Int']['output']>;
-    /** User details of the creator of the document. */
+    /**
+     * User details of the creator of the document.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<UserDetails>;
-    /** Timestamp of the creation of the document. */
-    created_on: Scalars['String']['output'];
+    /**
+     * Timestamp of the creation of the document.
+     * @deprecated This field is obsolete.
+     */
+    created_on?: Maybe<Scalars['String']['output']>;
     /** Whether the product grouping is active. */
     is_active?: Maybe<Scalars['Boolean']['output']>;
     /** The URL for the logo of the product grouping. */
     logo?: Maybe<Scalars['String']['output']>;
     /** A dictionary containing metadata information. */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** User details of the last modifier of the document. */
+    /**
+     * User details of the last modifier of the document.
+     * @deprecated This field is obsolete.
+     */
     modified_by?: Maybe<UserDetails>;
-    /** Timestamp of the last modification of the document. */
-    modified_on: Scalars['String']['output'];
+    /**
+     * Timestamp of the last modification of the document.
+     * @deprecated This field is obsolete.
+     */
+    modified_on?: Maybe<Scalars['String']['output']>;
     /** The name of the product grouping. */
     name: Scalars['JSON']['output'];
     /** A list of page visibilities of the product grouping. */
@@ -7755,47 +10965,53 @@ export type ProductGroupingDetails = {
     same_store_assignment?: Maybe<Scalars['Boolean']['output']>;
     /** The unique identifier for the product grouping. */
     slug?: Maybe<Scalars['JSON']['output']>;
-    /** User details of the verifier of the document, if applicable. */
+    /**
+     * User details of the verifier of the document, if applicable.
+     * @deprecated This field is obsolete.
+     */
     verified_by?: Maybe<UserDetails>;
-    /** Timestamp of when the document was verified, if applicable. */
+    /**
+     * Timestamp of when the document was verified, if applicable.
+     * @deprecated This field is obsolete.
+     */
     verified_on?: Maybe<Scalars['String']['output']>;
 };
-/** Contains product identifier details */
+/** Product identification codes and industry standard identifiers. */
 export type ProductIdentifier = {
     __typename?: 'ProductIdentifier';
-    /** The Alternative Lookup Product of the item. */
+    /** Alternative Lookup Product code for retail systems, e.g. 'ALU-XYZ-789'. */
     alu?: Maybe<Scalars['String']['output']>;
-    /** The European Article Number (EAN) of the item. */
-    ean?: Maybe<Scalars['String']['output']>;
-    /** ISBN (International Standard Book Number) is a unique identifier used globally to identify books and other non-periodical publications. */
+    /** European Article Number (EAN) barcode, e.g. '1234567890123'. */
+    ean?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** International Standard Book Number for books and publications, e.g. '978-0123456789'. */
     isbn?: Maybe<Scalars['String']['output']>;
-    /** The Stock Keeping Unit (SKU) code of the item. */
+    /** Stock Keeping Unit (SKU) for inventory management, e.g. 'SKU-ABC-123'. */
     sku_code?: Maybe<Scalars['String']['output']>;
-    /** Universal Product Code of the item. */
+    /** Universal Product Code (UPC) barcode, e.g. '123456789012'. */
     upc?: Maybe<Scalars['String']['output']>;
 };
 /** Product images data in different formats. */
 export type ProductImage = {
     __typename?: 'ProductImage';
-    /** Aspect ratio of the product image. */
+    /** Aspect ratio of the product image (e.g., '16:9'). Example: '1:1' */
     aspect_ratio?: Maybe<Scalars['String']['output']>;
-    /** Secured url of the product image. */
+    /** Secure HTTPS URL of the product image. Example: 'https://cdn.example.com/image.jpg' */
     secure_url?: Maybe<Scalars['String']['output']>;
-    /** Bucket link url for product image. */
+    /** CDN URL for the product image. Example: 'https://cdn.example.com/image.jpg' */
     url?: Maybe<Scalars['String']['output']>;
 };
-/** Configuration of a product within a group/bundle. */
+/** Product configuration within a bundle or group setting. */
 export type ProductInGroup = {
     __typename?: 'ProductInGroup';
-    /** Whether the product can be removed from the cart. */
+    /** Indicates whether customers can remove this product from the bundle selection. */
     allow_remove?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether the product should be automatically added to the cart. */
+    /** Indicates whether this product is automatically added to cart with the bundle. */
     auto_add_to_cart?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether the product should be automatically selected. */
+    /** Indicates whether this product is pre-selected by default in the bundle. */
     auto_select?: Maybe<Scalars['Boolean']['output']>;
-    /** The maximum quantity of the product that can be added to the cart. */
+    /** Maximum quantity allowed for this product in the bundle, e.g. 5, 10, 20. */
     max_quantity: Scalars['Int']['output'];
-    /** The minimum quantity of the product that can be added to the cart. */
+    /** Minimum quantity required for this product in the bundle, e.g. 1, 2. */
     min_quantity?: Maybe<Scalars['Int']['output']>;
     /** The price details for the product. */
     price?: Maybe<ProductPriceDetails>;
@@ -7809,32 +11025,40 @@ export type ProductInGroup = {
 /** Ladder price offers details which includes list of available ladder promotion on product. */
 export type ProductLadderPromotion = {
     __typename?: 'ProductLadderPromotion';
-    /** Available ladder promotions offers list. */
+    /** Available ladder promotions offers list. Example: [{ id: 'PROMO_L1', offer_text: 'Buy 2 get 10% off' }] */
     available_offers?: Maybe<Array<Maybe<LadderPriceOffer>>>;
-    /** Ladder price offers details which includes list of available ladder promotion on product. */
+    /** Currency information for the ladder price offers including currency code and symbol. Example: { code: 'INR', symbol: '₹' } */
     currency?: Maybe<CurrencyInfo>;
 };
 /** List of product details included in the response. */
 export type ProductListingDetail = {
     __typename?: 'ProductListingDetail';
-    /** Represents Action Object. */
+    /** Navigation action configuration for page routing and user interactions. */
     action?: Maybe<PageActionDetail>;
     /** A dictionary of product attributes. */
     attributes?: Maybe<Scalars['JSON']['output']>;
     /** Brand associated with the product. */
-    brand?: Maybe<ProductBrand>;
+    brand?: Maybe<NavigationAction>;
     /** List of product categories associated with the product. */
-    categories?: Maybe<Array<Maybe<ProductBrand>>>;
+    categories?: Maybe<Array<Maybe<NavigationAction>>>;
     /** Represents a mapping of product categories at different levels. */
     category_map?: Maybe<ProductCategoryMap>;
+    /** Identifier for the product channel. */
+    channel?: Maybe<Scalars['String']['output']>;
     /** Color of the product, if applicable. */
     color?: Maybe<Scalars['String']['output']>;
+    /** The country of origin for the product. */
+    country_of_origin?: Maybe<Scalars['String']['output']>;
     /** Custom JSON object for additional product data. */
     custom_config?: Maybe<Scalars['JSON']['output']>;
+    /** Additional custom attributes associated with the product listing for extended product details and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
     /** Custom metadata fields associated with the product. */
     custom_meta?: Maybe<Array<Maybe<CustomMetaFields>>>;
     /** Schema to define manufacturing time(MTO) for a product that needs to be sold before manufacturing. */
     custom_order?: Maybe<ProductDetailCustomOrder>;
+    /** Array of delivery promise options available for the product. */
+    delivery_promises?: Maybe<Array<Maybe<DeliveryPromiseItem>>>;
     /** The long description of the product. */
     description?: Maybe<Scalars['String']['output']>;
     /** Discount applied to the product, if any. */
@@ -7851,6 +11075,11 @@ export type ProductListingDetail = {
     image_nature?: Maybe<Scalars['String']['output']>;
     /** Indicates whether the product can be sold as an individual product. */
     is_dependent?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Indicates if the product is available for tryout.
+     * @deprecated This field is obsolete.
+     */
+    is_tryout?: Maybe<Scalars['Boolean']['output']>;
     /** The item code of the product. */
     item_code?: Maybe<Scalars['String']['output']>;
     /** This field describes the type of item, indicating the category or nature of the product. Possible values are Standard, Composite, Wet, Digital. */
@@ -7883,8 +11112,8 @@ export type ProductListingDetail = {
     similars?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Available sizes for the product. */
     sizes?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** A list of image URLs for the product. */
-    slug: Scalars['String']['output'];
+    /** URL-friendly identifier for the product. */
+    slug?: Maybe<Scalars['String']['output']>;
     /** Tags associated with the product for better categorization. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** Teaser tag or short promotional phrase for the product. */
@@ -7895,8 +11124,13 @@ export type ProductListingDetail = {
     type?: Maybe<Scalars['String']['output']>;
     /** Unique identifier for the product. */
     uid?: Maybe<Scalars['Int']['output']>;
-    /** Detailed information about the variants of a product. */
+    /** Detail of product variants, each representing a specific option of the product (e.g., size, color, or material). */
     variants?: Maybe<Array<Maybe<ProductVariantDetail>>>;
+};
+/** List of product details included in the response. */
+export type ProductListingDetailCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Represents details of price for a product. */
 export type ProductListingPrice = {
@@ -7916,20 +11150,30 @@ export type ProductListingPriceDetails = {
     /** The effective price object for the product. */
     marked?: Maybe<Price>;
 };
-/** Per quantity price of the product . */
+/** Represents the maximum quantity details for an item based on store, seller, or overall availability. */
+export type ProductMaxQuantityInfo = {
+    __typename?: 'ProductMaxQuantityInfo';
+    /** Total quantity available across all stores for all sellers. Example: 25 */
+    item?: Maybe<Scalars['Int']['output']>;
+    /** Total quantity across all stores for the specified seller. Example: 10 */
+    item_seller?: Maybe<Scalars['Int']['output']>;
+    /** Total quantity available for a specific store. Example: 5 */
+    item_store?: Maybe<Scalars['Int']['output']>;
+};
+/** Per quantity price of the product. */
 export type ProductPrice = {
     __typename?: 'ProductPrice';
-    /** Price before promotion and coupon amount applied for calculation. */
+    /** Price before promotion/coupon (add-on). Example: 0.0 */
     add_on?: Maybe<Scalars['Float']['output']>;
-    /** Currency code of the price defined for the product. */
+    /** Currency code of the price. Example: 'INR' */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** Currency symbol of the price defined for the product. */
+    /** Currency symbol of the price. Example: '₹' */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** Selling price of the product . */
+    /** Effective price of the product. Example: 499.0 */
     effective?: Maybe<Scalars['Float']['output']>;
-    /** Maximum price of the product . */
+    /** Marked price of the product. Example: 799.0 */
     marked?: Maybe<Scalars['Float']['output']>;
-    /** Selling price of the product. */
+    /** Selling price of the product. Example: 549.0 */
     selling_price?: Maybe<Scalars['Float']['output']>;
 };
 /** Detailed pricing information for a product group. */
@@ -7949,10 +11193,16 @@ export type ProductPriceDetails = {
 /** Price of single quantity product for seller currency and customer currency. */
 export type ProductPriceInfo = {
     __typename?: 'ProductPriceInfo';
-    /** Per quantity price of the product . */
+    /** Per quantity price of the product. Example: { effective: 499 } */
     base?: Maybe<ProductPrice>;
-    /** Per quantity price of the product . */
+    /** Per quantity price of the product (converted). Example: { effective: 499 } */
     converted?: Maybe<ProductPrice>;
+};
+/** Product return policy configuration for the store. */
+export type ProductReturnConfiguration = {
+    __typename?: 'ProductReturnConfiguration';
+    /** Whether customers can return products to the same store where they purchased them. */
+    on_same_store?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Details related to SEO of an entry. */
 export type ProductSeo = {
@@ -7965,19 +11215,19 @@ export type ProductSeo = {
 /** Response schema for product size sellers. */
 export type ProductSellers = {
     __typename?: 'ProductSellers';
-    /** A list of products with size and price details available from various sellers. */
-    items?: Maybe<Array<Maybe<ProductSizePrice>>>;
-    /** Information about the pagination of the results. */
-    page?: Maybe<PageInfo>;
-    /** A list of sorting and filtering criteria applied to the sellers' data. */
-    sort_on?: Maybe<SellerSortOn>;
+    /** Array of product size seller details with pricing, availability, and seller information. */
+    items?: Maybe<Array<Maybe<ProductSizeSeller>>>;
+    /** Pagination information including current page, total pages, and navigation details. */
+    page: PageInfo;
+    /** Available sorting options for organizing seller data by criteria like price, delivery time, or seller rating. */
+    sort_on?: Maybe<Array<Maybe<SellerSortOn>>>;
 };
-/** Details of a product set. */
+/** Product bundle or set configuration details. */
 export type ProductSet = {
     __typename?: 'ProductSet';
-    /** The quantity of products in the set. */
+    /** Total quantity of items included in the product set. */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** The size distribution of the product set. */
+    /** Size breakdown and distribution within the product set. */
     size_distribution?: Maybe<ProductSetDistribution>;
 };
 /** Distribution details of a product set. */
@@ -7986,12 +11236,12 @@ export type ProductSetDistribution = {
     /** A list of size distributions in the product set. */
     sizes?: Maybe<Array<Maybe<ProductSetDistributionSize>>>;
 };
-/** Distribution details of product sizes for Set type of Products. */
+/** Size distribution details for product sets and bundles. */
 export type ProductSetDistributionSize = {
     __typename?: 'ProductSetDistributionSize';
-    /** The number of pieces available in this size. */
+    /** Number of pieces available in this specific size, e.g. 2, 5, 10. */
     pieces?: Maybe<Scalars['Int']['output']>;
-    /** The number of pieces available in this size. */
+    /** Size identifier or label, e.g. 'S', 'M', 'L', 'XL', '32', '34'. */
     size?: Maybe<Scalars['String']['output']>;
 };
 /** Data containing priority and frequency of sitemap. */
@@ -8005,12 +11255,16 @@ export type ProductSiteMap = {
 /** Represents the size details of a product, including dimensions, weight, and availability. */
 export type ProductSizeDetails = {
     __typename?: 'ProductSizeDetails';
+    /** All seller-related identifiers for this size, including primary and non-primary identifiers. */
+    all_identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
     /** The dimensions of the product size. */
     dimension?: Maybe<Dimension>;
     /** Display name of the product size. */
     display?: Maybe<Scalars['String']['output']>;
     /** Indicates whether the product size is available for purchase. */
     is_available?: Maybe<Scalars['Boolean']['output']>;
+    /** Whether this sku is part of any product bundle */
+    is_bundle_item?: Maybe<Scalars['Boolean']['output']>;
     /** The quantity of the product size available. */
     quantity?: Maybe<Scalars['Int']['output']>;
     /** List of identifiers used by sellers for the product size. */
@@ -8033,52 +11287,168 @@ export type ProductSizeDetailsCart = {
 /** Response schema for product size price. */
 export type ProductSizePrice = {
     __typename?: 'ProductSizePrice';
-    /** Information about serviceability algorithm. */
+    /** Additional metadata about product size price, including any custom attributes or information that may be relevant for processing or displaying the product size price. */
+    _custom_json?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Information about serviceability algorithm.
+     * @deprecated This field is obsolete.
+     */
     article_assignment?: Maybe<ArticleAssignment>;
     /** This unique identifier is assigned to the specific article. This represents item x size x location. */
     article_id?: Maybe<Scalars['String']['output']>;
-    /** Estimated delivery time for the product, indicating when the customer can expect to receive their order based on the shipping options and location. */
+    /** Estimated delivery timeframes showing when customers can expect to receive their order. */
     delivery_promise?: Maybe<DeliveryPromiseFormatted>;
-    /** Amount or percentage of discount applied to the product's price, showing the savings for the customer. */
+    /** Discount information showing amount or percentage savings, e.g. '20%', '₹500 off'. */
     discount?: Maybe<Scalars['String']['output']>;
-    /** Discount countdown timer for a product. */
+    /** Discount countdown timer showing time-limited offers and urgency. */
     discount_meta?: Maybe<DiscountMeta>;
-    /** Collection of attributes grouped together, which provides detailed characteristics of the product, such as color, size, material, etc. */
+    /** Fulfillment options details */
+    fulfillment_option?: Maybe<FulfillmentOption>;
+    /** Grouped product attributes providing detailed characteristics like color, size, material, and specifications. */
     grouped_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
-    /** Whether Cash on Delivery (COD) is available for this product. It is true if COD is available and false otherwise. */
+    /**
+     * Date and time when the inventory was last updated.
+     * @deprecated This field is obsolete.
+     */
+    inventory_updated_on?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether Cash on Delivery (COD) payment option is available for this product. */
     is_cod?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether the product can be purchased as a gift. It is true if the product is available for gifting and false otherwise. */
+    /** Indicates whether the product can be purchased as a gift with gift wrapping and message options. */
     is_gift?: Maybe<Scalars['Boolean']['output']>;
-    /** Type of item, indicating the category or nature of the product. Possible values are Standard, Composite, Wet, Digital. */
+    /** Indicate whether product is servicable or not */
+    is_serviceable?: Maybe<Scalars['Boolean']['output']>;
+    /** Product category type: 'Standard' for regular items, 'Composite' for bundles, 'Wet' for liquids, 'Digital' for downloads. */
     item_type?: Maybe<Scalars['String']['output']>;
     /** Longitude and latitude coordinates, possibly indicating the location of the store or warehouse where the product is stocked. */
-    long_lat?: Maybe<Array<Maybe<Scalars['Float']['output']>>>;
+    long_lat?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
     /** Attributes specific to the marketplace, such as ratings, reviews, shipping options, and other marketplace-specific details. */
     marketplace_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
-    /** Postal code or zip code for which the product's availability and delivery options are being checked. */
+    /**
+     * PIN code for which product availability and delivery options are being checked, e.g. 400001, 110001.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
+    /** The postal code for which the product's availability and delivery options are being checked. */
+    postal_code?: Maybe<Scalars['String']['output']>;
     /** Price details of product. Includes currency details, MRP, Selling price. */
     price?: Maybe<ProductStockPrice>;
-    /** The price of a single unit of the product. It helps customers understand the cost per item when purchasing multiple units. */
+    /**
+     * The price of a single unit of the product. It helps customers understand the cost per item when purchasing multiple units.
+     * @deprecated This field is obsolete.
+     */
     price_per_piece?: Maybe<ProductStockPrice>;
     /** Price per unit of measurement for products sold in quantities (e.g., price per kilogram, liter, etc.), helping customers compare unit prices. */
     price_per_unit?: Maybe<ProductStockUnitPrice>;
     /** Available quantity of the product in stock. It shows the number of units available for purchase. */
     quantity?: Maybe<Scalars['Int']['output']>;
     /** Information about the return policy for the product, including conditions, timeframes, and any specific instructions or restrictions. */
-    return_config?: Maybe<ReturnConfig>;
+    return_config?: Maybe<ReturnConfiguration>;
     /** Seller offering the product, including the seller's name, rating, and other relevant information. */
     seller?: Maybe<Seller>;
     /** Number of sellers offering this product. It indicates the level of competition and availability from different sellers. */
     seller_count?: Maybe<Scalars['Int']['output']>;
-    /** Collection or bundle of items that are sold together as a set, detailing the components included in the set. */
+    /**
+     * Collection or bundle of items that are sold together as a set, detailing the components included in the set.
+     * @deprecated This field is obsolete.
+     */
     set?: Maybe<ProductSet>;
-    /** Special badges or labels assigned to the product, such as "Bestseller," "New Arrival," or "Limited Edition.". */
+    /**
+     * Special badges or labels assigned to the product, such as "Bestseller," "New Arrival," or "Limited Edition.".
+     * @deprecated This field is obsolete.
+     */
     special_badge?: Maybe<Scalars['String']['output']>;
     /** Identifier or name of the store where the product is available. It helps in identifying the specific location or online store offering the product. */
     store?: Maybe<AvailableStore>;
     /** Details about serviceability attributes. */
     strategy_wise_listing?: Maybe<Array<Maybe<StrategyWiseListing>>>;
+    /** Tags of article from which it can be identified. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** The total quantity of the item available across all stores for all sellers. */
+    total_available_quantity?: Maybe<Scalars['Int']['output']>;
+    /** Trader information for the offered product. */
+    trader?: Maybe<Scalars['JSON']['output']>;
+};
+/** Product size seller details including pricing, availability, and fulfillment information. */
+export type ProductSizeSeller = {
+    __typename?: 'ProductSizeSeller';
+    /** Additional metadata about product size price, including any custom attributes or information that may be relevant for processing or displaying the product size price. */
+    _custom_json?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Serviceability algorithm information determining how articles are assigned to fulfill orders.
+     * @deprecated This field is obsolete.
+     */
+    article_assignment?: Maybe<ArticleAssignment>;
+    /** Unique identifier for the specific article representing item × size × location combination, e.g. 'ART123_M_WH001'. */
+    article_id?: Maybe<Scalars['String']['output']>;
+    /** Estimated delivery timeframes showing when customers can expect to receive their order. */
+    delivery_promise?: Maybe<DeliveryPromiseFormatted>;
+    /** Discount information showing amount or percentage savings, e.g. '20%', '₹500 off'. */
+    discount?: Maybe<Scalars['String']['output']>;
+    /** Discount countdown timer showing time-limited offers and urgency. */
+    discount_meta?: Maybe<DiscountMeta>;
+    /** Fulfillment options details */
+    fulfillment_option?: Maybe<FulfillmentOption>;
+    /** Grouped product attributes providing detailed characteristics like color, size, material, and specifications. */
+    grouped_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
+    /**
+     * Date and time when the inventory was last updated.
+     * @deprecated This field is obsolete.
+     */
+    inventory_updated_on?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether Cash on Delivery (COD) payment option is available for this product. */
+    is_cod?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether the product can be purchased as a gift with gift wrapping and message options. */
+    is_gift?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicate whether product is servicable or not */
+    is_serviceable?: Maybe<Scalars['Boolean']['output']>;
+    /** Product category type: 'Standard' for regular items, 'Composite' for bundles, 'Wet' for liquids, 'Digital' for downloads. */
+    item_type?: Maybe<Scalars['String']['output']>;
+    /** Longitude and latitude coordinates, possibly indicating the location of the store or warehouse where the product is stocked. */
+    long_lat?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
+    /** Attributes specific to the marketplace, such as ratings, reviews, shipping options, and other marketplace-specific details. */
+    marketplace_attributes?: Maybe<Array<Maybe<ProductGroupedAttribute>>>;
+    /**
+     * PIN code for which product availability and delivery options are being checked, e.g. 400001, 110001.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
+    pincode?: Maybe<Scalars['Int']['output']>;
+    /** The postal code for which the product's availability and delivery options are being checked. */
+    postal_code?: Maybe<Scalars['String']['output']>;
+    /** Price details of product. Includes currency details, MRP, Selling price. */
+    price?: Maybe<ProductStockPrice>;
+    /**
+     * The price of a single unit of the product. It helps customers understand the cost per item when purchasing multiple units.
+     * @deprecated This field is obsolete.
+     */
+    price_per_piece?: Maybe<ProductStockPrice>;
+    /** Price per unit of measurement for products sold in quantities (e.g., price per kilogram, liter, etc.), helping customers compare unit prices. */
+    price_per_unit?: Maybe<ProductStockUnitPrice>;
+    /** Available quantity of the product in stock. It shows the number of units available for purchase. */
+    quantity?: Maybe<Scalars['Int']['output']>;
+    /** Information about the return policy for the product, including conditions, timeframes, and any specific instructions or restrictions. */
+    return_config?: Maybe<ReturnConfiguration>;
+    /** Seller offering the product, including the seller's name, rating, and other relevant information. */
+    seller?: Maybe<Seller>;
+    /** Number of sellers offering this product. It indicates the level of competition and availability from different sellers. */
+    seller_count?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Collection or bundle of items that are sold together as a set, detailing the components included in the set.
+     * @deprecated This field is obsolete.
+     */
+    set?: Maybe<ProductSet>;
+    /**
+     * Special badges or labels assigned to the product, such as "Bestseller," "New Arrival," or "Limited Edition.".
+     * @deprecated This field is obsolete.
+     */
+    special_badge?: Maybe<Scalars['String']['output']>;
+    /** Identifier or name of the store where the product is available. It helps in identifying the specific location or online store offering the product. */
+    store?: Maybe<AvailableStore>;
+    /** Details about serviceability attributes. */
+    strategy_wise_listing?: Maybe<Array<Maybe<StrategyWiseListing>>>;
+    /** Tags of article from which it can be identified. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Trader information for the offered product. */
+    trader?: Maybe<Scalars['JSON']['output']>;
 };
 /** Information about the availability of product sizes in different stores. */
 export type ProductSizeStores = {
@@ -8089,12 +11459,16 @@ export type ProductSizeStores = {
 /** Details about different sizes of the product, including pricing and availability. */
 export type ProductSizes = {
     __typename?: 'ProductSizes';
+    /** Customise order-related data for the product sizes. */
+    custom_order?: Maybe<Scalars['JSON']['output']>;
     /** Discount information applicable to the product sizes. */
     discount?: Maybe<Scalars['String']['output']>;
     /** Information about the discount countdown timer for a product. */
     discount_meta?: Maybe<DiscountMeta>;
     /** Whether the product supports multiple sizes. */
     multi_size?: Maybe<Scalars['Boolean']['output']>;
+    /** Number of boxes required for packaging the product. */
+    no_of_boxes?: Maybe<Scalars['Int']['output']>;
     /** Contains price information for product sizes. */
     price?: Maybe<ProductListingPrice>;
     /** Pricing details for product. */
@@ -8107,6 +11481,10 @@ export type ProductSizes = {
     size_details?: Maybe<Array<Maybe<ProductSizeDetails>>>;
     /** Information about the availability of product sizes in different stores. */
     stores?: Maybe<ProductSizeStores>;
+    /** Tags associated with the product sizes. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** A flexible object that holds additional teaser tag information. */
+    teaser_tag?: Maybe<Scalars['JSON']['output']>;
 };
 /** Represents sorting options available for products, including metadata and selection status. */
 export type ProductSortOn = {
@@ -8136,16 +11514,16 @@ export type ProductStockPrice = {
     /** The selling price of the product. */
     selling?: Maybe<Scalars['Float']['output']>;
 };
-/** Unit price details for product. */
+/** Unit price details for products sold by weight, volume, or measurement. */
 export type ProductStockUnitPrice = {
     __typename?: 'ProductStockUnitPrice';
-    /** The currency code for the unit price. */
+    /** Currency code for the unit price, e.g. 'INR', 'USD', 'EUR'. */
     currency_code?: Maybe<Scalars['String']['output']>;
-    /** The currency symbol for the unit price. */
+    /** Currency symbol for display, e.g. '₹', '$', '€'. */
     currency_symbol?: Maybe<Scalars['String']['output']>;
-    /** The unit price of the product. */
+    /** Price per unit of measurement, e.g. 150.00 for ₹150 per kg. */
     price?: Maybe<Scalars['Float']['output']>;
-    /** The unit of measure for the product. */
+    /** Unit of measurement, e.g. 'kg', 'liter', 'meter', 'piece'. */
     unit?: Maybe<Scalars['String']['output']>;
 };
 /** Represents the details of a product variant, including display type, header, logo, and associated items. */
@@ -8163,6 +11541,8 @@ export type ProductVariant = {
     key?: Maybe<Scalars['String']['output']>;
     /** URL or path to the logo associated with the product variant. */
     logo?: Maybe<Scalars['String']['output']>;
+    /** The total number of product variants available. */
+    total?: Maybe<Scalars['Int']['output']>;
 };
 /** Represents the details of a product variant, including display type, header, logo, and associated items. */
 export type ProductVariantDetail = {
@@ -8185,7 +11565,7 @@ export type ProductVariantItem = {
     _custom_json?: Maybe<Scalars['JSON']['output']>;
     /** Custom metadata fields associated with the product. */
     _custom_meta?: Maybe<Array<Maybe<CustomMetaFields>>>;
-    /** Schema of Action Object to render to the variant product. */
+    /** Navigation action configuration for page routing and user interactions. */
     action?: Maybe<PageActionDetail>;
     /** Color code or representation for the variant. */
     color?: Maybe<Scalars['String']['output']>;
@@ -8204,64 +11584,98 @@ export type ProductVariantItem = {
     /** Value or label representing the product variant. */
     value?: Maybe<Scalars['String']['output']>;
 };
-/** Product details. */
-export type Products3Input = {
-    /** The unique identifier for the product. */
-    identifier?: InputMaybe<Scalars['String']['input']>;
-    /** The specific line item of bag. */
-    line_number?: InputMaybe<Scalars['Int']['input']>;
-    /** The quantity of the product. */
-    quantity?: InputMaybe<Scalars['Int']['input']>;
-};
-/** Schema for products filters. */
+/**
+ * Defines filters for selecting specific products or line items.
+ * Example: `{ "identifier": "21500347", "line_number": 1 }`
+ */
 export type ProductsDataUpdatesFiltersInput = {
-    /** The quantity of the product. */
+    /** A unique string that serves as the product’s identifier, such as a SKU, barcode, or another distinct code. This ensures the product is correctly identified and distinguished from other items in the system. */
     identifier?: InputMaybe<Scalars['String']['input']>;
-    /** The specific line item of bag. */
+    /** The specific line item of bag. For example, 1. */
     line_number?: InputMaybe<Scalars['Int']['input']>;
 };
-/** Schema for product data updates. */
+/**
+ * Defines structure for updating bag or product-level data.
+ * - The fields to update (via `data`)
+ * - The product selection criteria (via `filters`)
+ *
+ * Example: `{ "filters": [{}], "data": { "meta": { "courier_partner_name": "BVC Logistics" } } }`
+ */
 export type ProductsDataUpdatesInput = {
     /** Information about the data to be updated. */
     data?: InputMaybe<Scalars['JSON']['input']>;
     /** Criteria applied to filter the products. */
     filters?: InputMaybe<Array<InputMaybe<ProductsDataUpdatesFiltersInput>>>;
 };
-/** Schema for product reasons data. */
-export type ProductsReasonsDataInput = {
-    /** The unique identifier for the reason. */
-    reason_id?: InputMaybe<Scalars['Int']['input']>;
-    /** The text describing the reason. */
-    reason_text?: InputMaybe<Scalars['String']['input']>;
-};
-/** Schema for product reasons filters. */
-export type ProductsReasonsFiltersInput = {
-    /** The unique identifier for the product. */
+/**
+ * Defines details of individual products or line items.
+ * Used to specify which product(s) a transition or update applies to.
+ * Example: `{ "identifier": "21500347", "line_number": 1, "quantity": 1 }`
+ */
+export type ProductsInput = {
+    /** A unique string that serves as the product’s identifier, such as a SKU, barcode, or another distinct code. This ensures the product is correctly identified and distinguished from other items in the system. */
     identifier?: InputMaybe<Scalars['String']['input']>;
-    /** The specific line item of bag. */
+    /** The specific line item of bag. For example, 1. */
     line_number?: InputMaybe<Scalars['Int']['input']>;
-    /** The quantity of the product. */
+    /** The quantity of the product. For example, 1. */
     quantity?: InputMaybe<Scalars['Int']['input']>;
 };
-/** Schema for product reasons. */
+/** Response schema for product size price with fulfillment options. */
+export type ProductsPriceWithFulfillmentOption = {
+    __typename?: 'ProductsPriceWithFulfillmentOption';
+    /** Array of product size price details including fulfillment options like delivery, pickup, and shipping methods. */
+    items?: Maybe<Array<Maybe<ProductSizePrice>>>;
+};
+/**
+ * Specifies the actual reason details at the product level.
+ * Example:{ "reason_id": "507f1f77bcf86cd799439011", "reason_text": "Damaged item" }
+ */
+export type ProductsReasonsDataInput = {
+    /** The unique identifier for the reason. For values please refer to the <a href='/partners/commerce/sdk/2.11.0/graphql/application/order/queries/shipment'>shipment.shipment_reasons.</a>. */
+    reason_id?: InputMaybe<Scalars['Int']['input']>;
+    /** The text describing the reason. For example, 'Damaged item' or 'Wrong size'. */
+    reason_text?: InputMaybe<Scalars['String']['input']>;
+};
+/**
+ * Defines filters for selecting specific product(s) or bag item(s)
+ * to which the reason applies.
+ * Example:{ "identifier": "21500347", "line_number": 1, "quantity": 1 }
+ */
+export type ProductsReasonsFiltersInput = {
+    /** The unique identifier for the product. For example, '21500347'. */
+    identifier?: InputMaybe<Scalars['String']['input']>;
+    /** The specific line item of bag. For example, 1. */
+    line_number?: InputMaybe<Scalars['Int']['input']>;
+    /** The quantity of the product. For example, 1. */
+    quantity?: InputMaybe<Scalars['Int']['input']>;
+};
+/**
+ * Defines the reason data structure for bag/product-level actions.
+ * - The reason details (via `data`)
+ * - The filter conditions to identify which products are affected.
+ * Example:
+ * `{ "filters": [{ "identifier": "21500347", "line_number": 1 }], "data": {"reason_id": "507f1f77bcf86cd799439011","reason_text": "Wrong size"} }`
+ */
 export type ProductsReasonsInput = {
-    /** Schema for product reasons data. */
+    /** Details of the reason for the product-level action. */
     data?: InputMaybe<ProductsReasonsDataInput>;
-    /** Criteria applied to filter the products. */
+    /** Filters used to select specific products/bags for which the reason applies. */
     filters?: InputMaybe<Array<InputMaybe<ProductsReasonsFiltersInput>>>;
 };
 /** Describes the response on successful user profile update. */
 export type ProfileEditSuccess = {
     __typename?: 'ProfileEditSuccess';
+    /** User's consent information including privacy policy acceptance */
+    consent?: Maybe<UserConsent>;
     /** The country specific prefix for the phone number. */
     country_code?: Maybe<Scalars['String']['output']>;
-    /** Email id of user. */
+    /** Email ID of user. */
     email?: Maybe<Scalars['String']['output']>;
     /** Information about the operation's result. */
     message?: Maybe<Scalars['String']['output']>;
     /** The user's mobile number without the country code. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** Unique registration token for user. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** A random uuid string used to track the request. */
     request_id?: Maybe<Scalars['String']['output']>;
@@ -8277,9 +11691,9 @@ export type ProfileEditSuccess = {
     user?: Maybe<UserDetail>;
     /** If user is registered or not. */
     user_exists?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether to send a link to verify the registered email id of the user. */
+    /** Whether to send a link to verify the registered email ID of the user. */
     verify_email_link?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether to send a OTP to verify the registered email id of the user. */
+    /** Whether to send a OTP to verify the registered email ID of the user. */
     verify_email_otp?: Maybe<Scalars['Boolean']['output']>;
     /** Whether to send a OTP to verify the registered phone of the user. */
     verify_mobile_otp?: Maybe<Scalars['Boolean']['output']>;
@@ -8287,95 +11701,120 @@ export type ProfileEditSuccess = {
 /** Schema for promise. */
 export type Promise = {
     __typename?: 'Promise';
-    /** Indicates whether the promise details should be shown. */
+    /** Indicates whether the promise details should be shown. For example, `show_promise` can be set to true. */
     show_promise?: Maybe<Scalars['Boolean']['output']>;
-    /** Schema for time stamp data. */
+    /** Schema for time stamp data. For example, `timestamp` can be set to a TimeStampData object. */
     timestamp?: Maybe<TimeStampData>;
 };
 /** Min and Max Delivery promise formatted timestamp. */
 export type PromiseFormatted = {
     __typename?: 'PromiseFormatted';
-    /** Maximum Delivery promise formatted timestamp. */
+    /** Maximum Delivery promise formatted timestamp. Example: '9 Oct, 6:00 PM' */
     max?: Maybe<Scalars['String']['output']>;
-    /** Minimum Delivery promise formatted timestamp. */
+    /** Minimum Delivery promise formatted timestamp. Example: '8 Oct, 10:00 AM' */
     min?: Maybe<Scalars['String']['output']>;
 };
 /** Shipment level promise times. */
 export type PromiseTimestamp = {
     __typename?: 'PromiseTimestamp';
-    /** Maximum Promise for the shipment. */
+    /** Maximum Promise for the shipment (epoch seconds). Example: 1702137600 */
     max?: Maybe<Scalars['Float']['output']>;
-    /** Minimum delivery promise time for the shipment. */
+    /** Minimum delivery promise time for the shipment (epoch seconds). Example: 1702051200 */
     min?: Maybe<Scalars['Float']['output']>;
 };
 /** Loyalty points message data. */
 export type PromoMeta = {
     __typename?: 'PromoMeta';
-    /** Loyalty points message denotes how much loyalty points and applied and how much left with the user. */
+    /** Loyalty points message, e.g., how many applied and remaining. Example: 'You’ll earn 56 points from this order!' */
     message?: Maybe<Scalars['String']['output']>;
 };
+/** Promotion group classification for offers. */
+export declare enum PromotionGroup {
+    /** Cart-level promotion group. */
+    Cart = "cart",
+    /** Contract-level promotion group. */
+    Contract = "contract",
+    /** External price adjustment promotion group. */
+    ExternalPriceAdjustment = "external_price_adjustment",
+    /** Ladder price promotion group. */
+    LadderPrice = "ladder_price",
+    /** Limited timer promotion group (Hero Banner / Deal of the Day). */
+    LimitedTimer = "limited_timer",
+    /** Product-level promotion group. */
+    Product = "product"
+}
 /** Promotion offer details includes promotion id, buy rules, offer text, promotion type, promotion name, promotion group, discount rules, free gift items list and promo description. */
 export type PromotionOffer = {
     __typename?: 'PromotionOffer';
-    /** Buy rules of promotion which is available on product. */
+    /** Buy rules of promotion. Example: { item_criteria: { brands: [123] } } */
     buy_rules?: Maybe<Scalars['JSON']['output']>;
-    /** Offer details including T&amp;C of the promotion which is avaiable on product. */
+    /** Additional custom attributes associated with the promotion offer for extended promotional data and configuration */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /** Offer details including T&C. Example: '10% off with CARD payments' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Discount rules of promotions which is avaiable on product. */
+    /** Discount rules of promotion. Example: { offer: { percentage: 10 } } */
     discount_rules?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Details of free gift items which included item id, brand name, item name, item slug, item price and item image url. */
+    /** Free gift items details. Example: [{ item_id: 987654, item_name: 'Tote Bag' }] */
     free_gift_items?: Maybe<Array<Maybe<FreeGiftItems>>>;
-    /** Promotion id of the promotion which is available on product. */
+    /** Promotion id. Example: 'PROMO_PAY_10' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Offer title of the promotion which is available on product. */
+    /** Offer title. Example: '10% off with Card' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Group of the promotion which is available on product. */
+    /** Promotion group. Example: 'payment' */
     promotion_group?: Maybe<Scalars['String']['output']>;
-    /** Datetime ISO String for promotion end date which is available on product. */
+    /** ISO datetime for promotion end date. Example: '2025-12-31T23:59:59Z' */
     valid_till?: Maybe<Scalars['String']['output']>;
+};
+/** Promotion offer details includes promotion id, buy rules, offer text, promotion type, promotion name, promotion group, discount rules, free gift items list and promo description. */
+export type PromotionOfferCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** Promotion offer response detail which incluedes available promotions list. */
 export type PromotionOffersResponse = {
     __typename?: 'PromotionOffersResponse';
-    /** Available promotion details which are available on product which includes promotion data like promotion id, promotion name, buy rules, discount rules validity dates etc. */
+    /** Available promotion details (id, name, buy/discount rules, validity dates). Example: [{ id: 'PROMO1', offer_text: '10% off' }] */
     available_promotions?: Maybe<Array<Maybe<PromotionOffer>>>;
 };
 /** Contains List of promotions data which are applicable on cart/product. */
 export type PromotionPaymentOffer = {
     __typename?: 'PromotionPaymentOffer';
-    /** Application id on which the promotion was created. */
+    /**
+     * Application id on which the promotion was created. Example: 'app_123'
+     * @deprecated This field is obsolete
+     */
     application_id?: Maybe<Scalars['String']['output']>;
-    /** Buy rules of promotions which denotes if the rules matches than only promotion is applicable. */
+    /** Buy rules of promotions. Example: { cart_conditions: { cart_total: { min: 999 } } } */
     buy_rules?: Maybe<Scalars['JSON']['output']>;
-    /** Article Price on which promotion calculated like effective price or marked price. */
+    /** Price basis used for calculating promotion (effective/marked). Example: 'effective' */
     calculate_on?: Maybe<Scalars['String']['output']>;
-    /** Offer details including T&amp;C of the promotion which is avaiable on cart. */
+    /** Offer details including T&C. Example: '10% off with CARD payments' */
     description?: Maybe<Scalars['String']['output']>;
-    /** Discount rules of promotions which is avaiable on cart. */
+    /** Discount rules of promotions. Example: { offer: { percentage: 10 } } */
     discount_rules?: Maybe<Scalars['JSON']['output']>;
-    /** Promotion id of the promotion which is available on cart. */
+    /** Promotion id of the promotion. Example: 'PROMO_PAY_10' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Offer title of the promotion which is available on cart. */
+    /** Offer title of the promotion. Example: '10% off with Card' */
     offer_text?: Maybe<Scalars['String']['output']>;
-    /** Group promotion which is available on cart. */
+    /** Promotion group. Example: 'payment' */
     promotion_group?: Maybe<Scalars['String']['output']>;
-    /** Name of the promotion which is available on cart. */
+    /** Name of the promotion. Example: 'Card Discount' */
     promotion_name?: Maybe<Scalars['String']['output']>;
-    /** Promotion type of the promotion which is availalbe on cart. */
+    /** Promotion type. Example: 'percentage' */
     promotion_type?: Maybe<Scalars['String']['output']>;
 };
-/** Returns a array containing the available offers (if exists) on product via promotions. Refer `PromotionPaymentOffersResponse` for more details. */
+/** Returns an array containing the available offers (if exists) on product via promotions. Refer `PromotionPaymentOffersResponse` for more details. */
 export type PromotionPaymentOffers = {
     __typename?: 'PromotionPaymentOffers';
-    /** List of promotions data which are applicable on cart/product. */
+    /** List of promotions data applicable on cart/product. Example: [{ id: 'PROMO_PAY_10' }] */
     promotions?: Maybe<Array<Maybe<PromotionPaymentOffer>>>;
-    /** Success flag of get payment offers API response. */
+    /** Success flag of get payment offers API response. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** List all promotional offers available for the items in the cart, including details such as offer text, unique promotion ID, and validity period. */
 export type Promotions = {
     __typename?: 'Promotions';
-    /** available promotion details which are available on product which includes promotion data like promotion id, promotion name, buy rules, discount rules validity dates etc. */
+    /** Available promotion details for the product. Example: [{ id: 'PROMO1', offer_text: '10% off' }] */
     available_promotions?: Maybe<Array<Maybe<LadderPriceOfferDetails>>>;
 };
 /** An object representing a single property with various attributes. */
@@ -8398,6 +11837,7 @@ export type Props = {
     /** Configuration object holding static values for the application. */
     props?: Maybe<Array<Maybe<PropDetail>>>;
 };
+/** Actions that can be performed on push tokens. */
 export declare enum PushTokenAction {
     Create = "create",
     Reset = "reset",
@@ -8427,88 +11867,131 @@ export type QrCodeResp = {
 /** Configuration for the QR feature. */
 export type QrFeature = {
     __typename?: 'QrFeature';
-    /** Whether sharing of mobile app via QR code is allowed. Default value is false. */
-    application?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether sharing collection via QR code is allowed. Default value is false. */
-    collections?: Maybe<Scalars['Boolean']['output']>;
-    /** Whether sharing product via QR code is allowed. Default value is false. */
-    products?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether sharing mobile app via QR code is allowed. Default value is false. */
+    application: Scalars['Boolean']['output'];
+    /** Indicates whether sharing collections via QR code is allowed. Default value is false. */
+    collections: Scalars['Boolean']['output'];
+    /** Indicates whether sharing products via QR code is allowed. Default value is false. */
+    products: Scalars['Boolean']['output'];
 };
+/** Query operations for user information and profile management. */
 export type Query = {
     __typename?: 'Query';
+    _empty?: Maybe<Scalars['String']['output']>;
     /** Get a specific customer address stored in the system by providing its unique identifier. This API provides detailed information about the address, including the recipient's name, address, city, postal code, and other relevant details. */
     address?: Maybe<Address>;
     /** List all addresses saved by the customer, simplifying the checkout process by offering pre-saved address options for delivery. */
     addresses?: Maybe<Addresses>;
     /** Get aggregator secret key of all payment gateways utilized for payments when using the SDK for the payment gateway. */
     aggregatorsConfig?: Maybe<AggregatorsConfigDetail>;
-    /** Get a list of countries within the specified delivery zones for that application. */
+    /** Returns all countries available for shipping, as configured in the sales channel's delivery zones. Use this to list countries where shipping or address selection is required for integration. */
     allCountries?: Maybe<CountryList>;
-    /** Get details of the current sales channel. */
+    /** Get comprehensive configuration details of the current sales channel including features, domains, and settings. */
     applicationConfiguration?: Maybe<ApplicationConfiguration>;
-    /** Query to get details about application content like blog, faq, faqCategories etc. */
+    /** Query to get details about sales channel content like blog, faq, faqCategories etc. Returns all available content types for the sales channel. */
     applicationContent?: Maybe<ApplicationContent>;
     /** Get the theme configuration and template details of a theme applied to the application. */
     appliedTheme?: Maybe<ThemeDetail>;
+    /** Get the list of attributes definition. */
+    attributesDefinition?: Maybe<UserAttributesDefinition>;
     /** Get information related to a specific blog such as it's contents, author, publish date, SEO related information. */
     blog?: Maybe<Blog>;
-    /** Get metadata of a brand such as name, information, logo, banner, etc. */
+    /** Get comprehensive metadata of a specific brand including name, description, logo, banner, and other brand details. You can get slug value from the query brands. */
     brand?: Maybe<BrandDetail>;
-    /** Get metadata of a brand such as name, information, logo, banner, etc. */
+    /** List all available brands with filtering options by department and pagination support. You can get the available departments from the query departments. */
     brands?: Maybe<BrandConnection>;
-    /** List offer discounts with information about quantity and seller. One offer is marked with a "best" flag, indicating it as the best offer among the list. */
+    /** List offer discounts with information about quantity and seller. One offer is marked with a "best" flag, indicating it as the best offer among the list. Either pass uid/item_id or slug. */
     bulkDiscountOffers?: Maybe<BulkDiscountOffers>;
+    bundleItems?: Maybe<BundleItems>;
+    bundlesByChild?: Maybe<BundlesByChild>;
     /** Get details of a cart linked to a specific customer using a unique cart ID. It offers an overview of the items, quantities, prices, and other relevant information associated with the cart. */
     cart?: Maybe<Cart>;
     /** Get shipment details for the items in a cart, specific to the selected address. Shipment details include delivery promises, seller information, item details, and other relevant information. */
     cartShipmentDetails?: Maybe<CartShipmentsResponse>;
-    /** List all available product categories. Also, users can filter the categories by department. */
+    /** List all available product categories organized by department with hierarchical structure and filtering options. You can get the available departments from the query departments. */
     categories?: Maybe<Categories>;
-    /** Get detailed information about a specific product category using its slug and get metadata of a category such as name, information, logo, banner, etc. */
+    /** Get comprehensive information about a specific product category including metadata, hierarchy, name, logo, banner, and related details. You can get slug value from the query categories. */
     category?: Maybe<Category>;
-    /** Get detailed information about a specific collection using its slug. */
+    /** Get comprehensive details about a specific collection including metadata, products, and configuration. You can get slug value from the query collections. */
     collection?: Maybe<CollectionDetail>;
-    /** Fetch items within a particular collection identified by its slug. */
+    /** Fetch products and items within a specific collection with advanced filtering, sorting, and pagination options. You can get slug value from the query collections. */
     collectionItems?: Maybe<CollectionItems>;
-    /** List of curated product collections with filtering options based on tags and collection names. */
+    /** List curated product collections with advanced filtering options based on tags, names, and collection types. */
     collections?: Maybe<CollectionConnection>;
-    /** List of supported countries. */
+    /**
+     * List of supported countries
+     * @deprecated Not required. Use allCountries instead
+     */
     countries?: Maybe<CountryConnection>;
     /** Get details about a particular country and its address format customized for different business scenarios. */
     country?: Maybe<CountryDetail>;
     /** List all available coupons that customer can apply to their carts. It provides details about each coupon, including its code, discount amount, and applicable conditions. */
     coupons?: Maybe<Coupons>;
-    /** List available currencies. */
+    /** List all available currencies supported by the platform with their details like codes, symbols, and status. */
     currencies?: Maybe<Array<Maybe<Currency>>>;
-    /** Get currency configuration of the sales channel. */
+    /** Get detailed currency configuration for a specific currency by its ID, including decimal digits, country info, and active status. */
     currency?: Maybe<Currency>;
+    /** Generic query to get custom fields for any resource type(s). Maximum 100 resourceIds and 100 namespaces are supported at a time. */
+    customFieldsByResource: CustomFieldResult;
     /** Get the consent provided by the user for receiving communication. */
     customerCommunicationConsent?: Maybe<CommunicationConsent>;
-    /** List all departments associated with available products. */
+    /** Get delivery promises for both global and store levels based on a specific locality type. */
+    deliveryPromise?: Maybe<DeliveryPromise>;
+    /** List all departments available in the catalog with their identifiers and basic information. */
     departments?: Maybe<Array<Maybe<Department>>>;
+    /** List all products eligible for the given offer. Returns a paginated list of products that can be used with the specified offer. At least one of offerCode or offerId must be provided. offerCode takes priority */
+    eligibleOfferProducts?: Maybe<EligibleProductsResponse>;
     /** Get a specific FAQ using its slug identifier. */
     faq?: Maybe<Faq>;
-    /** List categories for organizing FAQs. */
+    /** Get a specific FAQ category and its details using its slug identifier. */
     faqCategory?: Maybe<CategoryBySlug>;
-    /** List categories for organizing FAQs. */
+    /** Get all FAQs belonging to a specific category using the category slug. */
     faqsByCategory?: Maybe<FaQs>;
-    /** Get a list of products or brands the user is following. */
+    /** Get the user's personalized list of followed products, brands, or collections with pagination. */
     followedListing?: Maybe<FollowListing>;
-    /** Get the total number of followers for a specific item by its ID. */
+    /** Get the total number of users following a specific collection, brand, or product. */
     followerCount?: Maybe<FollowerCount>;
-    /** List all the products associated with a brand, collection or category in a random order. */
-    homeProducts?: Maybe<HomeProducts>;
-    /** List stores where specified products are currently in stock. */
+    /**
+     * Get a list of fulfillment options for the specified product and store for that sales channel.
+     * @deprecated Not required. Use productsPriceWithFulfillmentOption instead
+     */
+    fulfillmentOption?: Maybe<FulfillmentOptionList>;
+    /** Get list of stores for a fulfillment option of that sales-channel. */
+    fulfillmentOptionStores?: Maybe<FulfillmentOptionStores>;
+    /** List fulfillment options available for a specific product at the sales channel. */
+    fulfillmentOptions?: Maybe<FulfillmentOptions>;
+    /** Get refund modes for a shipment. */
+    getRefundModes?: Maybe<RefundOptionsResponse>;
+    /** Get refund modes and refund amount breakup for a shipment. */
+    getRefundModesWithPriceBreakUp?: Maybe<RefundOptionsWithPriceBreakup>;
+    /** List stores that currently have specified products in stock with location-based filtering options. */
     inStockLocations?: Maybe<StockLocations>;
-    /** Get geographical data for a specific type of locality based on the provided filters. For instance, obtain a list of cities for a given country and state. */
+    /** Get application translation languages. Returns all available languages configured for the application, including locale codes, display names, and direction settings. */
+    languages?: Maybe<Array<Maybe<Languages>>>;
+    /**
+     * Retrieves a list of geographical localities (such as countries, states, cities, sectors, or pincodes) based on the provided filters.
+     * Supports hierarchical queries, making it suitable for address workflows and system integrations. These hierarchies can be obtained using the country query.
+     *
+     * Example use cases:
+     * - To retrieve all states in India: set `locality = state`, `country = "IN"`
+     * - To retrieve all cities in Andhra Pradesh: set `locality = city`, `country = "IN"`, `state = "ANDHRA_PRADESH"` (use the display_name or name of the state)
+     * - To retrieve all pincodes in Hyderabad: set `locality = pincode`, `country = "IN"`, `city = "Hyderabad"` (use the display_name or name of the city)
+     *
+     * Workflow:
+     * 1. Fetch all states for a country.
+     * 2. Use the state’s display_name or name from the previous response to fetch its cities.
+     * 3. Use the city’s display_name or name from the previous response to fetch its pincodes.
+     */
     localities?: Maybe<LocalityConnection>;
     /** Get detailed geographical data for a specific locality, such as a pincode. For example, for a pincode value of 400603, the service returns its parent locations, including city, state, and country details. */
     locality?: Maybe<Locality>;
-    /** Get order details such as tracking details, shipment, store information using Fynd Order ID. */
+    /** Get order details such as tracking details, shipment, store information using Fynd Order ID. For example, orderId: 'FY63C1FBA80195F734C0'. */
     order?: Maybe<Order>;
-    /** Get all orders associated with a customer account. */
+    /** Get all payment transactions for an order, ordered by creation time ascending. */
+    orderTransactions?: Maybe<OrderTransactionDetail>;
+    /** Get all orders associated with a customer account. Returns paginated list of orders with filters. */
     orders?: Maybe<OrderConnection>;
-    /** Get detailed information for a specific page within the theme. */
+    /** Get detailed information for a specific marketing page using its slug. */
     page?: Maybe<CustomPageDetail>;
     /** Get Payment details. */
     payment?: Maybe<Payment>;
@@ -8520,47 +12003,57 @@ export type Query = {
     platformConfig?: Maybe<PlatformConfig>;
     /** Get available payment methods on the payment page for POS, specifying the aggregator for each option, such as 'CARD powered by Juspay' and 'QR powered by Razorpay'. */
     posPaymentModeRoutes?: Maybe<PaymentModeRouteDetail>;
-    /** Get product details such as price, attributes, HSN code, SKU code, etc. */
+    /** Get comprehensive product details including pricing, attributes, specifications, availability, and metadata. You can get slug value from the query products. */
     product?: Maybe<Product>;
-    /** Get products bundles to the one specified by its slug. */
+    /**
+     * Get product bundles and groupings associated with a specific product for cross-selling and upselling. You can get slug value from the query products.
+     * @deprecated This query is obsolete.
+     */
     productBundles?: Maybe<ProductBundle>;
-    /** Get all the products that have the same category. */
+    /** Compare multiple products side-by-side with detailed attribute and specification analysis. You can get slug value from the query products. */
     productComparison?: Maybe<ProductCompareDetails>;
     /** Get ladder offers associated for the items in the cart. Ladder offers provide discounts or special pricing based on item quantity, allowing users to benefit from bulk purchases or promotional deals. */
     productLadderPromotion?: Maybe<ProductLadderPromotion>;
-    /** Get the price of a product size at all the selling locations near to a PIN Code. */
+    /** Get detailed pricing information for a specific product size across different selling locations and fulfillment options. You can get slug and size value from the query products. */
     productPrice?: Maybe<ProductSizePrice>;
-    /** List all sellers offering a specific product identified by its slug and size. */
+    /** List all sellers and stores offering a specific product with pricing, availability, and delivery options. You can get slug and size value from the query products. */
     productSellers?: Maybe<ProductSellers>;
-    /** List all products available in the catalog. It supports filtering based on product name, brand, department, category, collection, and more, while also offering sorting options based on factors like price, ratings, discounts, and other relevant criteria. */
+    /** Search and list products with advanced filtering, sorting, and pagination options including brand, category, price range, and more. */
     products?: Maybe<ProductConnection>;
+    /** Get comprehensive pricing with multiple fulfillment options for a product size across various selling locations. You can get slug and size value from the query products. */
+    productsPriceWithFulfillmentOption?: Maybe<ProductsPriceWithFulfillmentOption>;
     /** List top 5 payment offers available for current product. */
     promotionPaymentOffers?: Maybe<PromotionPaymentOffers>;
-    /** List all promotional offers available for the items in the cart, including details such as offer text, unique promotion ID, and validity period. */
+    /** List all promotional offers available for the items in the cart, including details such as offer text, unique promotion ID, and validity period. Either pass slug of the product or pass cart_id. */
     promotions?: Maybe<Promotions>;
-    /** Get details about the active card aggregator used by the user, including the aggregator's name. You can refresh the data by setting the 'refresh' parameter to true if needed. */
+    /** Get the redirect URL for a payment aggregator to complete the payment process on the aggregator's page. */
     redirectToAggregator?: Maybe<RedirectToAggregatorDetail>;
     /** Get Refund details. */
     refund?: Maybe<Refund>;
-    /** Get products, brands, or categories based on a search query, which can be a partial or full name match. */
+    /** Search for products, brands, or categories with autocomplete suggestions and intelligent matching. */
     searchProduct?: Maybe<SearchProduct>;
+    /**
+     * Active SEO JSON-LD markup schema templates for the sales channel. Pass
+     * one or more page types to get the OR-union across them (e.g. `[HOME]`,
+     * `[BRAND, CATEGORY]`). Omitting `pageTypes` or passing `[]` returns
+     * templates for every page type.
+     */
+    seoMarkupSchemas: Array<SeoMarkupSchema>;
     /** Get cart items from the shared cart link based on unique token. */
     sharedCartDetails?: Maybe<SharedCartItems>;
-    /** Get shipment details such as price breakup, tracking details, store information, etc. using Shipment ID. */
+    /** Get shipment details such as price breakup, tracking details, store information, etc. using Shipment ID. For example, shipmentId: '16736576489251696245'. */
     shipment?: Maybe<Shipment>;
     /** Get previously created short link using its hash identifier. */
     shortLink?: Maybe<ShortLink>;
-    /** Get a slideshow using its `slug`. */
-    slideshow?: Maybe<Slideshow>;
-    /** Get details about a store based on its location Id. */
+    /** Get comprehensive details about a specific store including address, contact information, timing, and services based on its location ID. */
     store?: Maybe<Store>;
-    /** List all stores associated with the sales channel. */
+    /** List all stores associated with the sales channel with filtering options by location, city, and search queries. */
     stores?: Maybe<StoreConnection>;
-    /** Use this nested query to get details of customForm, ticket details. */
+    /** Get customer support details including custom forms and ticket information. */
     support?: Maybe<Support>;
-    /** Use this query to fetch details like appliedTheme, previewTheme, themePages and details. */
+    /** Get theme details including applied theme, preview theme, theme pages, and configuration. */
     theme?: Maybe<Theme>;
-    /** Use this nested query to retrieve user details like if the User isLoggedIn or not, to logout, to get activeSessionList and to check if hasPassword set or not. */
+    /** Get user details including login status, active sessions, and password configuration. */
     user?: Maybe<User>;
     /** Get the list of user attributes. */
     userAttributes?: Maybe<UserAttributes>;
@@ -8569,6 +12062,7 @@ export type Query = {
     /** Validate the applicability of a coupon code for the selected payment mode for the existing cart. This ensures the coupon's validity before proceeding with the payment process, enhancing user experience and preventing potential errors during transactions. */
     validateCoupon?: Maybe<CouponValidate>;
 };
+/** Query operations for user information and profile management. */
 export type QueryAddressArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cartId?: InputMaybe<Scalars['String']['input']>;
@@ -8578,6 +12072,7 @@ export type QueryAddressArgs = {
     mobileNo?: InputMaybe<Scalars['String']['input']>;
     tags?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryAddressesArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cartId?: InputMaybe<Scalars['String']['input']>;
@@ -8586,111 +12081,203 @@ export type QueryAddressesArgs = {
     mobileNo?: InputMaybe<Scalars['String']['input']>;
     tags?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryAggregatorsConfigArgs = {
     refresh?: InputMaybe<Scalars['Boolean']['input']>;
     xapitoken?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
+export type QueryAttributesDefinitionArgs = {
+    customerEditable?: InputMaybe<Scalars['Boolean']['input']>;
+    encrypted?: InputMaybe<Scalars['Boolean']['input']>;
+    excludingIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+    isLocked?: InputMaybe<Scalars['Boolean']['input']>;
+    name?: InputMaybe<Scalars['String']['input']>;
+    pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+    pinOrder?: InputMaybe<Scalars['Int']['input']>;
+    pinned?: InputMaybe<Scalars['Boolean']['input']>;
+    registrationEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+    registrationType?: InputMaybe<Array<InputMaybe<UserAttributeRegistrationType>>>;
+    slug?: InputMaybe<Scalars['String']['input']>;
+    type?: InputMaybe<AttributeType>;
+};
+/** Query operations for user information and profile management. */
 export type QueryBlogArgs = {
+    preview?: InputMaybe<Scalars['Boolean']['input']>;
     root_id?: InputMaybe<Scalars['String']['input']>;
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryBrandArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryBrandsArgs = {
     department?: InputMaybe<Scalars['String']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryBulkDiscountOffersArgs = {
     articleId?: InputMaybe<Scalars['String']['input']>;
     itemId?: InputMaybe<Scalars['Int']['input']>;
     slug?: InputMaybe<Scalars['String']['input']>;
     uid?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
+export type QueryBundleItemsArgs = {
+    pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+    slug: Scalars['String']['input'];
+};
+/** Query operations for user information and profile management. */
+export type QueryBundlesByChildArgs = {
+    pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+    size: Scalars['String']['input'];
+    slug: Scalars['String']['input'];
+};
+/** Query operations for user information and profile management. */
 export type QueryCartArgs = {
     areaCode?: InputMaybe<Scalars['String']['input']>;
-    assignCardId?: InputMaybe<Scalars['Int']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
     includeAllItems?: InputMaybe<Scalars['Boolean']['input']>;
     includeBreakup?: InputMaybe<Scalars['Boolean']['input']>;
     includeCodCharges?: InputMaybe<Scalars['Boolean']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCartShipmentDetailsArgs = {
     addressId?: InputMaybe<Scalars['String']['input']>;
     areaCode?: InputMaybe<Scalars['String']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
-    includePayment?: InputMaybe<Scalars['Boolean']['input']>;
     orderType?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCategoriesArgs = {
     department?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCategoryArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryCollectionArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryCollectionItemsArgs = {
     after?: InputMaybe<Scalars['String']['input']>;
+    filterQuery?: InputMaybe<Scalars['String']['input']>;
     filters?: InputMaybe<Scalars['Boolean']['input']>;
     first?: InputMaybe<Scalars['Int']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
     pageType?: InputMaybe<Scalars['String']['input']>;
     query?: InputMaybe<Scalars['String']['input']>;
-    search?: InputMaybe<Scalars['String']['input']>;
     slug: Scalars['String']['input'];
     sortOn?: InputMaybe<Sort_On>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCollectionsArgs = {
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     query?: InputMaybe<Scalars['String']['input']>;
     tag?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCountriesArgs = {
     onboarding?: InputMaybe<Scalars['Boolean']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     search?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCountryArgs = {
     countryIsoCode: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryCouponsArgs = {
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
+    productSlug?: InputMaybe<Scalars['String']['input']>;
+    storeId?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryCurrencyArgs = {
     id: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
+export type QueryCustomFieldsByResourceArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
+    resource: Scalars['String']['input'];
+    resourceId?: InputMaybe<Scalars['String']['input']>;
+    resourceIds?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+/** Query operations for user information and profile management. */
+export type QueryDeliveryPromiseArgs = {
+    pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+};
+/** Query operations for user information and profile management. */
+export type QueryEligibleOfferProductsArgs = {
+    offerCode?: InputMaybe<Scalars['String']['input']>;
+    offerId?: InputMaybe<Scalars['String']['input']>;
+    page?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+};
+/** Query operations for user information and profile management. */
 export type QueryFaqArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryFaqCategoryArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryFaqsByCategoryArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryFollowedListingArgs = {
     collectionType: Scalars['String']['input'];
     pageId?: InputMaybe<Scalars['String']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryFollowerCountArgs = {
     collectionId: Scalars['String']['input'];
     collectionType: Scalars['String']['input'];
 };
-export type QueryHomeProductsArgs = {
-    after?: InputMaybe<Scalars['String']['input']>;
-    first?: InputMaybe<Scalars['Int']['input']>;
-    pageNo?: InputMaybe<Scalars['Int']['input']>;
-    sortOn?: InputMaybe<Scalars['String']['input']>;
+/** Query operations for user information and profile management. */
+export type QueryFulfillmentOptionArgs = {
+    slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
+export type QueryFulfillmentOptionStoresArgs = {
+    pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
+    slug: Scalars['String']['input'];
+};
+/** Query operations for user information and profile management. */
+export type QueryFulfillmentOptionsArgs = {
+    productSlug: Scalars['String']['input'];
+    storeID?: InputMaybe<Scalars['String']['input']>;
+};
+/** Query operations for user information and profile management. */
+export type QueryGetRefundModesArgs = {
+    lineNumbers?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
+};
+/** Query operations for user information and profile management. */
+export type QueryGetRefundModesWithPriceBreakUpArgs = {
+    lineNumbers?: InputMaybe<Array<InputMaybe<ShipmentLineItem>>>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
+};
+/** Query operations for user information and profile management. */
 export type QueryInStockLocationsArgs = {
     city?: InputMaybe<Scalars['String']['input']>;
     latitude?: InputMaybe<Scalars['Float']['input']>;
@@ -8700,6 +12287,7 @@ export type QueryInStockLocationsArgs = {
     query?: InputMaybe<Scalars['String']['input']>;
     range?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryLocalitiesArgs = {
     city?: InputMaybe<Scalars['String']['input']>;
     country?: InputMaybe<Scalars['String']['input']>;
@@ -8707,127 +12295,177 @@ export type QueryLocalitiesArgs = {
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     search?: InputMaybe<Scalars['String']['input']>;
+    sector?: InputMaybe<Scalars['String']['input']>;
     state?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryLocalityArgs = {
     city?: InputMaybe<Scalars['String']['input']>;
     country?: InputMaybe<Scalars['String']['input']>;
     locality: LocalityEnum;
     localityValue: Scalars['String']['input'];
+    sector?: InputMaybe<Scalars['String']['input']>;
     state?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryOrderArgs = {
     orderId: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
+export type QueryOrderTransactionsArgs = {
+    orderId: Scalars['String']['input'];
+};
+/** Query operations for user information and profile management. */
 export type QueryOrdersArgs = {
-    customMeta?: InputMaybe<Scalars['String']['input']>;
+    endDate?: InputMaybe<Scalars['String']['input']>;
+    endDatetime?: InputMaybe<Scalars['String']['input']>;
     fromDate?: InputMaybe<Scalars['String']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
+    startDate?: InputMaybe<Scalars['String']['input']>;
+    startDatetime?: InputMaybe<Scalars['String']['input']>;
     status?: InputMaybe<Scalars['Int']['input']>;
     toDate?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryPageArgs = {
     rootId?: InputMaybe<Scalars['String']['input']>;
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryPaymentLinkDetailArgs = {
     paymentLinkId?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryPaymentModeRoutesArgs = {
     amount: Scalars['Float']['input'];
     cardReference?: InputMaybe<Scalars['String']['input']>;
-    cartId: Scalars['String']['input'];
-    checkoutMode: Scalars['String']['input'];
-    pincode: Scalars['String']['input'];
+    cartId?: InputMaybe<Scalars['String']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    displaySplit?: InputMaybe<Scalars['Boolean']['input']>;
+    fulfillmentOption?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    pincode?: InputMaybe<Scalars['String']['input']>;
     refresh?: InputMaybe<Scalars['Boolean']['input']>;
     userDetails?: InputMaybe<Scalars['String']['input']>;
 };
-export type QueryPlatformConfigArgs = {
-    name?: InputMaybe<Scalars['String']['input']>;
-};
+/** Query operations for user information and profile management. */
 export type QueryPosPaymentModeRoutesArgs = {
     amount: Scalars['Int']['input'];
     cardreference?: InputMaybe<Scalars['String']['input']>;
-    cartId: Scalars['String']['input'];
-    checkoutMode: Scalars['String']['input'];
+    cartId?: InputMaybe<Scalars['String']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    displaySplit?: InputMaybe<Scalars['Boolean']['input']>;
+    orderId?: InputMaybe<Scalars['String']['input']>;
     orderType: Scalars['String']['input'];
-    pincode: Scalars['String']['input'];
+    pincode?: InputMaybe<Scalars['String']['input']>;
     refresh?: InputMaybe<Scalars['Boolean']['input']>;
     userDetails?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductArgs = {
     slug: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryProductBundlesArgs = {
     id?: InputMaybe<Scalars['String']['input']>;
     slug?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductComparisonArgs = {
     slug: Array<InputMaybe<Scalars['String']['input']>>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductLadderPromotionArgs = {
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     promotionId?: InputMaybe<Scalars['String']['input']>;
     slug: Scalars['String']['input'];
     storeId?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductPriceArgs = {
+    fulfillmentOptionSlug?: InputMaybe<Scalars['String']['input']>;
     moq?: InputMaybe<Scalars['Int']['input']>;
     pincode?: InputMaybe<Scalars['String']['input']>;
     size: Scalars['String']['input'];
     slug: Scalars['String']['input'];
     storeId?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductSellersArgs = {
+    fulfillmentOptionSlug?: InputMaybe<Scalars['String']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     size: Scalars['String']['input'];
     slug: Scalars['String']['input'];
     strategy?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryProductsArgs = {
     after?: InputMaybe<Scalars['String']['input']>;
     enableFilter?: InputMaybe<Scalars['Boolean']['input']>;
     filterQuery?: InputMaybe<Scalars['String']['input']>;
     first?: InputMaybe<Scalars['Int']['input']>;
     pageNo?: InputMaybe<Scalars['Int']['input']>;
+    pageSize?: InputMaybe<Scalars['Int']['input']>;
     pageType?: InputMaybe<Scalars['String']['input']>;
     search?: InputMaybe<Scalars['String']['input']>;
     sortOn?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
+export type QueryProductsPriceWithFulfillmentOptionArgs = {
+    fulfillmentOptionSlug?: InputMaybe<Scalars['String']['input']>;
+    moq?: InputMaybe<Scalars['Int']['input']>;
+    pincode?: InputMaybe<Scalars['String']['input']>;
+    size: Scalars['String']['input'];
+    slug: Scalars['String']['input'];
+    storeId?: InputMaybe<Scalars['Int']['input']>;
+};
+/** Query operations for user information and profile management. */
 export type QueryPromotionPaymentOffersArgs = {
     id?: InputMaybe<Scalars['String']['input']>;
     uid?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryPromotionsArgs = {
+    autoApply?: InputMaybe<Scalars['Boolean']['input']>;
+    cartId?: InputMaybe<Scalars['String']['input']>;
     pageSize?: InputMaybe<Scalars['Int']['input']>;
     promotionGroup?: InputMaybe<Scalars['String']['input']>;
+    promotionType?: InputMaybe<Scalars['String']['input']>;
     slug?: InputMaybe<Scalars['String']['input']>;
     storeId?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryRedirectToAggregatorArgs = {
     aggregator?: InputMaybe<Scalars['String']['input']>;
     source?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QuerySearchProductArgs = {
     query: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
+export type QuerySeoMarkupSchemasArgs = {
+    pageTypes?: InputMaybe<Array<PageType>>;
+};
+/** Query operations for user information and profile management. */
 export type QuerySharedCartDetailsArgs = {
     token: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryShipmentArgs = {
     shipmentId: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryShortLinkArgs = {
     hash: Scalars['String']['input'];
 };
-export type QuerySlideshowArgs = {
-    slug: Scalars['String']['input'];
-};
+/** Query operations for user information and profile management. */
 export type QueryStoreArgs = {
     locationId: Scalars['Int']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryStoresArgs = {
     city?: InputMaybe<Scalars['String']['input']>;
     latitude?: InputMaybe<Scalars['Float']['input']>;
@@ -8837,18 +12475,21 @@ export type QueryStoresArgs = {
     query?: InputMaybe<Scalars['String']['input']>;
     range?: InputMaybe<Scalars['Int']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryThemeArgs = {
     themeId: Scalars['String']['input'];
 };
+/** Query operations for user information and profile management. */
 export type QueryUserAttributesArgs = {
     slug?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryUserExistsArgs = {
     q?: InputMaybe<Scalars['String']['input']>;
 };
+/** Query operations for user information and profile management. */
 export type QueryValidateCouponArgs = {
     addressId?: InputMaybe<Scalars['String']['input']>;
-    aggregatorName?: InputMaybe<Scalars['String']['input']>;
     buyNow?: InputMaybe<Scalars['Boolean']['input']>;
     cardId?: InputMaybe<Scalars['String']['input']>;
     id?: InputMaybe<Scalars['String']['input']>;
@@ -8862,43 +12503,49 @@ export type QueryValidateCouponArgs = {
 /** Schema for question. */
 export type QuestionSet = {
     __typename?: 'QuestionSet';
-    /** The text displayed for the question. */
+    /** The text displayed for the question. For example, `display_name` can be set to 'Sample Name'. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the question. */
+    /** The unique identifier for the question. For example, `id` can be set to 1. */
     id?: Maybe<Scalars['Int']['output']>;
 };
-/** Price raw breakup of the cart which denotes cod charge, convinience fee, coupon amount, delivery charge, discount, loyalty points, gift card, gst charge, etc. */
+/** Price raw breakup of the cart which denotes cod charge, convenience fee, coupon amount, delivery charge, discount, loyalty points, gift card, gst charge, etc. */
 export type RawBreakup = {
     __typename?: 'RawBreakup';
-    /** Cod charge value applied to cart. This is applied when user select payment mode as COD. */
+    /** Cod charge value applied to cart (applies when payment mode is COD). Example: 50.0 */
     cod_charge?: Maybe<Scalars['Float']['output']>;
-    /** Convenience fee amount applied to cart. */
+    /** Convenience fee amount applied to cart. Example: 19.0 */
     convenience_fee?: Maybe<Scalars['Float']['output']>;
-    /** Coupon amount applied to cart. */
+    /** Coupon amount applied to cart. Example: 150.0 */
     coupon?: Maybe<Scalars['Float']['output']>;
-    /** Delivery charge applied to cart. */
+    /** Delivery charge applied to cart. Example: 0.0 */
     delivery_charge?: Maybe<Scalars['Float']['output']>;
-    /** Discount amount recieved on cart. */
+    /** Discount amount received on cart. Example: 350.0 */
     discount?: Maybe<Scalars['Float']['output']>;
-    /** Loyalty points applied on cart. */
+    /** Engage points amount applied on the cart. Example: 56.0 */
+    engage_amount?: Maybe<Scalars['Float']['output']>;
+    /** Engage discount amount applied on the cart as payment mode. Example: 56.0 */
+    engage_mop_amount?: Maybe<Scalars['Float']['output']>;
+    /** Loyalty points applied on cart. Example: 200.0 */
     fynd_cash?: Maybe<Scalars['Float']['output']>;
-    /** Gift cart amount applied on cart. */
+    /** Gift card amount applied on cart. Example: 250.0 */
     gift_card?: Maybe<Scalars['Float']['output']>;
-    /** GST charges applied on cart. */
+    /** GST charges applied on cart. Example: 123.0 */
     gst_charges?: Maybe<Scalars['Float']['output']>;
-    /** Total of payment modes by which payment is going to be done. */
+    /** Total of payment modes by which payment is going to be done. Example: 1499.0 */
     mop_total?: Maybe<Scalars['Float']['output']>;
-    /** Maximum price total amount of all products in cart. */
+    /** Maximum price total amount of all products in cart (MRP total). Example: 2999.0 */
     mrp_total?: Maybe<Scalars['Float']['output']>;
-    /** Selling price amount of all products in cart. */
+    /** Store credits applied on cart. Example: 100.0 */
+    store_credit?: Maybe<Scalars['Float']['output']>;
+    /** Selling price amount of all products in cart (subtotal). Example: 1699.0 */
     subtotal?: Maybe<Scalars['Float']['output']>;
-    /** Total payable amount by the customer. */
+    /** Total payable amount by the customer. Example: 1549.0 */
     total?: Maybe<Scalars['Float']['output']>;
-    /** Total amount of charges applied on cart. */
+    /** Total charges applied on cart. Example: 69.0 */
     total_charge?: Maybe<Scalars['Float']['output']>;
-    /** Total value of goods after all discount, coupons and promotion applied of all products in cart. */
+    /** Total value of goods after discounts, coupons, promotions. Example: 1600.0 */
     vog?: Maybe<Scalars['Float']['output']>;
-    /** Total amount will be saved if customer places the order. */
+    /** Total amount saved with this order. Example: 450.0 */
     you_saved?: Maybe<Scalars['Float']['output']>;
 };
 /** Razorpay config detail schema. */
@@ -8918,19 +12565,46 @@ export type RazorPayAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
     /** Payment gateway verify payment api endpoint. */
     verify_api?: Maybe<Scalars['String']['output']>;
+    /** UPI validation details. */
+    vpa?: Maybe<Scalars['String']['output']>;
 };
-/** Schema for reasons data. */
+/**
+ * Schema for specifying reasons associated with shipment or product-level actions.
+ * Example:
+ * {
+ *   "entities": [{ "filters": [{}], "data": { "reason_id": "507f1f77bcf86cd799439011", "reason_text": "Customer requested cancellation" } }],
+ *   "products": [{ "filters": [{ "identifier": "21500347", "line_number": 1 }], "data": { "reason_id": "507f1f77bcf86cd799439011", "reason_text": "Damaged item" } }]
+ * }
+ */
 export type ReasonsDataInput = {
     /** Reasons data for shipments. */
     entities?: InputMaybe<Array<InputMaybe<EntitiesReasonsInput>>>;
     /** Reasons data for bags. */
     products?: InputMaybe<Array<InputMaybe<ProductsReasonsInput>>>;
+};
+/** Redeem loyalty points accumulated from orders or loyalty campaigns. */
+export type RedeemLoyaltyPoints = {
+    /** If true, redeem points; if false, remove applied points. Example: true */
+    redeem_points?: InputMaybe<Scalars['Boolean']['input']>;
+};
+/** Redirect the user to a URL to continue payment (e.g., Razorpay). */
+export type RedirectAction = NextAction & {
+    __typename?: 'RedirectAction';
+    /** Additional contextual fields (method, token, bank, etc.). */
+    fields?: Maybe<Array<FormField>>;
+    /** Type of action (REDIRECT). */
+    type: NextActionType;
+    /** Destination URL to redirect the user. */
+    url?: Maybe<Scalars['String']['output']>;
 };
 /** Redirection schema for device that includes fallback URL, which is the URL to redirect users to the app store or a web page if the app is not installed, and fallback type, indicating whether the fallback directs users to the app store or a web page. */
 export type RedirectDevice = {
@@ -8955,6 +12629,7 @@ export type RedirectToAggregatorDetail = {
     /** Status updated or not. */
     success: Scalars['Boolean']['output'];
 };
+/** Types of redirects available in the system. */
 export declare enum RedirectType {
     AppStore = "app_store",
     Web = "web"
@@ -8962,6 +12637,10 @@ export declare enum RedirectType {
 /** Redirect URL. */
 export type RedirectUrl = {
     __typename?: 'RedirectUrl';
+    /** Extra details, stringify json of the extra data. */
+    extra?: Maybe<Scalars['String']['output']>;
+    /** URL to which the user may redirect. */
+    redirect_url?: Maybe<Scalars['String']['output']>;
     /** URL to which the user may redirect. */
     signup_url: Scalars['String']['output'];
     /** Aggregator Operation is successful or not. */
@@ -8995,14 +12674,28 @@ export type Refund = {
     __typename?: 'Refund';
     /** Lists available refund modes, such as UPI, providing details like display name, logo, and ID for each mode. */
     active_refund_transfer_modes?: Maybe<ActiveRefundTransferModes>;
-    /** Get beneficiary details like bank name, ifsc code, branch name associated with a specific order for refund processing. */
+    /**
+     * To be deprecated: Get beneficiary details like bank name, ifsc code, branch name associated with a specific order for refund processing.
+     * @deprecated Use 'order_user_beneficiaries' instead.
+     */
     order_beneficiaries_detail?: Maybe<OrderBeneficiaryDetail>;
-    /** Get beneficiaries associated with the user for processing refunds, based on the provided order ID. */
+    /** Returns UPI and Bank refund beneficiaries for a user; supports optional `filterBy` (enum: `order`, `shipment`)—when provided, only beneficiaries linked to the specified `order_id` or `shipment_id` are returned. */
+    order_user_beneficiaries?: Maybe<GetRefundBeneficiary>;
+    /**
+     * To be deprecated: Get beneficiaries associated with the user for processing refunds, based on the provided order ID.
+     * @deprecated Use 'order_user_beneficiaries' instead.
+     */
     user_beneficiaries_detail?: Maybe<OrderBeneficiaryDetail>;
 };
 /** Get refund details. */
 export type RefundOrder_Beneficiaries_DetailArgs = {
     orderId: Scalars['String']['input'];
+};
+/** Get refund details. */
+export type RefundOrder_User_BeneficiariesArgs = {
+    filterBy?: InputMaybe<FilterByEnum>;
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
 };
 /** Get refund details. */
 export type RefundUser_Beneficiaries_DetailArgs = {
@@ -9011,18 +12704,158 @@ export type RefundUser_Beneficiaries_DetailArgs = {
 /** Refund account Response. */
 export type RefundAccountResponse = {
     __typename?: 'RefundAccountResponse';
-    /** Refund account data. */
+    /** Name of the bank account holder. */
+    account_holder?: Maybe<Scalars['String']['output']>;
+    /** Masked bank account number of the beneficiary. */
+    account_no?: Maybe<Scalars['String']['output']>;
+    /** Name of the bank. */
+    bank_name?: Maybe<Scalars['String']['output']>;
+    /** Unique ID assigned to the beneficiary. */
+    beneficiary_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Refund account data.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     data?: Maybe<Scalars['JSON']['output']>;
-    /** Flag for verification of refund. */
+    /** This flag indicates whether the beneficiary account is verified by the aggregator. */
     is_verified_flag?: Maybe<Scalars['Boolean']['output']>;
+    /** Logo URL of the bank. */
+    logo?: Maybe<Scalars['String']['output']>;
     /** Response message. */
     message: Scalars['String']['output'];
     /** Success or failure flag. */
     success: Scalars['Boolean']['output'];
+    /** UPI id of the beneficiary. */
+    upi?: Maybe<Scalars['String']['output']>;
+};
+/** Refund Mode details for processing refunds. */
+export type RefundMode = {
+    /** Information about the refund recipient, such as name, bank account details, or payment instructions. */
+    beneficiary_details?: InputMaybe<RefundModeTransitionBeneficiaryData>;
+    /** Array containing identifiers associated with the original payments, facilitating tracking and reconciliation of refunds. */
+    display_name?: InputMaybe<Scalars['String']['input']>;
+    /** URL of the logo representing the payment mode. */
+    logo?: InputMaybe<Scalars['String']['input']>;
+    /** Payment mode identifiers for which this refund mode is assigned. */
+    payment_identifiers?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+    /** Type or method of refund to be applied (e.g., bank transfer, credit card reversal, store credit). */
+    refund_mode?: InputMaybe<RefundModeType>;
+};
+/** Contains information about Refund Mode assigned to payment mode and status */
+export type RefundModeData = {
+    __typename?: 'RefundModeData';
+    /** Amount that was originally paid */
+    amount_paid?: Maybe<Scalars['Float']['output']>;
+    /** Bank account and beneficiary information */
+    beneficiary_details?: Maybe<ShipmentBeneficiaryDetails>;
+    /** Indicates that the system applied a default refund mode when no refund mode is chosen during the return/refund process. */
+    default_refund_mode?: Maybe<Scalars['Boolean']['output']>;
+    /** Human-readable name for the refund mode */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the refund mode instance */
+    identifier: Scalars['String']['output'];
+    /** logo URL of the refund mode. */
+    logos?: Maybe<Scalars['String']['output']>;
+    /** Additional payment information */
+    payment_identifiers?: Maybe<Array<Scalars['String']['output']>>;
+    /** Amount to be refunded */
+    refund_amount?: Maybe<Scalars['Float']['output']>;
+    /** Method of refund processing */
+    refund_mode: Scalars['String']['output'];
+    /** Current refund status */
+    refund_status?: Maybe<RefundStatus>;
+    /** Additional remarks or notes */
+    remarks?: Maybe<Scalars['String']['output']>;
+};
+/** description: Refund Mode Transition Beneficiary Data for status transition. */
+export type RefundModeTransitionBeneficiaryData = {
+    /** Unique identifier for the beneficiary. */
+    beneficiary_id?: InputMaybe<Scalars['String']['input']>;
+};
+/** Enum for Refund Mode Types */
+export declare enum RefundModeType {
+    /** Issue refund as store credits to the customer */
+    Creditnote = "creditnote",
+    /** Refund back to the original payment source */
+    RefundToSource = "refund_to_source",
+    /** Settle the refund offline outside the system */
+    SettleOffline = "settle_offline",
+    /** Transfer refund amount directly to the customer's bank account */
+    TransferToBank = "transfer_to_bank"
+}
+/** Schema for Refund Option */
+export type RefundOption = {
+    __typename?: 'RefundOption';
+    amount?: Maybe<Scalars['Float']['output']>;
+    beneficiary_type?: Maybe<Scalars['String']['output']>;
+    currency_symbol?: Maybe<Scalars['String']['output']>;
+    display_name?: Maybe<Scalars['String']['output']>;
+    logo?: Maybe<Scalars['String']['output']>;
+    message?: Maybe<Scalars['String']['output']>;
+    refund_modes?: Maybe<Array<Maybe<RefundOptionMode>>>;
+    slug?: Maybe<Scalars['String']['output']>;
+    suggested_list?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+};
+/** Schema for Refund Mode */
+export type RefundOptionMode = {
+    __typename?: 'RefundOptionMode';
+    display_name?: Maybe<Scalars['String']['output']>;
+    payment_identifiers?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    refund_mode?: Maybe<Scalars['String']['output']>;
+};
+/** Schema For Refund Options */
+export type RefundOptionsResponse = {
+    __typename?: 'RefundOptionsResponse';
+    /** Indicates whether refund configuration is enabled for the sales channel; if disabled, no refund options are shown, and if enabled, the applicable refund modes are displayed. */
+    is_refund_config_enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** List of available refund options the user can select. */
+    refund_options?: Maybe<Array<Maybe<RefundOption>>>;
+    /** Breakdown of refund amounts across charges and discounts. */
+    refund_price_breakup?: Maybe<Array<Maybe<OrderBreakupValue>>>;
+};
+/** Schema For Refund Options */
+export type RefundOptionsWithPriceBreakup = {
+    __typename?: 'RefundOptionsWithPriceBreakup';
+    /** Indicates whether refund configuration is enabled for the sales channel; if disabled, no refund options are shown, and if enabled, the applicable refund modes are displayed. */
+    is_refund_config_enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** List of available refund options the user can select. */
+    refund_options?: Maybe<Array<Maybe<RefundOption>>>;
+    /** Breakdown of refund amounts across charges and discounts. */
+    refund_price_breakup?: Maybe<Array<Maybe<OrderBreakupValue>>>;
+};
+/** Refund Status Details */
+export type RefundStatus = {
+    __typename?: 'RefundStatus';
+    /** Unique identifier for the refund status. */
+    id: Scalars['String']['output'];
+    /** Display Status for the storefront its pending when refund is in progress and completed when refund completed for a mode */
+    operational_status: Scalars['String']['output'];
+    /** Descriptive status of the refund (e.g., refund_acknowledged, refund_approved). */
+    status: Scalars['String']['output'];
+    /** Refund Status Transaction Data */
+    transaction_data?: Maybe<Scalars['JSON']['output']>;
+    /** Refund Status Transaction Info per Payment Mode */
+    transaction_info?: Maybe<Array<Maybe<RefundTransactionInfo>>>;
+};
+/** Refund Status Transaction Info per Payment Mode */
+export type RefundTransactionInfo = {
+    __typename?: 'RefundTransactionInfo';
+    /**
+     * Payment mode for which the refund was processed.
+     * Please refer for detailed
+     * <a href='/commerce/references/payment-mode/'>Payment Mode.</a>
+     */
+    mode?: Maybe<Scalars['String']['output']>;
+    /** Refund Reference Number (RRN) generated for the refund transaction. */
+    rrn?: Maybe<Scalars['String']['output']>;
+    /** Unique Transaction Reference (UTR) for the refund. */
+    utr?: Maybe<Scalars['String']['output']>;
 };
 /** Schema representing the response received upon a successful user registration using a form. */
 export type RegisterFormSuccess = {
     __typename?: 'RegisterFormSuccess';
+    /** User's consent information including privacy policy acceptance */
+    consent?: Maybe<UserConsent>;
     /** The country specific prefix for the phone number. */
     country_code?: Maybe<Scalars['String']['output']>;
     /** The email address provided during registration. */
@@ -9031,7 +12864,7 @@ export type RegisterFormSuccess = {
     message?: Maybe<Scalars['String']['output']>;
     /** The user's phone mobile without the country code. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** A token used for completing the registration process. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** A random uuid string used to track the registration response. */
     request_id?: Maybe<Scalars['String']['output']>;
@@ -9058,12 +12891,19 @@ export type RegisterRequiredFields = {
     /** Structure of phone configuration. */
     mobile?: Maybe<RequiredFieldDetail>;
 };
-/** Configuration for the registration page of the application. */
+/** Configuration for the registration page of the sales channel. */
 export type RegistrationPageFeature = {
     __typename?: 'RegistrationPageFeature';
-    /** Shows whether a form to collect the address of the store, should be displayed upon visiting the website. */
-    ask_store_address?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether a form to collect store address should be displayed upon visiting the website. */
+    ask_store_address: Scalars['Boolean']['output'];
 };
+/** Defines whether an attribute is mandatory or optional during user registration. */
+export declare enum RegistrationType {
+    /** The attribute must be filled during registration. */
+    Mandatory = "mandatory",
+    /** The attribute is optional during registration. */
+    Optional = "optional"
+}
 /** An object containing theme release details */
 export type Release = {
     __typename?: 'Release';
@@ -9114,7 +12954,7 @@ export type ResendOrCancelPaymentRequestInput = {
 export type ResendOrCancelPaymentResponse = {
     __typename?: 'ResendOrCancelPaymentResponse';
     /** Link status. */
-    data: LinkStatus;
+    data?: Maybe<LinkStatus>;
     /** Response is successful or not. */
     success: Scalars['Boolean']['output'];
 };
@@ -9145,37 +12985,58 @@ export type ResetPasswordSuccess = {
 /** Data related to contents of blogs. */
 export type ResourceContent = {
     __typename?: 'ResourceContent';
-    /** The type of content of blogs - html. */
+    /** The type of content of blogs - html. For example, 'html' or 'markdown'. */
     type?: Maybe<Scalars['String']['output']>;
-    /** The contents of blog. */
+    /** The contents of blog. For example, HTML content or markdown text. */
     value?: Maybe<Scalars['String']['output']>;
 };
+/** Group of custom fields by resource slug/id */
+export type ResourceCustomFieldGroup = {
+    __typename?: 'ResourceCustomFieldGroup';
+    /** List of custom fields for this resource */
+    custom_fields: Array<CustomField>;
+    /** Resource slug or ID */
+    resource_id: Scalars['String']['output'];
+};
+/** Types of responses available. */
 export declare enum ResponseEnum {
     No = "no",
     Yes = "yes"
 }
-/** Return configuration details. */
-export type ReturnConfig = {
-    __typename?: 'ReturnConfig';
-    /** Indicates if the item is returnable. */
+/** Represents a standard API response message. */
+export type ResponseMessage = {
+    __typename?: 'ResponseMessage';
+    /** Human-readable description providing details about the status or outcome of the API response. */
+    message: Scalars['String']['output'];
+};
+/** Product return policy configuration and timeframe details. */
+export type ReturnConfiguration = {
+    __typename?: 'ReturnConfiguration';
+    /** Indicates whether the item can be returned by customers. */
     returnable?: Maybe<Scalars['Boolean']['output']>;
-    /** Distribution details of product sizes for Set type of Products. */
+    /** Return window duration, e.g. 7, 15, 30 (days/hours based on unit). */
     time?: Maybe<Scalars['Int']['output']>;
-    /** The unit for the return configuration. */
+    /** Time unit for return period, e.g. 'days', 'hours', 'months'. */
     unit?: Maybe<Scalars['String']['output']>;
 };
-/** Configuration for the revenue engine. */
+/**
+ * Configuration for the revenue engine.
+ * This object has been deprecated and will be removed in future release.
+ */
 export type RevenueEngineFeature = {
     __typename?: 'RevenueEngineFeature';
-    /** Enable revenue engine. Default value is false. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates whether revenue engine is enabled. Default value is false. */
+    enabled: Scalars['Boolean']['output'];
 };
-/** Configuration for reward points within the application. */
+/**
+ * Configuration for reward points within the sales channel.
+ * This object has been deprecated and will be removed in future versions.
+ */
 export type RewardPointsConfig = {
     __typename?: 'RewardPointsConfig';
-    /** Details for crediting reward points. */
+    /** Configuration details for crediting reward points. */
     credit?: Maybe<Credit>;
-    /** Details for debiting reward points. */
+    /** Configuration details for debiting reward points. */
     debit?: Maybe<Debit>;
 };
 /** Root Payment Mode Schema. */
@@ -9191,6 +13052,8 @@ export type RootPaymentMode = {
     display_name: Scalars['String']['output'];
     /** Display Priority. */
     display_priority: Scalars['Int']['output'];
+    /** The payment flow to be used for this saved instrument (e.g., 'token', 'recurring', 'standard') */
+    flow?: Maybe<PaymentFlow>;
     /** This flag will be true in case of Payment link payment through card. */
     is_pay_by_card_pl?: Maybe<Scalars['Boolean']['output']>;
     /** Payment mode. */
@@ -9199,6 +13062,12 @@ export type RootPaymentMode = {
     name: Scalars['String']['output'];
     /** Card save or not. */
     save_card?: Maybe<Scalars['Boolean']['output']>;
+    /** List of stored payment methods, including saved cards and UPI IDs, available for quick selection during checkout. */
+    stored_payment_details?: Maybe<Array<Maybe<StoredPaymentDetails>>>;
+    /** A list of UPI handlers that can be used to construct valid UPI IDs for payment processing or user identification. */
+    suggested_list?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** List of payment methods supported by the merchant. */
+    supported_methods?: Maybe<Array<Maybe<SupportedMethodDetails>>>;
 };
 /** Rupifi Banner Response. */
 export type RupifiBanner = {
@@ -9233,7 +13102,10 @@ export type RupifyAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
@@ -9250,11 +13122,23 @@ export type Seo = {
     /** The SEO title of the item. */
     title?: Maybe<Scalars['String']['output']>;
 };
-/** Object containing all data related to SEO for a sales channel website. */
-export type SeoConfiguration = {
-    __typename?: 'SEOConfiguration';
-    /** Object containing all data related to SEO for a sales channel website. */
-    seo?: Maybe<SeoSchema>;
+/** Details related to SEO of an entry. */
+export type SeoDetails = {
+    __typename?: 'SEODetails';
+    /** List of action objects which can power breadcrumbs on website. */
+    breadcrumbs?: Maybe<Array<Maybe<SeObreadcrumb>>>;
+    /** Specifies the preferred URL for the resource to resolve duplicate content issues and improve SEO. */
+    canonical_url?: Maybe<Scalars['String']['output']>;
+    /** The contents of og:description. */
+    description?: Maybe<Scalars['String']['output']>;
+    /** The image url of the og:image. */
+    image?: Maybe<SeoImage>;
+    /** List of meta tags. */
+    meta_tags?: Maybe<Array<Maybe<SeoMetaItem>>>;
+    /** Data containing priority and frequency of sitemap. */
+    sitemap?: Maybe<SeoSiteMapDetails>;
+    /** The contents of og:title. */
+    title?: Maybe<Scalars['String']['output']>;
 };
 /** The image url of the og:image. */
 export type SeoImage = {
@@ -9279,6 +13163,14 @@ export type SeoMetaItems = {
     value?: Maybe<Scalars['String']['output']>;
 };
 /** Data containing priority and frequency of sitemap. */
+export type SeoSiteMapDetails = {
+    __typename?: 'SEOSiteMapDetails';
+    /** Value of sitemap frequency change denoting how frequently the content changes. */
+    frequency?: Maybe<Scalars['String']['output']>;
+    /** Value of sitemap priority randing from 0.0 to 1.0. */
+    priority?: Maybe<Scalars['Float']['output']>;
+};
+/** Data containing priority and frequency of sitemap. */
 export type SeoSitemap = {
     __typename?: 'SEOSitemap';
     /** Value of sitemap frequency change denoting how frequently the content changes. */
@@ -9297,151 +13189,493 @@ export type SeObreadcrumb = {
 /** The schema for the communication channel for SMS channel which includes the response indicating the user's preference and the display name of the communication channel. */
 export type SmsCommunication = {
     __typename?: 'SMSCommunication';
-    /** Name of the channel of communication the user has agreed to receive messages through. */
+    /** Name of the channel of communication the user has agreed to receive messages through. Example: "SMS". */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** The user's choice to opt in or opt out of receiving communications. */
+    /** The user's choice to opt in or opt out of receiving communications. Values: "yes" (User has opted in to receive SMS communications) or "no" (User has opted out of receiving SMS communications). Defaults to "yes" if no consent record exists. Example: "yes". */
     response?: Maybe<Scalars['String']['output']>;
+    /** The phone number of the user. Phone number with country code prefix. Only present if user has provided phone number. Example: "919869821300". */
+    value?: Maybe<Scalars['String']['output']>;
 };
-/** Represents SafetyNet integration settings for the application. */
+/** SafetyNet integration settings for the sales channel. */
 export type Safetynet = {
     __typename?: 'Safetynet';
     /** Credentials required for SafetyNet integration. */
-    credentials?: Maybe<SafetynetCredentials>;
-    /** Shows whether Safetynet integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: SafetynetCredentials;
+    /** Indicates whether SafetyNet integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for SafetyNet integration. */
 export type SafetynetCredentials = {
     __typename?: 'SafetynetCredentials';
-    /** Secret credential API key for Safetynet. This API key is used for calling the methods of Safetynet APIs. */
+    /** API key for SafetyNet authentication, e.g. 'AIzaSyC1234567890abcdef'. */
     api_key?: Maybe<Scalars['String']['output']>;
 };
 /** Save address response details, which includes address id, success flag and default address flag. */
 export type SaveAddressResponse = {
     __typename?: 'SaveAddressResponse';
-    /** Id of the address. */
+    /** Id of the address. Example: 'addr_001' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Default address flag if no address selected then this should be the default address selected. */
+    /** Whether this is the default address. Example: false */
     is_default_address?: Maybe<Scalars['Boolean']['output']>;
-    /** Success flag of save address Response. */
+    /** Success flag of save address Response. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Schedule details for the collection, including timing and duration information. */
 export type Schedule = {
     __typename?: 'Schedule';
+    /** The cron expression for the schedule. */
+    cron?: Maybe<Scalars['String']['output']>;
+    /** The duration of the job in seconds. */
+    duration?: Maybe<Scalars['Int']['output']>;
     /** The end time of the job. */
     end?: Maybe<Scalars['String']['output']>;
+    /** Additional metadata related to the collection schedule, such as timezone information, scheduling rules, or any other relevant details that can help in understanding the scheduling context. */
+    metadata?: Maybe<Scalars['JSON']['output']>;
     /** List of next schedules. */
     next_schedule?: Maybe<Array<Maybe<NextSchedule>>>;
     /** The start time of the job. */
     start?: Maybe<Scalars['String']['output']>;
 };
-/** Represents an item in the autocomplete suggestion list. */
+/** Individual search suggestion item with navigation and display information. */
 export type SearchItem = {
     __typename?: 'SearchItem';
-    /** Schema of Action Object. */
+    /** Navigation action configuration for page routing and user interactions. */
     action?: Maybe<PageActionDetail>;
-    /** Custom JSON data related to the autocomplete item, allowing for additional metadata. */
+    /** Additional metadata for customizing the search suggestion behavior and appearance. */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** The display string for the size. */
+    /** Display text for the suggestion, e.g. 'iPhone 14 Pro', 'Nike Running Shoes', 'Electronics'. */
     display?: Maybe<Scalars['String']['output']>;
-    /** The URL for the logo of the product grouping. */
+    /** Logo or icon associated with the search item for visual identification. */
     logo?: Maybe<Media>;
-    /** The type of action such as product, products, category, brand. */
+    /** Type of search result: 'product', 'brand', 'category', 'collection'. */
     type?: Maybe<Scalars['String']['output']>;
 };
-/** Response containing a list of autocomplete items. */
+/** Search suggestions and autocomplete results for product queries. */
 export type SearchProduct = {
     __typename?: 'SearchProduct';
-    /** List of autocomplete items suggested based on user input. */
+    /** Array of suggested items including products, brands, and categories based on search input. */
     items?: Maybe<Array<Maybe<SearchItem>>>;
 };
-/** An object containing various properties associated with the section. */
-export type SectionProps = {
-    __typename?: 'SectionProps';
-    /** An object containing various properties associated with the autoplay. */
-    autoplay?: Maybe<ImagePickerProp>;
-    /** An object containing various properties associated with the item_margin. */
-    item_margin?: Maybe<ImagePickerProp>;
-    /** An object containing various properties associated with the slide_interval. */
-    slide_interval?: Maybe<ImagePickerProp>;
-    /** An object containing various properties associated with the title. */
-    title?: Maybe<ImagePickerProp>;
+/** Asset urls for the section. */
+export type SectionAssets = {
+    __typename?: 'SectionAssets';
+    /** The CDN URL of CSS file. */
+    css?: Maybe<Scalars['String']['output']>;
+    /** The CDN URL of JS bundle. */
+    js?: Maybe<Scalars['String']['output']>;
+};
+/** An object defining source details for the section. */
+export type SectionSource = {
+    __typename?: 'SectionSource';
+    /** This is the extension binding name containing this section. */
+    bundle_name?: Maybe<Scalars['String']['output']>;
+    /** The source id specifying the source of the section. */
+    id?: Maybe<Scalars['String']['output']>;
+    /** This is source type. It will either be themeBundle or extension. */
+    type?: Maybe<Scalars['String']['output']>;
 };
 /** A secure URL for hosted images or assets. */
 export type SecureUrl = {
     __typename?: 'SecureUrl';
-    /** Hosted URL of the image. */
-    secure_url?: Maybe<Scalars['String']['output']>;
+    /** Secure HTTPS URL of the hosted image, e.g. 'https://cdn.example.com/image.jpg'. */
+    secure_url: Scalars['String']['output'];
 };
-/** Represents Segment integration settings for the application. */
+/** Represents a domain configuration for security restrictions. */
+export type SecurityDomain = {
+    __typename?: 'SecurityDomain';
+    /** The host URL for the allowed domain, e.g. 'example.com'. */
+    host: Scalars['String']['output'];
+    /** The protocol/scheme to use for the domain. Default is 'https'. */
+    url_scheme?: Maybe<SecurityUrlScheme>;
+};
+/** Configuration for security-related features of the sales channel. */
+export type SecurityFeature = {
+    __typename?: 'SecurityFeature';
+    /** List of allowed domains for security restrictions. */
+    domains?: Maybe<Array<Maybe<SecurityDomain>>>;
+};
+/** Protocol types for security domain configuration. */
+export declare enum SecurityUrlScheme {
+    /** HTTP protocol */
+    Http = "http",
+    /** HTTPS protocol (default) */
+    Https = "https"
+}
+/** Segment integration settings for the sales channel. */
 export type Segment = {
     __typename?: 'Segment';
     /** Credentials required for Segment integration. */
-    credentials?: Maybe<SegmentCredentials>;
-    /** Shows whether Segment integration is enabled or disabled for the sales channel. */
-    enabled?: Maybe<Scalars['Boolean']['output']>;
+    credentials: SegmentCredentials;
+    /** Indicates whether Segment integration is enabled or disabled for the sales channel. */
+    enabled: Scalars['Boolean']['output'];
 };
 /** Credentials required for Segment integration. */
 export type SegmentCredentials = {
     __typename?: 'SegmentCredentials';
-    /** The unique identifier for a source that tells Segment from which source data is coming from, to which workspace the data belongs, and which destinations should receive the data. */
+    /** Write key for Segment that identifies the data source, e.g. 'wk_1234567890abcdef'. */
     write_key?: Maybe<Scalars['String']['output']>;
 };
-/** Select address request schema, includes cart id, address id and billing address id. */
+/** Select Address response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type SelectAddressResponse = {
+    __typename?: 'SelectAddressResponse';
+    /**
+     * List of saved addresses for user cart checkout.
+     * @deprecated This field is obsolete
+     */
+    addresses?: Maybe<Addresses>;
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /**
+     * Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }]
+     * @deprecated This field is obsolete
+     */
+    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
+    /**
+     * Price breakup for coupon, display, loyalty points, etc.
+     * @deprecated This field is obsolete
+     */
+    breakup_values?: Maybe<CartBreakup>;
+    /**
+     * Buy Now flag for fast checkout. Example: false
+     * @deprecated This field is obsolete
+     */
+    buy_now?: Maybe<Scalars['Boolean']['output']>;
+    /** Numeric cart identifier. Example: 123456 */
+    cart_id?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Checkout mode (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
+    checkout_mode?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cart-level comment. Example: 'Deliver after 6 PM'
+     * @deprecated This field is obsolete
+     */
+    comment?: Maybe<Scalars['String']['output']>;
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
+    common_config?: Maybe<CartCommonConfig>;
+    /**
+     * Cart-level coupon data (applied flag, code, amount, title, message).
+     * @deprecated This field is obsolete , Use breakup_values.coupon instead
+     */
+    coupon?: Maybe<CartDetailCoupon>;
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
+    coupon_text?: Maybe<Scalars['String']['output']>;
+    /**
+     * Currency for prices (e.g., code 'INR', symbol '₹').
+     * @deprecated This field is obsolete
+     */
+    currency?: Maybe<CartCurrency>;
+    /**
+     * Custom cart metadata. Example: { channel: 'web' }
+     * @deprecated This field is obsolete
+     */
+    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery charge informational message. Example: 'Free delivery above ₹999'
+     * @deprecated This field is obsolete
+     */
+    delivery_charge_info?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery promise for the cart.
+     * @deprecated This field is obsolete
+     */
+    delivery_promise?: Maybe<DeliveryPromiseResponse>;
+    /**
+     * Whether promotion free gift selection is available. Example: true
+     * @deprecated This field is obsolete
+     */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * GSTIN associated with the cart. Example: '27AAACI1195H1ZK'
+     * @deprecated This field is obsolete
+     */
+    gstin?: Maybe<Scalars['String']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    id?: Maybe<Scalars['String']['output']>;
+    /** Whether the cart response is valid. Example: true */
+    is_valid?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * List of cart items including item id, size, store, pricing, etc.
+     * @deprecated This field is obsolete
+     */
+    items?: Maybe<Array<Maybe<CartProductInfo>>>;
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
+    last_modified?: Maybe<Scalars['String']['output']>;
+    /** Response message. Example: 'Cart fetched successfully' */
+    message?: Maybe<Scalars['String']['output']>;
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
+    notification?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 }
+     * @deprecated This field is obsolete
+     */
+    pan_config?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * User PAN number. Example: 'ABCDE1234F'
+     * @deprecated This field is obsolete
+     */
+    pan_no?: Maybe<Scalars['String']['output']>;
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
+    payment_selection_lock?: Maybe<PaymentSelectionLock>;
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
+    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
+    staff_user_id?: Maybe<Scalars['String']['output']>;
+    /** Whether the API call was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Number of items in cart. Example: 3
+     * @deprecated This field is obsolete
+     */
+    user_cart_items_count?: Maybe<Scalars['Int']['output']>;
+};
+/** Select Address response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type SelectAddressResponseAddressesArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+    mobileNo?: InputMaybe<Scalars['String']['input']>;
+    tags?: InputMaybe<Scalars['String']['input']>;
+};
+/** Select address for the cart (delivery and/or billing). */
 export type SelectCartAddressRequestInput = {
-    /** Billing address id selected by user on which shipment bill to be generated. */
+    /** Billing address ID. Example: 'addr_bill_01' */
     billing_address_id?: InputMaybe<Scalars['String']['input']>;
-    /** Cart id of the user cart for which the select address operation performed. */
+    /** Cart ID. Example: '5bb521cfdc83215e1889b346' */
     cart_id?: InputMaybe<Scalars['String']['input']>;
-    /** Address is selected by user on which shipment to be delivered. */
+    /** Delivery address ID. Example: 'addr_001' */
     id?: InputMaybe<Scalars['String']['input']>;
 };
+/** Apply coupon response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type SelectPaymentModeResponse = {
+    __typename?: 'SelectPaymentModeResponse';
+    /**
+     * List of saved addresses for user cart checkout.
+     * @deprecated This field is obsolete
+     */
+    addresses?: Maybe<Addresses>;
+    /**
+     * Alternate pickup person details.
+     * @deprecated This field is obsolete
+     */
+    alternate_pickup_person?: Maybe<AlternatePickupPerson>;
+    /**
+     * Applied promotions including id, name, offer text, buy/discount rules, type. Example: [{ promo_id: 'PROMO1', offer_text: '10% OFF' }]
+     * @deprecated This field is obsolete
+     */
+    applied_promo_details?: Maybe<Array<Maybe<AppliedPromotion>>>;
+    /** Price breakup for coupon, display, loyalty points, etc. */
+    breakup_values?: Maybe<CartBreakup>;
+    /**
+     * Buy Now flag for fast checkout. Example: false
+     * @deprecated This field is obsolete
+     */
+    buy_now?: Maybe<Scalars['Boolean']['output']>;
+    /** Numeric cart identifier. Example: 123456 */
+    cart_id?: Maybe<Scalars['Int']['output']>;
+    /**
+     * Checkout mode (e.g., 'self', 'other'). Example: 'self'
+     * @deprecated This field is obsolete
+     */
+    checkout_mode?: Maybe<Scalars['String']['output']>;
+    /**
+     * Cart-level comment. Example: 'Deliver after 6 PM'
+     * @deprecated This field is obsolete
+     */
+    comment?: Maybe<Scalars['String']['output']>;
+    /**
+     * Sales channel common config (e.g., delivery charge config).
+     * @deprecated This field is obsolete
+     */
+    common_config?: Maybe<CartCommonConfig>;
+    /**
+     * Cart-level coupon data (applied flag, code, amount, title, message).
+     * @deprecated This field is obsolete , Use breakup_values.coupon instead
+     */
+    coupon?: Maybe<CartDetailCoupon>;
+    /**
+     * Display text of the applied coupon. Example: 'SAVE10 applied'
+     * @deprecated This field is obsolete
+     */
+    coupon_text?: Maybe<Scalars['String']['output']>;
+    /** Currency for prices (e.g., code 'INR', symbol '₹'). */
+    currency?: Maybe<CartCurrency>;
+    /**
+     * Custom cart metadata. Example: { channel: 'web' }
+     * @deprecated This field is obsolete
+     */
+    custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * Customer user ID associated with the cart. Example: 'usr_456'
+     * @deprecated This field is obsolete
+     */
+    customer_id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery charge informational message. Example: 'Free delivery above ₹999'
+     * @deprecated This field is obsolete
+     */
+    delivery_charge_info?: Maybe<Scalars['String']['output']>;
+    /**
+     * Delivery promise for the cart.
+     * @deprecated This field is obsolete
+     */
+    delivery_promise?: Maybe<DeliveryPromiseResponse>;
+    /**
+     * Whether promotion free gift selection is available. Example: true
+     * @deprecated This field is obsolete
+     */
+    free_gift_selection_available?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * GSTIN associated with the cart. Example: '27AAACI1195H1ZK'
+     * @deprecated This field is obsolete
+     */
+    gstin?: Maybe<Scalars['String']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    id?: Maybe<Scalars['String']['output']>;
+    /**
+     * Whether the cart response is valid. Example: true
+     * @deprecated This field is obsolete
+     */
+    is_valid?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * List of cart items including item id, size, store, pricing, etc.
+     * @deprecated This field is obsolete
+     */
+    items?: Maybe<Array<Maybe<CartProductInfo>>>;
+    /**
+     * Last modified timestamp (ISO 8601). Example: '2025-10-07T14:20:00Z'
+     * @deprecated This field is obsolete
+     */
+    last_modified?: Maybe<Scalars['String']['output']>;
+    /**
+     * Response message. Example: 'Cart fetched successfully'
+     * @deprecated This field is obsolete
+     */
+    message?: Maybe<Scalars['String']['output']>;
+    /**
+     * Notification payload for the cart. Example: { type: 'warning', text: 'Few items out of stock' }
+     * @deprecated This field is obsolete
+     */
+    notification?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * PAN configuration with thresholds for COD and online payments. Example: { enabled: true, cod_threshold_amount: 50000, online_threshold_amount: 200000 }
+     * @deprecated This field is obsolete
+     */
+    pan_config?: Maybe<Scalars['JSON']['output']>;
+    /**
+     * User PAN number. Example: 'ABCDE1234F'
+     * @deprecated This field is obsolete
+     */
+    pan_no?: Maybe<Scalars['String']['output']>;
+    /**
+     * Payment selection lock configuration.
+     * @deprecated This field is obsolete
+     */
+    payment_selection_lock?: Maybe<PaymentSelectionLock>;
+    /**
+     * Whether checkout is restricted. Example: false
+     * @deprecated This field is obsolete
+     */
+    restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Staff user ID if cart is created by a staff member. Example: 'usr_123'
+     * @deprecated This field is obsolete
+     */
+    staff_user_id?: Maybe<Scalars['String']['output']>;
+    /** Whether the API call was successful. Example: true */
+    success?: Maybe<Scalars['Boolean']['output']>;
+    /** Cart UID. Example: '5bb521cfdc83215e1889b346' */
+    uid?: Maybe<Scalars['String']['output']>;
+    /**
+     * Number of items in cart. Example: 3
+     * @deprecated This field is obsolete
+     */
+    user_cart_items_count?: Maybe<Scalars['Int']['output']>;
+};
+/** Apply coupon response schema which includes cart id, breakup values, coupon, coupon text, gstin etc. */
+export type SelectPaymentModeResponseAddressesArgs = {
+    buyNow?: InputMaybe<Scalars['Boolean']['input']>;
+    checkoutMode?: InputMaybe<Scalars['String']['input']>;
+    isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+    mobileNo?: InputMaybe<Scalars['String']['input']>;
+    tags?: InputMaybe<Scalars['String']['input']>;
+};
+/** Types of selection options available. */
 export declare enum SelectedType {
     Exact = "exact",
     None = "none",
     Query = "query"
 }
-/** Information about a seller. */
+/** Seller information including identity and service coverage. */
 export type Seller = {
     __typename?: 'Seller';
-    /** The store count serviceable by this seller. */
+    /** Number of stores or locations serviceable by this seller. */
     count?: Maybe<Scalars['Int']['output']>;
-    /** The name of the seller. */
+    /** Display name of the seller, e.g. 'ABC Electronics Store', 'FastMart Retail'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier for the seller. */
+    /** Unique identifier for the seller, e.g. 12345, 67890. */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** A list of sorting and filtering criteria applied to the sellers' data. */
+/** Sorting options available for organizing seller data. */
 export type SellerSortOn = {
     __typename?: 'SellerSortOn';
-    /** Indicates whether this sorting option is currently selected. */
+    /** Indicates whether this sorting option is currently active/selected. */
     is_selected?: Maybe<Scalars['Boolean']['output']>;
-    /** Name or identifier of the sorting option. */
+    /** Display name of the sorting option, e.g. 'Price: Low to High', 'Fastest Delivery', 'Best Seller'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** Value used to specify the sorting order (e.g., price_asc, discount_dsc). */
+    /** Internal value used to specify the sorting order, e.g. 'price_asc', 'delivery_time_asc', 'discount_dsc'. */
     value?: Maybe<Scalars['String']['output']>;
 };
-/** Describes the request structure to send OTP to email. */
+/** Describes the request structure to send OTP for the 'forgot email' flow. */
 export type SendEmailForgotOtpRequestSchemaInput = {
-    /** Action to specify if to send or resent the OTP. */
+    /** Action to send or resend the OTP. */
     action?: InputMaybe<UserAction>;
-    /** Email of a user to send email OTP. */
+    /** Email address to send the OTP. */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** Token to validate the request. */
+    /** Token used to validate the request. */
     token?: InputMaybe<Scalars['String']['input']>;
 };
-/** Describes the request structure to send OTP to email. */
+/** Describes the request structure to send OTP to an email. */
 export type SendEmailOtpRequestSchemaInput = {
-    /** Action to specify if to send or resent the OTP. */
+    /** Action to send or resend the OTP. */
     action?: InputMaybe<UserAction>;
-    /** Captcha_code for sending email otp request. */
-    captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Email of a user to send email OTP. */
+    /** Email address to send the OTP. */
     email?: InputMaybe<Scalars['String']['input']>;
-    /** Unique temporary registration of the user. */
+    /** Temporary registration token for the user. */
     register_token?: InputMaybe<Scalars['String']['input']>;
-    /** Token to validate the request. */
+    /** Token used to validate the request. */
     token?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the response received upon successfully sending a verification link to an email. */
@@ -9450,34 +13684,34 @@ export type SendEmailVerifyLinkSuccess = {
     /** Whether the email verification link was successfully sent. */
     verify_email_link?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to send OTP on forgot mobile number. */
+/** Describes the request structure to send OTP for the 'forgot mobile' flow. */
 export type SendMobileForgotOtpRequestSchemaInput = {
-    /** Action to specify if to send or resent the OTP. */
+    /** Action to send or resend the OTP. */
     action?: InputMaybe<UserAction>;
-    /** Unique hash value. */
+    /** Android SMS Retriever hash (optional). */
     android_hash?: InputMaybe<Scalars['String']['input']>;
-    /** Country code for the phone number. */
+    /** Country calling code for the phone number. */
     country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Phone number of user. */
+    /** User's mobile number. */
     mobile?: InputMaybe<Scalars['String']['input']>;
-    /** Token to validate the request. */
+    /** Token used to validate the request. */
     token?: InputMaybe<Scalars['String']['input']>;
 };
-/** Describes the request structure to send OTP on mobile. */
+/** Describes the request structure to send OTP to a mobile number. */
 export type SendMobileOtpRequestSchemaInput = {
-    /** Action to specify if to send or resent the OTP. */
+    /** Action to send or resend the OTP. */
     action?: InputMaybe<UserAction>;
-    /** Unique hash value. */
+    /** Android SMS Retriever hash (optional). */
     android_hash?: InputMaybe<Scalars['String']['input']>;
-    /** Captcha_code for sending reset mobile  otp request. */
+    /** Captcha code for the mobile OTP request. */
     captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Country code for the phone number. */
+    /** Country calling code for the phone number. */
     country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Force verify the OTP. */
+    /** Force OTP verification (internal use). */
     force?: InputMaybe<Scalars['String']['input']>;
-    /** Mobile number of user. */
+    /** User's mobile number. */
     mobile?: InputMaybe<Scalars['String']['input']>;
-    /** Token to validate the request. */
+    /** Token used to validate the request. */
     token?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the response received upon successfully sending a verification link to a mobile number. */
@@ -9486,29 +13720,29 @@ export type SendMobileVerifyLinkSuccess = {
     /** Whether the mobile verification link was successfully sent. */
     verify_mobile_link?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to login or register with a one-time password (OTP) sent via email or sms. */
+/** Describes the request structure to login or register with an OTP sent via SMS. */
 export type SendOtpRequestSchemaInput = {
-    /** Unique hash value. */
+    /** Android SMS Retriever hash (optional). */
     android_hash?: InputMaybe<Scalars['String']['input']>;
-    /** Captcha_code for sending otp request. */
-    captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Country code for the phone number. */
-    country_code?: InputMaybe<Scalars['String']['input']>;
+    /** Country calling code for the phone number. */
+    country_code: Scalars['String']['input'];
+    /** Whether to encrypt the OTP. */
+    encrypt_otp?: InputMaybe<Scalars['Boolean']['input']>;
     /** Phone number. */
-    mobile?: InputMaybe<Scalars['String']['input']>;
+    mobile: Scalars['String']['input'];
 };
 /** Describes the successful response on sending OTP on user registration or authentication. */
 export type SendOtpResponse = {
     __typename?: 'SendOtpResponse';
     /** Country code for the phone number. */
     country_code?: Maybe<Scalars['String']['output']>;
-    /** Email id of user. */
+    /** Email ID of user. */
     email?: Maybe<Scalars['String']['output']>;
     /** Message to specify the OTP send status. Eg. OTP sent, failed to send OTP etc. */
     message?: Maybe<Scalars['String']['output']>;
     /** Phone number of user. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** Unique registration token for user. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** Unique request id for the OTP. */
     request_id?: Maybe<Scalars['String']['output']>;
@@ -9530,71 +13764,137 @@ export type SendOtpResponse = {
 /** Schema for send otp. */
 export type SendOtpToCustomerResponse = {
     __typename?: 'SendOtpToCustomerResponse';
-    /** Message indicating the result of the request. */
+    /** Message indicating the result of the request. For example, 'OTP sent successfully' or 'OTP sent to registered mobile number'. */
     message?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier for the request. */
+    /** Unique identifier for the request. For example, '63c1fd1baf6c6925304395cb'. */
     request_id?: Maybe<Scalars['String']['output']>;
-    /** Time in seconds before the OTP can be resent. */
+    /** Time in seconds before the OTP can be resent. For example, 30, 60, or 120. */
     resend_timer?: Maybe<Scalars['Int']['output']>;
-    /** Indicates whether the request was successful. */
+    /** Indicates whether the request was successful. For example, true or false. */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to reset a password using the link sent on email. */
+/** Describes the request structure to send a reset-password link to an email. */
 export type SendResetPasswordEmailRequestSchemaInput = {
-    /** Captcha_code for sending reset password email request. */
-    captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Email id of user. */
-    email?: InputMaybe<Scalars['String']['input']>;
+    /** Email address of the user. */
+    email: Scalars['String']['input'];
 };
-/** Describes the request structure to reset a password using the link sent on mobile. */
+/** Describes the request structure to send a reset-password link to a mobile number. */
 export type SendResetPasswordMobileRequestSchemaInput = {
-    /** Captcha_code for sending reset password mobile request. */
+    /** Captcha code for the reset-password mobile request. */
     captcha_code?: InputMaybe<Scalars['String']['input']>;
-    /** Country code for the phone number. */
-    country_code?: InputMaybe<Scalars['String']['input']>;
-    /** Phone number of user. */
-    mobile?: InputMaybe<Scalars['String']['input']>;
+    /** Country calling code for the phone number. */
+    country_code: Scalars['String']['input'];
+    /** User's mobile number. */
+    mobile: Scalars['String']['input'];
 };
-/** Describes the request structure to send verification link to phone number. */
+/** Describes the request structure to send a verification link to a phone number. */
 export type SendVerificationLinkMobileRequestSchemaInput = {
-    /** Boolean to specify if the phone number is active or not. */
+    /** Whether the phone number is active. */
     active?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Country code for the phone number. */
+    /** Country calling code for the phone number. */
     country_code?: InputMaybe<Scalars['String']['input']>;
     /** Phone number. */
     phone?: InputMaybe<Scalars['String']['input']>;
-    /** Boolean to specify if the phone number is primary or not. */
+    /** Whether the phone number is the primary contact. */
     primary?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Boolean to specify if the phone number is verified or not. */
+    /** Whether the phone number is verified. */
     verified?: InputMaybe<Scalars['Boolean']['input']>;
+};
+/**
+ * A single SEO JSON-LD markup schema template configured for a sales channel,
+ * keyed by the storefront page type it should be rendered on. The `schema`
+ * field is a Mustache/Nunjucks-style template string that storefronts render
+ * against the current route's data at request time. Mirrors the REST
+ * SEOSchemaMarkupTemplate response.
+ */
+export type SeoMarkupSchema = {
+    __typename?: 'SeoMarkupSchema';
+    /** Whether the template is currently active. Inactive templates are not returned by `seoMarkupSchemas`. */
+    active?: Maybe<Scalars['Boolean']['output']>;
+    /** Admin-facing description of what this template does. */
+    description?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
+    id?: Maybe<Scalars['String']['output']>;
+    /** The storefront page type this template renders on. */
+    page_type: PageType;
+    /** Mustache/Nunjucks template that produces the JSON-LD payload. Storefront renders this against current page data. */
+    schema: Scalars['String']['output'];
+    /** Human-readable title for the schema template (admin-only label). */
+    title?: Maybe<Scalars['String']['output']>;
 };
 /** Object containing all data related to SEO for a sales channel website. */
 export type SeoSchema = {
     __typename?: 'SeoSchema';
-    /** Contents of additional sitemap. */
+    /** Contents of additional sitemap. For example, 'https://example.com/sitemap.xml'. */
+    additional_sitemap?: Maybe<Scalars['String']['output']>;
+    /**
+     * Contents of additional sitemap. For example, 'https://example.com/sitemap.xml'.
+     * @deprecated This field is obsolete.Please use additional_sitemap instead.
+     */
     additonal_sitemap?: Maybe<Scalars['String']['output']>;
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     app?: Maybe<Scalars['String']['output']>;
-    /** Whether canonical tags is enabled or not for a sales channel's website. */
+    /** Whether canonical tags is enabled or not for a sales channel's website. For example, true or false. */
     cannonical_enabled?: Maybe<Scalars['Boolean']['output']>;
-    /** Timestamp which represent the time when data was created. */
+    /**
+     * Timestamp which represent the time when data was created. For example, '2024-01-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
     /** Custom meta tags for a sales channel website. */
     custom_meta_tags?: Maybe<Array<Maybe<CustomMetaTag>>>;
-    /** Data regarding the og:title and og:description of a sales channel website. */
+    /** Data regarding the title and description of a sales channel website. */
     details?: Maybe<Detail>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Contents of robots.txt file of a sales channel. */
+    /**
+     * Contents of robots.txt file of a sales channel. For example, 'User-agent: *
+     * Disallow: /admin/'.
+     */
     robots_txt?: Maybe<Scalars['String']['output']>;
-    /** Whether sitemaps is enabled or not for a sales channel's website. */
+    /** Whether sitemaps is enabled or not for a sales channel's website. For example, true or false. */
     sitemap_enabled?: Maybe<Scalars['Boolean']['output']>;
-    /** Timestamp which represent when was the last time when data was updated. */
+    /**
+     * Timestamp which represent when was the last time when data was updated. For example, '2024-01-20T14:45:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
+/** Model representing serviceability details for a region. */
+export type ServiceabilityModel = {
+    __typename?: 'ServiceabilityModel';
+    /** Boolean value indicating whether first-mile service is available or not. */
+    is_first_mile?: Maybe<Scalars['Boolean']['output']>;
+    /** Boolean value indicating whether installation services are available in the specified region or not. */
+    is_installation?: Maybe<Scalars['Boolean']['output']>;
+    /** Boolean value indicating whether last-mile service is available or not. */
+    is_last_mile?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates if quality check service is available. This refers to the ability to perform quality checks on items at the customer's doorstep. */
+    is_qc?: Maybe<Scalars['Boolean']['output']>;
+    /** Indicates if doorstep return service is available. This refers to the ability to return items directly from the customer's doorstep. */
+    is_return?: Maybe<Scalars['Boolean']['output']>;
+    /** Boolean value indicating whether a region is first-mile serviceable or not in return pickup. */
+    is_reverse_pickup?: Maybe<Scalars['Boolean']['output']>;
+    /** Limit on the amount of cash on delivery (COD) payments allowed in the specified region. */
+    lm_cod_limit?: Maybe<Scalars['Int']['output']>;
+    /** Time of day by which pickups must be scheduled to be processed on the same day. eg 10:00 (24 hour format) */
+    pickup_cutoff?: Maybe<Scalars['String']['output']>;
+    /**
+     * Code representing a specific delivery route used.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
+    route_code?: Maybe<Scalars['String']['output']>;
+};
+/** Enum for session duration units. */
 export declare enum SessionEnum {
+    /** Session duration in days. */
     Days = "Days",
+    /** Session duration in hours. */
     Hours = "Hours",
+    /** Session duration in minutes. */
     Minutes = "Minutes"
 }
 /** Consent text details shown to user. */
@@ -9619,6 +13919,8 @@ export type SetDefaultBeneficiaryRequestInput = {
     beneficiary_id: Scalars['String']['input'];
     /** Merchant Order Id. */
     order_id: Scalars['String']['input'];
+    /** The unique identifier for the shipment. */
+    shipment_id?: InputMaybe<Scalars['String']['input']>;
 };
 /** Set default beneficiary Response. */
 export type SetDefaultBeneficiaryResponse = {
@@ -9631,270 +13933,305 @@ export type SetDefaultBeneficiaryResponse = {
 /** Share cart detail includes checkout mode, cart id, payment selection lock config, delivery promise, comment message,  items, breakup values and other cart data of shared cart. */
 export type SharedCart = {
     __typename?: 'SharedCart';
-    /** Price breakup of cart which denotes different values like coupon, display, and loyalty points. */
+    /** Price breakup of cart (coupon, display, loyalty points, etc.). */
     breakup_values?: Maybe<CartBreakup>;
-    /** Buy now flag of user cart. */
+    /** Buy now flag of user cart. Example: false */
     buy_now?: Maybe<Scalars['Boolean']['output']>;
-    /** Cart id of user cart for generating cart sharing token. */
+    /** Cart id of user cart for generating cart sharing token. Example: 123456 */
     cart_id?: Maybe<Scalars['Int']['output']>;
-    /** Checkout mode of address on which address to be used for which checkout mode of cart. */
+    /** Checkout mode for the cart (e.g., 'self', 'other'). Example: 'self' */
     checkout_mode?: Maybe<Scalars['String']['output']>;
-    /** Comment message added in user cart. */
+    /** Comment message added in user cart. Example: 'Deliver after 6 PM' */
     comment?: Maybe<Scalars['String']['output']>;
-    /** Coupon text of the applied coupon on user cart. */
+    /** Coupon text of the applied coupon on user cart. Example: 'SAVE10 applied' */
     coupon_text?: Maybe<Scalars['String']['output']>;
-    /** Currency data of the cart for prices. */
+    /** Currency data of the cart for prices. Example: { code: 'INR', symbol: '₹' } */
     currency?: Maybe<CartCurrency>;
-    /** Metadata of custom cart */
+    /** Metadata of custom cart. Example: { channel: 'web' } */
     custom_cart_meta?: Maybe<Scalars['JSON']['output']>;
-    /** Delivery charge info message of the user cart. */
+    /** Delivery charge info message of the user cart. Example: 'Free delivery over ₹999' */
     delivery_charge_info?: Maybe<Scalars['String']['output']>;
-    /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
+    /** Shipment level promise (formatted time, timestamp, ISO). */
     delivery_promise?: Maybe<DeliveryPromiseResponse>;
-    /** GSTIN added in user cart. */
+    /** GSTIN added in user cart. Example: '27AAACI1195H1ZK' */
     gstin?: Maybe<Scalars['String']['output']>;
-    /** Cart id of shared cart. */
+    /** Shared cart id. Example: 'shrt_abc123' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Valid flag for get shared cart detail API. */
+    /** Valid flag for get shared cart detail API. Example: true */
     is_valid?: Maybe<Scalars['Boolean']['output']>;
-    /** Items data list in user cart that includes item id, item size, store id, available sizes and rest of the item related data. */
+    /** List of items with id, size, store id, sizes, and related data. */
     items?: Maybe<Array<Maybe<CartProductInfo>>>;
-    /** Last modified timestamp of user cart. */
+    /** Last modified timestamp of user cart. Example: '2025-10-07T10:30:00Z' */
     last_modified?: Maybe<Scalars['String']['output']>;
-    /** Message of the get shared cart API response. */
+    /** Message of the get shared cart API response. Example: 'Shared cart fetched successfully' */
     message?: Maybe<Scalars['String']['output']>;
     /** Payment Default Selection Schema. */
     payment_selection_lock?: Maybe<PaymentSelectionLock>;
-    /** Restrict checkout flag to restrict the checkout process. */
+    /**
+     * Restrict checkout flag. Example: false
+     * @deprecated This field is obsolete
+     */
     restrict_checkout?: Maybe<Scalars['Boolean']['output']>;
-    /** Shared cart details schema included token, user, created on, source and meta. */
+    /** Shared cart details including token, user, created_on, source, and meta. */
     shared_cart_details?: Maybe<SharedCartDetails>;
-    /** Cart id of the user cart. */
+    /** Cart id of the user cart. Example: '5bb521cfdc83215e1889b346' */
     uid?: Maybe<Scalars['String']['output']>;
 };
 /** Shared cart details schema included token, user, created on, source and meta. */
 export type SharedCartDetails = {
     __typename?: 'SharedCartDetails';
-    /** Created on timestamp of user cart. */
+    /** Created on timestamp of user cart. Example: '2025-10-07T10:30:00Z' */
     created_on?: Maybe<Scalars['String']['output']>;
-    /** Meta data sent while generating share cart link. */
+    /** Meta data sent while generating share cart link. Example: { campaign: 'DIWALI' } */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** Share link device and other source information. */
+    /** Share link device and other source information. Example: { device: 'android' } */
     source?: Maybe<Scalars['JSON']['output']>;
-    /** Short link id of the user cart that needs to be shared. */
+    /** Short link id of the user cart that needs to be shared. Example: 'shrt_abc123' */
     token?: Maybe<Scalars['String']['output']>;
-    /** User details of who generated share link. */
+    /** User details of who generated share link. Example: { id: 'usr_123' } */
     user?: Maybe<Scalars['JSON']['output']>;
 };
 /** Shared cart response schema which included error or cart data. */
 export type SharedCartItems = {
     __typename?: 'SharedCartItems';
-    /** Cart of share cart which inclued cart items, promise, checkout mode, comment, GSTIN etc. */
+    /** Shared cart which includes items, promise, checkout mode, comment, GSTIN, etc. */
     cart?: Maybe<SharedCart>;
-    /** Error details if any error occurs which includes type of error, error code and error message. */
+    /** Error details if any. Example: 'Invalid or expired token' */
     error?: Maybe<Scalars['String']['output']>;
 };
 /** Shared cart response schema which included error or cart data. */
 export type SharedCartResponse = {
     __typename?: 'SharedCartResponse';
-    /** Share cart detail includes checkout mode, cart id, payment selection lock config, delivery promise, comment message,  items, breakup values and other cart data of shared cart. */
+    /** Shared cart details including checkout mode, cart id, payment selection lock, delivery promise, comment, items, breakup values, etc. */
     cart?: Maybe<SharedCart>;
-    /** Error details if any error occurs which includes type of error, error code and error message. */
+    /** Error details (if any). Example: 'Invalid or expired token' */
     error?: Maybe<Scalars['String']['output']>;
 };
-/** Shipment details. */
+/** Shipment details used to fetch shipment specific information, can be used to fetch the details of a specific shipment or to track the shipment. */
 export type Shipment = {
     __typename?: 'Shipment';
-    /** Schema for customer details response. */
+    /** Schema for customer details response. For example, call with orderId 'FY123456789'. */
     customer_detail?: Maybe<CustomerDetailsResponse>;
     /** Shipment details. */
     detail?: Maybe<OrderShipment>;
-    /** Schema for shipment invoice. */
+    /** Schema for shipment invoice, for example to download invoice for shipment 'SHIP123'. For example, `invoice_detail` can be set to a ShipmentInvoice object. */
     invoice_detail?: Maybe<ShipmentInvoice>;
-    /** Individual bag reason details. */
+    /** Individual bag reason details. For example, fetch reasons for bag_id 'bag001'. */
     shipment_bag_reasons?: Maybe<ShipmentBagReasons>;
-    /** Individual shipment reason details. */
+    /** List of reasons for cancelling an shipment. For example : 'Wrong size' */
     shipment_reasons?: Maybe<ShipmentCancellationReasons>;
-    /** Shipment tracking details. */
+    /** Shipment tracking details, can be used to retrieve tracking events for a specific shipment. For example, retrieve tracking events for AWB 'AWB123456'. */
     track_shipment?: Maybe<TrackShipment>;
 };
-/** Shipment details. */
+/** Shipment details used to fetch shipment specific information, can be used to fetch the details of a specific shipment or to track the shipment. */
 export type ShipmentCustomer_DetailArgs = {
     orderId: Scalars['String']['input'];
 };
-/** Shipment details. */
+/** Shipment details used to fetch shipment specific information, can be used to fetch the details of a specific shipment or to track the shipment. */
 export type ShipmentShipment_Bag_ReasonsArgs = {
     bagId: Scalars['String']['input'];
 };
 /** Schema for Shipment Application Status Response. */
 export type ShipmentApplicationStatusResponse = {
     __typename?: 'ShipmentApplicationStatusResponse';
-    /** An array containing different status options of shipments. */
+    /** An array containing different status options of shipments. For example, `statuses` can be set to [a StatusesBodyResponse object]. */
     statuses?: Maybe<Array<Maybe<StatusesBodyResponse>>>;
 };
 /** Schema for shipment's bag reasons. */
 export type ShipmentBagReasons = {
     __typename?: 'ShipmentBagReasons';
-    /** A list of shipment's bag reasons. */
+    /** A list of shipment's bag reasons. For example, `reasons` can be set to [a BagReasons object]. */
     reasons?: Maybe<Array<Maybe<BagReasons>>>;
-    /** Indicates if the operation was successful. */
+    /** Indicates if the operation was successful. For example, `success` can be set to true. */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Schema for shipment's cancellation reasons list. */
+/** Contains Payout Details. */
+export type ShipmentBeneficiaryDetails = {
+    __typename?: 'ShipmentBeneficiaryDetails';
+    /** Name of the account holder */
+    account_holder?: Maybe<Scalars['String']['output']>;
+    /** Bank account number (may be masked) */
+    account_no?: Maybe<Scalars['String']['output']>;
+    /** Name of the bank */
+    bank_name?: Maybe<Scalars['String']['output']>;
+    /** Encrypted/encoded beneficiary identifier */
+    beneficiary_id?: Maybe<Scalars['String']['output']>;
+    /** Bank branch name */
+    branch_name?: Maybe<Scalars['String']['output']>;
+    /** Indian Financial System Code */
+    ifsc_code?: Maybe<Scalars['String']['output']>;
+    /** Whether the beneficiary details are verified */
+    is_verified?: Maybe<Scalars['Boolean']['output']>;
+    /** VPA Address of the customer */
+    vpa_address?: Maybe<Scalars['String']['output']>;
+};
+/** Schema for shipment's cancellation reasons list, for example data returned from cancellation FAQ APIs. */
 export type ShipmentCancellationReasons = {
     __typename?: 'ShipmentCancellationReasons';
-    /** A list of shipment reasons. */
+    /** A list of shipment reasons. For example, [{ reason_id: 1001, reason_text: 'Customer request' }]. */
     reasons?: Maybe<Array<Maybe<ShipmentReason>>>;
 };
 /** Get invoice shipment response. */
 export type ShipmentInvoice = {
     __typename?: 'ShipmentInvoice';
-    /** Type of presigned URL. */
+    /** Type of presigned URL. For example, `presigned_type` can be set to 'value'. */
     presigned_type: Scalars['String']['output'];
-    /** The presigned URL for accessing the shipment data, obtained from the response data. */
+    /** The presigned URL for accessing the shipment data, obtained from the response data. For example, `presigned_url` can be set to 'https://example.com/resource'. */
     presigned_url: Scalars['String']['output'];
-    /** Identifier for the shipment. */
+    /** Identifier for the shipment. For example, `shipment_id` can be set to '16736576489251696245'. */
     shipment_id: Scalars['String']['output'];
-    /** Indicates if the operation was successful . */
+    /** Indicates if the operation was successful . For example, `success` can be set to true. */
     success: Scalars['Boolean']['output'];
 };
+/** Represents a specific shipment bag line number along with the quantity eligible for refund. */
+export type ShipmentLineItem = {
+    /** Unique identifier of the shipment bag line number for which the refund is being requested. */
+    line_number?: InputMaybe<Scalars['Int']['input']>;
+    /** Number of units from the specified for shipment bag line number to be returned and refunded. */
+    quantity?: InputMaybe<Scalars['Float']['input']>;
+};
+/** Represents the types of events that can trigger OTP verification to securely authenticate customer actions. */
+export declare enum ShipmentOtpEventType {
+    /** Used when an OTP needs to be sent to the customer's registered mobile number to authenticate the user while updating the delivery address in case of a Non-Delivery Report (NDR) scenario. For example, trigger this when NDR forms capture a new address. */
+    CustomerNdr = "customer_ndr",
+    /** Used when an OTP needs to be sent to the customer's registered mobile number to authenticate the user while they are entering or updating refund bank account details during the return or refund process. For example, trigger this when customers add bank details for refunds. */
+    RefundBankDetails = "refund_bank_details"
+}
 /** Schema for shipment payment. */
 export type ShipmentPayment = {
     __typename?: 'ShipmentPayment';
-    /** The name to be displayed for the payment mode. */
+    /** Amount paid using this payment method. For example, `amount` can be set to 2499.5. */
+    amount?: Maybe<Scalars['Float']['output']>;
+    /** The name to be displayed for the payment mode. For example, `display_name` can be set to 'Sample Name'. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** URL of the logo representing the payment mode. */
+    /** URL of the logo representing the payment mode. For example, `logo` can be set to 'value'. */
     logo?: Maybe<Scalars['String']['output']>;
     /** Information about the payment source. For eg, NB_ICICI. */
     mode?: Maybe<Scalars['String']['output']>;
-    /** Stands for Mode of Payment. This is a short code (like 'COD' for Cash On Delivery) that represents the payment method used. */
+    /** Stands for Mode of Payment. This is a short code (like 'COD' for Cash On Delivery) that represents the payment method used. For example, `mop` can be set to 'value'. */
     mop?: Maybe<Scalars['String']['output']>;
-    /** Information about the payment mode, indicates whether COD or PREPAID. */
+    /** Information about the payment mode, indicates whether COD or PREPAID. For example, `payment_mode` can be set to 'value'. */
     payment_mode?: Maybe<Scalars['String']['output']>;
-    /** The current status of the payment. */
+    /** The current status of the payment. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for shipment payment. */
 export type ShipmentPaymentInfo = {
     __typename?: 'ShipmentPaymentInfo';
-    /** Amount paid using this payment method. */
+    /** Amount paid using this payment method. For example, `amount` can be set to 2499.5. */
     amount?: Maybe<Scalars['Float']['output']>;
-    /** The name to be displayed for the payment mode. */
+    /** The name to be displayed for the payment mode. For example, `display_name` can be set to 'Sample Name'. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** URL of the logo representing the payment mode. */
+    /** URL of the logo representing the payment mode. For example, `logo` can be set to 'value'. */
     logo?: Maybe<Scalars['String']['output']>;
     /** Information about the payment source. For eg, NB_ICICI. */
     mode?: Maybe<Scalars['String']['output']>;
-    /** Stands for Mode of Payment. This is a short code (like 'COD' for Cash On Delivery) that represents the payment method used. */
+    /** Stands for Mode of Payment. This is a short code (like 'COD' for Cash On Delivery) that represents the payment method used. For example, `mop` can be set to 'value'. */
     mop?: Maybe<Scalars['String']['output']>;
-    /** Information about the payment mode, indicates whether COD or PREPAID. */
+    /** Information about the payment mode, indicates whether COD or PREPAID. For example, `payment_mode` can be set to 'value'. */
     payment_mode?: Maybe<Scalars['String']['output']>;
-    /** The current status of the payment. */
+    /** Refund Amount to this payment mode only populate when shipment is Return */
+    refund_amount?: Maybe<Scalars['Float']['output']>;
+    /** The current status of the payment. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
 };
 /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
 export type ShipmentPromise = {
     __typename?: 'ShipmentPromise';
-    /** Min and Max Delivery promise formatted timestamp. */
+    /** Min and Max Delivery promise formatted timestamp. Example: { min: 'Tomorrow', max: 'Day after' } */
     formatted?: Maybe<PromiseFormatted>;
-    /** Promise in ISO format. */
+    /** Promise in ISO format. Example: { min: '2025-10-08T10:00:00Z', max: '2025-10-09T18:00:00Z' } */
     iso?: Maybe<PromiseFormatted>;
-    /** Shipment level promise times. */
+    /** Shipment level promise times. Example: { min: 1702051200, max: 1702137600 } */
     timestamp?: Maybe<PromiseTimestamp>;
 };
 /** Schema for individual shipment reason. */
 export type ShipmentReason = {
     __typename?: 'ShipmentReason';
-    /** The type of feedback. */
+    /** The type of feedback. For example, `feedback_type` can be set to 'value'. */
     feedback_type?: Maybe<Scalars['String']['output']>;
-    /** The process flow related to the reason. */
+    /** The process flow related to the reason. For example, `flow` can be set to 'value'. */
     flow?: Maybe<Scalars['String']['output']>;
-    /** The priority level of the reason. */
+    /** The priority level of the reason. For example, `priority` can be set to 5. */
     priority?: Maybe<Scalars['Int']['output']>;
-    /** The unique identifier for the reason. */
+    /** The unique identifier for the reason. For values please refer to the <a href='/partners/commerce/sdk/2.11.0/graphql/application/order/queries/shipment'>shipment.shipment_reasons.</a>. */
     reason_id?: Maybe<Scalars['Int']['output']>;
-    /** The text describing the reason. */
+    /** The text describing the reason. For example, `reason_text` can be set to 'Customer requested cancellation'. */
     reason_text?: Maybe<Scalars['String']['output']>;
-    /** A flag indicating whether to show a textbox on the frontend. */
+    /** A flag indicating whether to show a textbox on the frontend. For example, `show_text_area` can be set to true. */
     show_text_area?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Shipment Response details of the cart which how many shipments will be shipped for the items in cart and gives infoormation about box type, order type, promise of each shipment and delivery partner details. */
+/** Shipment response details of the cart including how many shipments will be shipped for the items in cart and information about box type, order type, promise of each shipment and delivery partner details. */
 export type ShipmentResponse = {
     __typename?: 'ShipmentResponse';
-    /** Box type of the shipment in which the shipment will be delivered. */
+    /** Box type of the shipment. Example: 'standard' */
     box_type?: Maybe<Scalars['String']['output']>;
-    /** Delivery partner id of the shipment. */
+    /** Delivery partner id of the shipment. Example: 'DP_123' */
     dp_id?: Maybe<Scalars['String']['output']>;
-    /** Delivery partner options that are available to deliver the shipment. */
+    /** Delivery partner options available. Example: { preferred: 'Express' } */
     dp_options?: Maybe<Scalars['JSON']['output']>;
-    /** Fulfilment id of the shipment. */
+    /** Fulfillment id of the shipment. Example: 5678 */
     fulfillment_id?: Maybe<Scalars['Int']['output']>;
-    /** Fulfilment type of shipment. */
+    /** Shipment Fulfillment Option Details. Example: { selected_option: 'store-pickup' } */
+    fulfillment_option?: Maybe<FulfillmentOption>;
+    /** Fulfillment type of shipment. Example: 'HomeDelivery' */
     fulfillment_type?: Maybe<Scalars['String']['output']>;
-    /** Item details in the shipment. */
+    /** Item details in the shipment. Example: [{ quantity: 1, identifiers: { identifier: 'line_abc' } }] */
     items?: Maybe<Array<Maybe<CartProductInfo>>>;
-    /** Order type of the shipment like pickAtStore or HomeDelivery. */
-    order_type?: Maybe<Scalars['String']['output']>;
-    /** Shipment level promise information which denotes time in 3 different formats i.e formatted time, timestamp and iso format. */
+    /** Order type of the shipment (e.g., 'PickAtStore', 'HomeDelivery','Digital). Example: 'HomeDelivery' */
+    order_type?: Maybe<OrderTypeEnum>;
+    /** Shipment level promise (formatted, timestamp, ISO). */
     promise?: Maybe<DeliveryPromiseResponse>;
-    /** Shipment type of the shipment returned in get shipments API like single_shipment or multiple shipment. Single Shipment means 1 item in 1 shipment and vice versa in the other one. */
+    /** Shipment type (single_shipment or multiple_shipment). Example: 'single_shipment' */
     shipment_type?: Maybe<Scalars['String']['output']>;
-    /** Count of shipments that will be shipped. */
+    /** Count of shipments that will be shipped. Example: 2 */
     shipments?: Maybe<Scalars['Int']['output']>;
 };
 /** Schema for shipment status. */
 export type ShipmentStatus = {
     __typename?: 'ShipmentStatus';
-    /** The hexadecimal color code associated with the shipment status. */
+    /** The hexadecimal color code associated with the shipment status. For example, `hex_code` can be set to 'sample_code'. */
     hex_code?: Maybe<Scalars['String']['output']>;
-    /** The title or display name representing the shipment status. */
+    /** The title or display name representing the shipment status. For example, `title` can be set to 'value'. */
     title?: Maybe<Scalars['String']['output']>;
-    /** The internal or code value representing the shipment status. */
+    /** The internal or code value representing the shipment status. For example, `value` can be set to '999.0'. */
     value?: Maybe<Scalars['String']['output']>;
 };
 /** Schema for shipment total details. */
 export type ShipmentTotalDetails = {
     __typename?: 'ShipmentTotalDetails';
-    /** The total number of pieces included. */
+    /** The total number of pieces included. For example, `pieces` can be set to 2. */
     pieces?: Maybe<Scalars['Int']['output']>;
-    /** The number of different sizes included. */
+    /** The number of different sizes included. For example, `sizes` can be set to 1. */
     sizes?: Maybe<Scalars['Int']['output']>;
-    /** The total price of the order or item. */
+    /** The total price of the order or item. For example, `total_price` can be set to 2499.5. */
     total_price?: Maybe<Scalars['Float']['output']>;
 };
 /** Schema for shipments user info. */
 export type ShipmentUserInfo = {
     __typename?: 'ShipmentUserInfo';
-    /** Email address of the user. */
+    /** Email address of the user. For example, `email` can be set to 'user@example.com'. */
     email?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier of the store. */
+    /** First name of the user. For example, `first_name` can be set to 'John'. */
     first_name?: Maybe<Scalars['String']['output']>;
-    /** A code associated with the store. */
+    /** Gender of the user. For example, `gender` can be set to 'male'. */
     gender?: Maybe<Scalars['String']['output']>;
-    /** The name of the company associated with the store. */
+    /** Last name of the user. For example, `last_name` can be set to 'Doe'. */
     last_name?: Maybe<Scalars['String']['output']>;
-    /** The identifier of the company associated with the store. */
+    /** Mobile number of the user. For example, `mobile` can be set to '9876543210'. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** The name of the store. */
+    /** Full name of the user. For example, `name` can be set to 'John Doe'. */
     name?: Maybe<Scalars['String']['output']>;
-};
-/** Schema for shipments request. */
-export type ShipmentsRequestInput = {
-    /** Schema for data updates. */
-    data_updates?: InputMaybe<DataUpdatesInput>;
-    /** The unique identifier for request which is the shipment_id. */
-    identifier: Scalars['String']['input'];
-    /** Specific bag to be updated. */
-    products?: InputMaybe<Array<InputMaybe<Products3Input>>>;
-    /** Schema for reasons data. */
-    reasons?: InputMaybe<ReasonsDataInput>;
 };
 /** Schema for url component of short link which contains original link to be shortened, the hash of URL and the shortened URL. */
 export type ShortLink = {
     __typename?: 'ShortLink';
     /** Original web address which will be converted to shortlink. */
     original?: Maybe<ShortLinkDetail>;
-    /** Schema for url component of short link which contains original link to be shortened, the hash of URL and the shortened URL. */
+    /**
+     * Schema for url component of short link which contains original link to be shortened, the hash of URL and the shortened URL.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     short_link_by_hash?: Maybe<ShortLinkDetail>;
 };
 /** Response schema for successful creation of short link  that includes original link, meta data, hash of url, campaign attributes, document ID, document timestamps, redirect attributes and social media attributes of short link to be created. */
@@ -9906,15 +14243,24 @@ export type ShortLinkDetail = {
     app_redirect?: Maybe<Scalars['Boolean']['output']>;
     /** The ID of the sales channel associated with the shortlink. */
     application?: Maybe<Scalars['String']['output']>;
-    /** Additional attributes of shortlink. */
+    /**
+     * Additional attributes of shortlink.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     attribution?: Maybe<Attribution>;
-    /** Campaign attributes of shortlink. */
+    /**
+     * Campaign attributes of shortlink.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     campaign?: Maybe<CampaignShortLink>;
     /** Click count of shortlink. */
     count?: Maybe<Scalars['Int']['output']>;
     /** The timestamp indicating when a record was initially created. */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Reference of the creator of the shortlink. */
+    /**
+     * Reference of the creator of the shortlink.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     created_by?: Maybe<Scalars['String']['output']>;
     /** Flag to enable tracking of a short link. */
     enable_tracking?: Maybe<Scalars['Boolean']['output']>;
@@ -9924,9 +14270,15 @@ export type ShortLinkDetail = {
     fallback?: Maybe<RedirectType>;
     /** Key used to uniquely identify document that contains shortlink details. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Additional attributes of shortlink. */
+    /**
+     * Additional attributes of shortlink.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     meta?: Maybe<Scalars['JSON']['output']>;
-    /** To create personalized short links. */
+    /**
+     * To create personalized short links.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     personalized?: Maybe<Scalars['Boolean']['output']>;
     /** Redirection attributes of shortlink. */
     redirects?: Maybe<Redirects>;
@@ -9938,27 +14290,20 @@ export type ShortLinkDetail = {
     updated_at?: Maybe<Scalars['String']['output']>;
     /** Original web address which will be converted to shortlink. */
     url?: Maybe<UrlInfo>;
-    /** Identifier which can uniquely identify the user. */
+    /**
+     * Identifier which can uniquely identify the user.
+     * @deprecated This field is deprecated and will be removed in a future release.
+     */
     user_id?: Maybe<Scalars['String']['output']>;
 };
 /** Request schema for creation of short link  that includes original link, meta data, hash of url, campaign attributes, redirect attributes and social media attributes of short link to be created. */
 export type ShortLinkReqInput = {
     /** Status of the shortlink. */
     active?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Schema for expiration attributes of shortlink campaign. */
-    attribution?: InputMaybe<AttributionInput>;
-    /** Schema for campaign attributes of shortlink. It includes source and channel of communication of campaign. */
-    campaign?: InputMaybe<CampaignShortLinkInput>;
-    /** Click count of shortlink. */
-    count?: InputMaybe<Scalars['Int']['input']>;
     /** Flag to enable tracking of a short link. */
     enable_tracking?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Expiry of the shortlink. */
+    /** Expiry of the shortlink. ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ */
     expire_at?: InputMaybe<Scalars['String']['input']>;
-    /** A string value used for converting long URL to short URL and vice-versa. */
-    hash?: InputMaybe<Scalars['String']['input']>;
-    /** To create personalized short links. */
-    personalized?: InputMaybe<Scalars['Boolean']['input']>;
     /** Redirects schema for redirection configuration for different mediums like device and web. */
     redirects?: InputMaybe<RedirectsInput>;
     /** Schema for Social Media Tags attributes of shortlink. */
@@ -9968,6 +14313,30 @@ export type ShortLinkReqInput = {
     /** The web address to shorten. */
     url: Scalars['String']['input'];
 };
+/** Input for signing URLs with expiry time */
+export type SignUrlInput = {
+    /** The time in seconds until the signed URL expires. After this time, the signed_url will no longer work and a new one must be requested. Example: 300. */
+    expiry: Scalars['Int']['input'];
+    /** List of URLs to be signed. Provide the original URL/path for each file that needs temporary access. Example: "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/company/61/self/legal/documents/free/original/sample.pdf". */
+    urls: Array<InputMaybe<Scalars['String']['input']>>;
+};
+/** The response schema of the result for the presigned URLs */
+export type SignUrlResult = {
+    __typename?: 'SignUrlResult';
+    /** List of signed URLs with their details */
+    urls?: Maybe<Array<Maybe<SignedUrlData>>>;
+};
+/** Represents a signed URL with its expiration time */
+export type SignedUrlData = {
+    __typename?: 'SignedUrlData';
+    /** The time in seconds until the signed URL expires. After this time, the signed_url will no longer work and a new one must be requested. Example: 300. */
+    expiry?: Maybe<Scalars['Int']['output']>;
+    /** A pre-signed URL that provides temporary access to the file in the private bucket. This URL includes authentication parameters and can be used to download the file directly. Valid until 'expiry' time. Example: "https://storage.googleapis.com/bucket/company/61/self/legal/documents/free/original/sample.pdf?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=...&X-Goog-Signature=...". */
+    signed_url?: Maybe<Scalars['String']['output']>;
+    /** The original URL/path that was provided in the request. Example: "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/company/61/self/legal/documents/free/original/sample.pdf". */
+    url?: Maybe<Scalars['String']['output']>;
+};
+/** Types of similar items that can be displayed. */
 export declare enum SimilarListItem {
     Basic = "basic",
     Brand = "brand",
@@ -9994,23 +14363,26 @@ export type SimplAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
     /** Payment gateway verify payment api endpoint. */
     verify_api?: Maybe<Scalars['String']['output']>;
 };
-/** Detailed information about a specific size. */
+/** Size variant information including availability and stock details. */
 export type Size = {
     __typename?: 'Size';
-    /** The display string for the size. */
+    /** Human-readable size display name, e.g. 'Small', 'Medium', 'Large', '32 inches'. */
     display?: Maybe<Scalars['JSON']['output']>;
-    /** Whether or not this size is available. */
+    /** Indicates whether this size variant is currently available for purchase. */
     is_available?: Maybe<Scalars['Boolean']['output']>;
-    /** The quantity of this size available. */
+    /** Available stock quantity for this specific size, e.g. 10, 25, 50. */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** The value of the size. */
+    /** Internal size value or code, e.g. 'S', 'M', 'L', '32', '34'. */
     value?: Maybe<Scalars['JSON']['output']>;
 };
 /** Size chart providing detailed sizing information for products. */
@@ -10020,6 +14392,8 @@ export type SizeChart = {
     description?: Maybe<Scalars['String']['output']>;
     /** Headers used in the size chart columns. */
     headers?: Maybe<ColumnHeaders>;
+    /** Unique ID of the size chart. */
+    id?: Maybe<Scalars['String']['output']>;
     /** URL of the image representing the size chart. */
     image?: Maybe<Scalars['String']['output']>;
     /** Additional tip or guideline related to sizing. */
@@ -10046,71 +14420,37 @@ export type SizeChartValues = {
     col_5?: Maybe<Scalars['String']['output']>;
     /** Value for column 6. */
     col_6?: Maybe<Scalars['String']['output']>;
-};
-/** Details related to slideshow/screensaver. */
-export type Slideshow = {
-    __typename?: 'Slideshow';
-    /** Details related to slideshow/screensaver. */
-    active?: Maybe<Scalars['Boolean']['output']>;
-    /** Application ID - Identifier for a Sales channel. */
-    application?: Maybe<Scalars['String']['output']>;
-    /** Whether slideshow is deleted or not. */
-    archived?: Maybe<Scalars['Boolean']['output']>;
-    /** Data related to slideshow/screensaver. */
-    configuration?: Maybe<ConfigurationSchema>;
-    /** Custom JSON object for specific use cases. */
-    custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** Details related to resource creation and updation. */
-    date_meta?: Maybe<DateMeta>;
-    /** Unique identifier of an entry. */
-    id?: Maybe<Scalars['String']['output']>;
-    /** Details related to slideshow/screensaver. */
-    media?: Maybe<Array<Maybe<SlideshowMedia>>>;
-    /** Details related to slideshow/screensaver. */
-    platform?: Maybe<Scalars['String']['output']>;
-    /** Details related to slideshow/screensaver. */
-    slug?: Maybe<Scalars['String']['output']>;
-};
-/** An object containing al the media urls for displaying in slideshow/screensaver. */
-export type SlideshowMedia = {
-    __typename?: 'SlideshowMedia';
-    /** Schema to define the Action Object. */
-    action?: Maybe<ContentAction>;
-    /** Whether the duration for each media is to be decided by system or not. If true, it'll equally divide time in all medias. */
-    auto_decide_duration?: Maybe<Scalars['Boolean']['output']>;
-    /** Background colour of Media. */
-    bg_color?: Maybe<Scalars['String']['output']>;
-    /** Amount of time in seconds for which Media has to appear. */
-    duration?: Maybe<Scalars['Int']['output']>;
-    /** Type of Media. */
-    type?: Maybe<Scalars['String']['output']>;
-    /** URL of Media where it's hosted. */
-    url?: Maybe<Scalars['String']['output']>;
-};
-/** Details related to slideshow/screensaver. */
-export type Slideshows = {
-    __typename?: 'Slideshows';
-    /** Details related to slideshow/screensaver. */
-    items?: Maybe<Array<Maybe<Slideshow>>>;
-    /** Data related to pagination. */
-    page?: Maybe<PageInfo>;
+    /** Value for column 7. */
+    col_7?: Maybe<Scalars['String']['output']>;
+    /** Value for column 8. */
+    col_8?: Maybe<Scalars['String']['output']>;
+    /** Value for column 9. */
+    col_9?: Maybe<Scalars['String']['output']>;
+    /** Value for column 10. */
+    col_10?: Maybe<Scalars['String']['output']>;
 };
 /** Type of social login are active or inactive for application. */
 export type Social = {
     __typename?: 'Social';
-    /** Is accountkit social login active for application or not. */
+    /**
+     * Is AccountKit social login active for application or not. This feature is deprecated and no longer functional.
+     * @deprecated AccountKit authentication is deprecated and no longer functional.
+     */
     account_kit?: Maybe<Scalars['Boolean']['output']>;
-    /** Is apple social login active for application or not. */
+    /** Is Apple social login active for application or not. */
     apple?: Maybe<Scalars['Boolean']['output']>;
-    /** Is facebook social login active for application or not . */
+    /** Is Facebook social login active for application or not. */
     facebook?: Maybe<Scalars['Boolean']['output']>;
-    /** Is google social login active for application or not . */
+    /** Is Google social login active for application or not. */
     google?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Structure of credentials of account kit social. */
+/** Structure of credentials of account kit social. This type is deprecated and no longer functional. */
 export type SocialAccountId = {
     __typename?: 'SocialAccountId';
-    /** App id of the  credentials account kit. */
+    /**
+     * App ID of the credentials account kit. This field is deprecated.
+     * @deprecated AccountKit authentication is deprecated and no longer functional.
+     */
     app_id?: Maybe<Scalars['String']['output']>;
 };
 /** Contains social media and blog links related to the brand or business, including icons and URLs for various platforms. */
@@ -10157,21 +14497,47 @@ export type SocialMediaTagsInput = {
 /** Structure of social credentials of application owner. */
 export type SocialTokens = {
     __typename?: 'SocialTokens';
-    /** Credentials of the accountkit social login of application owner. */
+    /**
+     * Credentials of the AccountKit social login of application owner. This feature is deprecated and no longer functional.
+     * @deprecated AccountKit authentication is deprecated and no longer functional.
+     */
     accountkit?: Maybe<SocialAccountId>;
-    /** Structure of credentials of facebook social. */
+    /** Structure of credentials of Apple social login. */
+    apple?: Maybe<AppleSocialAccount>;
+    /** Structure of credentials of Facebook social. */
     facebook?: Maybe<SocialAccountId>;
-    /** Structure of credentials of google social. */
+    /** Structure of credentials of Google social. */
     google?: Maybe<SocialAccountId>;
 };
+/** Sorting options for data ordering. */
 export declare enum Sort_On {
+    /** Sorts items based on the depth of size options in descending order. */
+    DepthDsc = "depth_dsc",
+    /** Sorts items based on discount in ascending order. */
     DiscountAsc = "discount_asc",
+    /** Sorts items based on discount in descending order. */
     DiscountDsc = "discount_dsc",
+    /** Sorts items based on the latest added. */
     Latest = "latest",
+    /** Sorts items based on popularity. */
     Popular = "popular",
+    /** Sorts items based on price in ascending order. */
     PriceAsc = "price_asc",
+    /** Sorts items based on price in descending order. */
     PriceDsc = "price_dsc"
 }
+/** Split payment configuration detail for a payment flow. */
+export type SplitConfigurationDetail = {
+    __typename?: 'SplitConfigurationDetail';
+    /** Whether this split configuration is currently active. */
+    is_active?: Maybe<Scalars['Boolean']['output']>;
+    /** Maximum number of split transactions allowed for a single order. */
+    max_transactions_allowed?: Maybe<Scalars['Int']['output']>;
+    /** Minimum transaction amount required to use split payment. */
+    min_transaction_limit?: Maybe<SplitTransactionLimit>;
+    /** Timeout settings for completing each split payment. */
+    timeout?: Maybe<SplitPaymentTimeout>;
+};
 /** Contains payment split details */
 export type SplitObject = {
     __typename?: 'SplitObject';
@@ -10182,33 +14548,77 @@ export type SplitObject = {
     /** Maximum amount of splits allowed. */
     total_number_of_splits?: Maybe<Scalars['Int']['output']>;
 };
+/** Timeout configuration for a split payment step. */
+export type SplitPaymentTimeout = {
+    __typename?: 'SplitPaymentTimeout';
+    /** Category of timeout applied. 'standard' enforces a fixed duration via unit and value; 'no_limit' means no expiry and unit/value will be null. */
+    timeout_type?: Maybe<Scalars['String']['output']>;
+    /** Time unit for the timeout duration (e.g., 'minutes', 'hours'). Null when timeout_type is 'no_limit'. */
+    unit?: Maybe<Scalars['String']['output']>;
+    /** Numeric value of the timeout duration. Null when timeout_type is 'no_limit'. */
+    value?: Maybe<Scalars['Int']['output']>;
+};
+/** Minimum transaction limit for split payment eligibility. */
+export type SplitTransactionLimit = {
+    __typename?: 'SplitTransactionLimit';
+    /** How the limit is interpreted — 'absolute' means a fixed currency amount. 'percentage' means percentage of order amount. */
+    limit_type?: Maybe<Scalars['String']['output']>;
+    /** Minimum amount required to initiate a split payment. */
+    value?: Maybe<Scalars['Float']['output']>;
+};
 /** Archived zip containing complete theme code. */
 export type Src = {
     __typename?: 'Src';
     /** Object containing theme bundles, eg: common.js, umd.js. */
     link?: Maybe<Scalars['String']['output']>;
 };
-/** Staff details which can be added while checkout if staff member is doing check on behalf of customer which incluedes empployee code, user, last name, first name and staff user id. */
+/** Staff details for checkout on behalf of a customer. */
 export type StaffCheckoutInput = {
-    /** Id of staff who does checkout on behalf of customer. */
+    /** Staff ID. Example: 'staff_001' */
     _id: Scalars['String']['input'];
-    /** Employee code of staff who does checkout on behalf of customer. */
+    /** Employee code. Example: 'EMP-42' */
     employee_code?: InputMaybe<Scalars['String']['input']>;
-    /** First name of staff emplyee who does checkout on behalf of customer. */
+    /** First name. Example: 'John' */
     first_name: Scalars['String']['input'];
-    /** Last name of staff employee who does checkout on behalf of customer. */
+    /** Last name. Example: 'Doe' */
     last_name: Scalars['String']['input'];
-    /** User id of the employee who does checkout on behalf of customer. */
+    /** User ID of the staff. Example: 'usr_123' */
     user: Scalars['String']['input'];
 };
-/** Schema for statuses. */
-export type StatuesRequestInput = {
-    /** State to be change for Remaining Bag/Products. */
-    exclude_bags_next_state?: InputMaybe<Scalars['String']['input']>;
-    /** A list containing information about shipments. */
-    shipments?: InputMaybe<Array<InputMaybe<ShipmentsRequestInput>>>;
-    /** The status to which the entity is to be transitioned. */
-    status?: InputMaybe<Scalars['String']['input']>;
+/** The response schema provides detailed information about the file storage path, content type, associated metadata, etc */
+export type StartUploadData = {
+    __typename?: 'StartUploadData';
+    /** The MIME type of the file being uploaded. Must match one of the valid content types for the namespace. Examples: "image/jpeg", "application/pdf", "text/csv", "video/mp4". Used for validation and proper file handling by the storage service. */
+    content_type?: Maybe<Scalars['String']['output']>;
+    /** The original name of the file to be uploaded. This is the filename provided in the request. Example: "product-image.jpg". */
+    file_name?: Maybe<Scalars['String']['output']>;
+    /** The complete storage path where the file will be stored in GCS. Auto-generated by the system based on the namespace rules. Format: /{namespace_path}/{hashed_filename}. This path is needed for the /complete API call after uploading. Example: "/user-profile-pic/free/original/abc123-profile.jpg". */
+    file_path?: Maybe<Scalars['String']['output']>;
+    /** The HTTP method to use when uploading to the signed URL. Always "PUT" for file uploads. Use this method when making the request to upload.url. Example: "PUT". */
+    method?: Maybe<Scalars['String']['output']>;
+    /** The namespace that determines file storage rules, validation, path generation, and access control (public/private bucket). Examples: "user-profile-pic" (public), "feedback-media" (public), "application-audience" (private). Each namespace has specific allowed content types and size limits. */
+    namespace?: Maybe<Scalars['String']['output']>;
+    /** The storage operation type to perform. Always "putObject" for file uploads. Indicates this is a write operation to create a new object in the storage bucket. Example: "putObject". */
+    operation?: Maybe<Scalars['String']['output']>;
+    /** The size of the file in bytes. Must match the actual file size. Used for validation against namespace size limits. The system validates this before generating the upload URL. Example: 524288. */
+    size?: Maybe<Scalars['Int']['output']>;
+    /** Optional array of string tags for categorizing and organizing the file. Tags can be provided in the request to attach metadata to the file. Can be used later for filtering and searching. Examples: ["product", "thumbnail"], ["invoice", "2024"], []. Defaults to empty array if not provided. */
+    tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+    /** Contains the pre-signed upload URL and its expiration time. */
+    upload?: Maybe<Upload>;
+};
+/** The request schema for initiating a file upload includes the file metadata such as name, content type, size, and optional tags. */
+export type StartUploadReqInput = {
+    /** The MIME type of the file being uploaded. Must match one of the valid content types for the namespace. Examples: "image/jpeg", "application/pdf", "text/csv", "video/mp4". Used for validation and proper file handling by the storage service. */
+    content_type: Scalars['String']['input'];
+    /** The original name of the file to be uploaded. This is the filename provided in the request. Example: "product-image.jpg". */
+    file_name: Scalars['String']['input'];
+    /** Additional parameters for file processing and storage location. */
+    params?: InputMaybe<FileUploadParamsInput>;
+    /** The size of the file in bytes. Must match the actual file size. Used for validation against namespace size limits. The system validates this before generating the upload URL. Example: 524288. */
+    size: Scalars['Int']['input'];
+    /** Optional array of string tags for categorizing and organizing the file. Tags can be provided in the request to attach metadata to the file. Can be used later for filtering and searching. Examples: ["product", "thumbnail"], ["invoice", "2024"], []. Defaults to empty array if not provided. */
+    tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 /** Denotes in what state is the ticket. */
 export type Status = {
@@ -10220,170 +14630,466 @@ export type Status = {
     /** Key for status. */
     key: Scalars['String']['output'];
 };
+/** Schema for shipments request. */
+export type StatusUpdateShipmentsInput = {
+    /** Schema for data updates. <br> Example: { entities: [...], products: [...] }. */
+    data_updates?: InputMaybe<DataUpdatesInput>;
+    /** The unique identifier for request which is the shipment_id. For example, '16736576489251696245'. */
+    identifier: Scalars['String']['input'];
+    /** Specific bag to be updated. Example: [{ identifier: '21500347', line_number: 1, quantity: 1 }]. */
+    products?: InputMaybe<Array<InputMaybe<ProductsInput>>>;
+    /** Used to capture cancellation, return, or failure reasons across both shipment (entity) and product (bag) levels. Example: { entities: [...], products: [...] }. */
+    reasons?: InputMaybe<ReasonsDataInput>;
+    /** Modes for processing refunds. */
+    refund_modes?: InputMaybe<Array<InputMaybe<RefundMode>>>;
+    /**
+     * A list of comments or annotations provided during a status transition or data update on the shipment.
+     * Each comment helps capture the intent, context, or the user action performed — such as assigning a delivery partner, updating address, or retrying delivery.
+     * Useful for audit trails, communication, and debugging purposes.
+     */
+    transition_comments?: InputMaybe<Array<InputMaybe<TransitionCommentsInput>>>;
+};
 /** Schema for Statuses body response. */
 export type StatusesBodyResponse = {
     __typename?: 'StatusesBodyResponse';
-    /** List of shipments. */
+    /** List of shipments. For example, `shipments` can be set to [{ key: 'value' }]. */
     shipments?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
 };
-/** A list of application stores with associated filters and pagination details. */
+/** Schema for status update for shipments. */
+export type StatusesRequestInput = {
+    /**
+     * Other line items in the not included in StatusesRequestInput.Shipments will be transitioned to this state.
+     * Please refer for detailed
+     * <a href='commerce/miscellaneous/updateShipmentStatus/#4-partial-confirmation-at-products-and-quantity-level\'>example.</a>
+     */
+    exclude_bags_next_state?: InputMaybe<Scalars['String']['input']>;
+    /** A list containing information about shipments. Example: [{ identifier: '16736576489251696245', products: [{ identifier: '21500347', line_number: 1, quantity: 1 }] }]. */
+    shipments?: InputMaybe<Array<InputMaybe<StatusUpdateShipmentsInput>>>;
+    /**
+     * The status to which the shipment is to be transitioned. For example, 'bag_confirmed', 'delivered', or 'return_bag_delivered'.
+     * For list of status please refer <a href='/commerce/getting-started/oms-states/'>OMS States</a>.
+     */
+    status?: InputMaybe<Scalars['String']['input']>;
+};
+/** Application stores with filters and pagination. */
 export type StockLocations = {
     __typename?: 'StockLocations';
-    /** A list of filters applied to the store listing. */
-    filters?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** A list of application stores. */
-    items?: Maybe<Array<Maybe<InStockStore>>>;
-    /** Pagination details for the store listing. */
+    /** Filters applied to the store listing. */
+    filters?: Maybe<Array<Maybe<ApplicationStoreFilterListing>>>;
+    /** List of application stores. */
+    items?: Maybe<Array<Maybe<Store>>>;
+    /** Store listing pagination details. */
     page?: Maybe<PageInfo>;
 };
-/** Details of a store, including its contact information, address, and geographic coordinates. */
+/** Store details including contact information, address, and geographic coordinates. */
 export type Store = {
     __typename?: 'Store';
-    /** The address details of the store. */
-    address?: Maybe<StoreAddressSerializer>;
-    /** Information about the company that owns the store. */
+    /**
+     * Custom JSON data for additional store configuration and metadata.
+     * @deprecated This field is obsolete.
+     */
+    _custom_json?: Maybe<Scalars['JSON']['output']>;
+    /** Additional contact numbers and information for the store. */
+    additional_contacts?: Maybe<Array<Maybe<ContactDetails>>>;
+    /** Complete store address including street, city, state, and coordinates. */
+    address?: Maybe<StoreAddress>;
+    /**
+     * Whether courier partner assignment is done automatically by the system.
+     * @deprecated This field is obsolete.
+     */
+    auto_assign_courier_partner?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Indicates whether automatic invoice generation is enabled for the store.
+     * @deprecated This field is obsolete.
+     */
+    auto_invoice?: Maybe<Scalars['Boolean']['output']>;
+    /** Average order processing time at this store location. */
+    avg_order_processing_time?: Maybe<OrderProcessingTime>;
+    /**
+     * Whether bulk shipment processing is enabled for large orders.
+     * @deprecated This field is obsolete.
+     */
+    bulk_shipment?: Maybe<Scalars['Boolean']['output']>;
+    /** Company information that owns and operates the store. */
     company?: Maybe<CompanyStore>;
-    /** Contact details for the store. */
+    /**
+     * Identifier of the parent company to which the store belongs.
+     * @deprecated This field is obsolete.
+     */
+    company_id?: Maybe<Scalars['Int']['output']>;
+    /** List of store contact phone numbers with country codes. */
     contact_numbers?: Maybe<Array<Maybe<StorePhoneNumber>>>;
-    /** Custom JSON data related to the store. */
+    /**
+     * Indicates whether credit note issuance feature is enabled for returns and refunds.
+     * @deprecated This field is obsolete.
+     */
+    credit_note?: Maybe<Scalars['Boolean']['output']>;
+    /** Additional custom attributes associated with the store for extended store configuration and metadata */
+    custom_fields?: Maybe<Array<Maybe<CustomField>>>;
+    /**
+     * Custom JSON data for additional store configuration and metadata.
+     * @deprecated This field is obsolete.
+     */
     custom_json?: Maybe<Scalars['JSON']['output']>;
-    /** A list of departments within the store. */
+    /** Whether the store uses default order acceptance timing configuration. */
+    default_order_acceptance_timing?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * List of departments available within the store (e.g., Electronics, Fashion, Home).
+     * @deprecated This field is obsolete.
+     */
     departments?: Maybe<Array<Maybe<StoreDepartment>>>;
-    /** The manager's email address for the store. */
-    manager?: Maybe<StoreManagerSerializer>;
-    /** The name of the store. */
+    /** Display name of the store as shown to customers (e.g., 'Central Park Store'). */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /**
+     * GST (Goods and Services Tax) credentials and configuration for the store.
+     * @deprecated This field is obsolete.
+     */
+    gst_credentials?: Maybe<GstCredentialsConfiguration>;
+    /** Store manager contact and identification information. */
+    manager: StoreManagerSerializer;
+    /** Display name of the store (e.g., 'Downtown Mall Store', 'Airport Branch'). */
     name?: Maybe<Scalars['String']['output']>;
-    /** A unique code or identifier for the store, often used for internal reference. */
+    /** Custom order acceptance timing schedule for weekdays when not using defaults. */
+    order_acceptance_timing?: Maybe<Array<Maybe<OrderTiming>>>;
+    /** Product return policy and configuration settings for the store. */
+    product_return_config?: Maybe<ProductReturnConfiguration>;
+    /**
+     * Current operational stage or status of the store (e.g., 'verified', 'pending', 'active').
+     * @deprecated This field is obsolete.
+     */
+    stage?: Maybe<Scalars['String']['output']>;
+    /**
+     * Unique store code or identifier for internal reference (e.g., 'NYC001', 'LAX024').
+     * @deprecated This field is obsolete.
+     */
     store_code?: Maybe<Scalars['String']['output']>;
-    /** Represents the opening and closing times for a store on a specific weekday. */
+    /** Type classification of the store (e.g., 'retail', 'warehouse', 'flagship', 'outlet'). */
+    store_type?: Maybe<Scalars['String']['output']>;
+    /** Store operating hours for each day of the week with opening and closing times. */
     timing?: Maybe<Array<Maybe<StoreTiming>>>;
-    /** Unique identifier for the store. */
-    uid?: Maybe<Scalars['Int']['output']>;
+    /** Unique numeric identifier for the store (e.g., 123, 456, 789). */
+    uid: Scalars['Int']['output'];
+};
+/** Store details including contact information, address, and geographic coordinates. */
+export type StoreCustom_FieldsArgs = {
+    keys?: InputMaybe<Array<Scalars['String']['input']>>;
+    namespaces?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 /** The address details for the store. */
-export type StoreAddressSerializer = {
-    __typename?: 'StoreAddressSerializer';
+export type StoreAddress = {
+    __typename?: 'StoreAddress';
     /** The address line 1 of the store. */
     address1?: Maybe<Scalars['String']['output']>;
     /** The address line2 of the store. */
     address2?: Maybe<Scalars['String']['output']>;
+    /**
+     * Meta information related to the store's address.
+     * @deprecated This field is obsolete.
+     */
+    address_meta?: Maybe<Scalars['JSON']['output']>;
     /** The city where the store is located. */
     city?: Maybe<Scalars['String']['output']>;
     /** The country where the store is located. */
     country?: Maybe<Scalars['String']['output']>;
+    /** Country code for the store address. */
+    country_code?: Maybe<Scalars['String']['output']>;
     /** A landmark near the store. */
     landmark?: Maybe<Scalars['String']['output']>;
-    /** The latitude of the store's location. */
+    /** Geographic coordinates of the store location. */
+    lat_long?: Maybe<LatLong>;
+    /**
+     * The latitude of the store's location.
+     * @deprecated This field is obsolete. Use lat_long field instead which provides coordinates in GeoJSON Point format.
+     */
     latitude?: Maybe<Scalars['Float']['output']>;
-    /** The longitude of the store's location. */
+    /**
+     * The longitude of the store's location.
+     * @deprecated This field is obsolete. Use lat_long field instead which provides coordinates in GeoJSON Point format.
+     */
     longitude?: Maybe<Scalars['Float']['output']>;
-    /** The postal code for the store's location. */
+    /**
+     * The postal code for the store's location.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
+    /** The postal code for the store's location. */
+    postal_code?: Maybe<Scalars['String']['output']>;
     /** The state where the store is located. */
     state?: Maybe<Scalars['String']['output']>;
 };
-/** Response object containing a list of stores and pagination information for store listings. */
+/** Store listing response with pagination information. */
 export type StoreConnection = {
     __typename?: 'StoreConnection';
-    /** An array of store details. Each store includes information such as name, address, and geographic coordinates. */
+    /** Array of store details including name, address, and coordinates. */
     items: Array<Maybe<StoreDetail>>;
-    /** An array of store details. Each store includes information such as name, address, and geographic coordinates. */
+    /** Pagination information for the store listing. */
     page: PageInfo;
 };
-/** Details about store department. */
+/** Store department details. */
 export type StoreDepartment = {
     __typename?: 'StoreDepartment';
-    /** An object containing information about the store department's logo, such as the URL or other related media details. */
+    /** Whether the department is currently active and operational. */
+    is_active?: Maybe<Scalars['Boolean']['output']>;
+    /** Logo image information and metadata for the department. */
     logo?: Maybe<Scalars['JSON']['output']>;
-    /** The name of the store department, which is typically used for display and identification purposes. */
+    /** Display name of the store department (e.g., 'Electronics', 'Fashion', 'Home & Garden'). */
     name?: Maybe<Scalars['String']['output']>;
-    /** The priority or ranking of the department within the store. This field is used to determine the order in which departments are displayed or processed. */
+    /** Priority or ranking order for department display (e.g., 1, 2, 3 - lower numbers appear first). */
     priority_order?: Maybe<Scalars['Int']['output']>;
-    /** A URL-friendly identifier for the store department, often used in web addresses and routing to uniquely identify the department. */
+    /** URL-friendly identifier for the store department (e.g., 'electronics', 'fashion', 'home-garden'). */
     slug?: Maybe<Scalars['String']['output']>;
-    /** The unique identifier assigned to the store department. */
+    /** Unique identifier assigned to the store department (e.g., 101, 102, 103). */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** Detailed information about a store. */
+/** Detailed store information. */
 export type StoreDetail = {
     __typename?: 'StoreDetail';
-    /** The street address of the store. */
+    /** Store street address. */
     address?: Maybe<Scalars['String']['output']>;
-    /** The city where the store is located. */
+    /**
+     * Whether courier partner assignment is automatic.
+     * @deprecated This field is obsolete.
+     */
+    auto_assign_courier_partner?: Maybe<Scalars['Boolean']['output']>;
+    /**
+     * Whether auto-invoice is enabled for the store.
+     * @deprecated This field is obsolete.
+     */
+    auto_invoice?: Maybe<Scalars['Boolean']['output']>;
+    /** Average order processing time. */
+    avg_order_processing_time?: Maybe<OrderProcessingTime>;
+    /**
+     * Whether bulk shipment is enabled for the store.
+     * @deprecated This field is obsolete.
+     */
+    bulk_shipment?: Maybe<Scalars['Boolean']['output']>;
+    /** City where the store is located. */
     city?: Maybe<Scalars['String']['output']>;
-    /** The country where the store is located. */
+    /**
+     * Identifier of the company to which the store belongs.
+     * @deprecated This field is obsolete.
+     */
+    company_id?: Maybe<Scalars['Int']['output']>;
+    /** Store contact details. */
+    contact_numbers?: Maybe<Array<Maybe<StorePhoneNumber>>>;
+    /** Store contact numbers. */
+    contacts?: Maybe<Array<Maybe<ContactDetails>>>;
+    /** Country where the store is located. */
     country?: Maybe<Scalars['String']['output']>;
+    /**
+     * Whether credit note issuance is enabled.
+     * @deprecated This field is obsolete.
+     */
+    credit_note?: Maybe<Scalars['Boolean']['output']>;
+    /** Whether the store has default order acceptance timings. */
+    default_order_acceptance_timing?: Maybe<Scalars['Boolean']['output']>;
+    /** Display name of the store. */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /**
+     * GST credentials for the store.
+     * @deprecated This field is obsolete.
+     */
+    gst_credentials?: Maybe<GstCredentialsConfiguration>;
     /** Geographic coordinates of the store, including latitude and longitude. */
     lat_long?: Maybe<LatLong>;
-    /** The name of the store. */
+    /** Store manager contact number. */
+    manager_contact?: Maybe<Scalars['String']['output']>;
+    /** Store name. */
     name?: Maybe<Scalars['String']['output']>;
-    /** The postal code or zip code for the store's location. */
+    /** Order acceptance timings for each weekday. */
+    order_acceptance_timing?: Maybe<Array<Maybe<OrderTiming>>>;
+    /**
+     * Postal code or zip code for the store's location.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
-    /** The state or province where the store is located. */
+    /** Postal code for the store's location. */
+    postal_code?: Maybe<Scalars['String']['output']>;
+    /** Product return configuration for the store. */
+    product_return_config?: Maybe<ProductReturnConfiguration>;
+    /**
+     * Stage or status of the store (e.g., 'verified', 'pending', 'active').
+     * @deprecated This field is obsolete.
+     */
+    stage?: Maybe<Scalars['String']['output']>;
+    /** State or province where the store is located. */
     state?: Maybe<Scalars['String']['output']>;
-    /** A unique code or identifier for the store, often used for internal reference. */
+    /**
+     * Unique store code or identifier for internal reference. (e.g., 'NYC001', 'LAX024').
+     * @deprecated This field is obsolete.
+     */
     store_code?: Maybe<Scalars['String']['output']>;
-    /** The manager's email address for the store. */
+    /** Store manager's email address. */
     store_email?: Maybe<Scalars['String']['output']>;
-    /** The list of tags mapped to the store. */
+    /** Type of the store. */
+    store_type?: Maybe<Scalars['String']['output']>;
+    /** List of tags mapped to the store. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** The unique identifier for the store. */
+    /** Unique store identifier. */
     uid?: Maybe<Scalars['Int']['output']>;
+};
+/** Distance information from the user's location to the store. */
+export type StoreDistance = {
+    __typename?: 'StoreDistance';
+    /** Reason if distance cannot be calculated (e.g., 'invalid_customer_location'). */
+    reason?: Maybe<Scalars['String']['output']>;
+    /** Unit of measurement for the distance (e.g., 'm' for meters, 'km' for kilometers). */
+    unit?: Maybe<Scalars['String']['output']>;
+    /** Distance value from the user's location (e.g., 1500, 1830). */
+    value?: Maybe<Scalars['Float']['output']>;
+};
+/** Represents the store's operating hours for a specific day of the week. */
+export type StoreHours = {
+    __typename?: 'StoreHours';
+    /** Closing time of the store. Example: { hour: 21, minute: 0 } */
+    closing?: Maybe<StoreTime>;
+    /** Indicates whether the store is open on the specified weekday. Example: true */
+    open?: Maybe<Scalars['Boolean']['output']>;
+    /** Opening time of the store. Example: { hour: 9, minute: 0 } */
+    opening?: Maybe<StoreTime>;
+    /** The day of the week (e.g., 'Monday', 'Tuesday'). Example: 'Monday' */
+    weekday?: Maybe<Scalars['String']['output']>;
 };
 /** Store information of the store which includes store name, store id and store code. */
 export type StoreInfo = {
     __typename?: 'StoreInfo';
-    /** Store name of the store from where the product is fulfiled . */
+    /** Store name of the store from where the product is fulfilled. Example: 'Fynd Andheri' */
     name?: Maybe<Scalars['String']['output']>;
-    /** A unique code or identifier for the store, often used for internal reference. */
+    /** A unique code/identifier for the store. Example: 'ANDH001' */
     store_code?: Maybe<Scalars['String']['output']>;
-    /** Unique identifiers of the store from where product is fulfileld. */
+    /** Unique identifier of the store. Example: 2001 */
     uid?: Maybe<Scalars['Int']['output']>;
 };
-/** Details of the store manager. */
+/** Store manager details. */
 export type StoreManagerSerializer = {
     __typename?: 'StoreManagerSerializer';
-    /** The email address of the store manager. */
+    /** Store manager email address. */
     email?: Maybe<Scalars['String']['output']>;
-    /** Contact details for the seller. */
+    /** Contact details for the store manager. */
     mobile_no?: Maybe<StorePhoneNumber>;
-    /** The name of the store manager. */
+    /** Store manager name. */
     name?: Maybe<Scalars['String']['output']>;
 };
-/** Object representing a user's phone number, including its active status, whether it's the primary number, verification status, and the phone number itself. */
+/** Store phone number with country code. */
 export type StorePhoneNumber = {
     __typename?: 'StorePhoneNumber';
-    /** Country code, e.g. +91. */
+    /** Country code (e.g., +91). */
     country_code?: Maybe<Scalars['Int']['output']>;
-    /** Phone number of the user. */
+    /** Phone number. */
     number?: Maybe<Scalars['String']['output']>;
 };
-/** Represents the opening and closing times for a store on a specific weekday. */
+/** Contains details of delivery promises for each store. */
+export type StorePromise = {
+    __typename?: 'StorePromise';
+    /** Code assigned to a store. */
+    code?: Maybe<Scalars['String']['output']>;
+    /** Name of a store. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** Delivery promise information like max and min. */
+    promise?: Maybe<DeliveryPromiseInfo>;
+    /** Unique identifier of a store. */
+    uid?: Maybe<Scalars['Int']['output']>;
+};
+/** The opening time of the store. */
+export type StoreTime = {
+    __typename?: 'StoreTime';
+    /** The hour of the store in 24-hour format (e.g., 9 for 9 AM). Example: 9 */
+    hour?: Maybe<Scalars['Int']['output']>;
+    /** The minute of the store (e.g., 30 for 9:30 AM). Example: 30 */
+    minute?: Maybe<Scalars['Int']['output']>;
+};
+/** Store opening and closing times for a specific weekday. */
 export type StoreTiming = {
     __typename?: 'StoreTiming';
-    /** Represents a specific time with hour and minute. */
+    /** Closing time with hour and minute. Example: { hour: 21, minute: 30 } */
     closing?: Maybe<Time>;
-    /** Indicates if the store is open on this day. */
+    /** Whether the store is open on this day. Example: true */
     open?: Maybe<Scalars['Boolean']['output']>;
-    /** Represents a specific time with hour and minute. */
+    /** Opening time with hour and minute. Example: { hour: 11, minute: 0 } */
     opening?: Maybe<Time>;
-    /** The day of the week. */
-    weekday?: Maybe<Scalars['String']['output']>;
+    /** Day of the week. Example: monday */
+    weekday?: Maybe<Weekday>;
 };
+/** Store timing information including operational and order acceptance timings. */
+export type StoreTimingDetails = {
+    __typename?: 'StoreTimingDetails';
+    /** Hours when the store is physically open and operational for customers. This defines when the store is available for walk-ins and general operations. Example: [{ weekday: "monday", open: true, opening: { hour: 11, minute: 0 }, closing: { hour: 21, minute: 30 } }] */
+    operational_timing?: Maybe<Array<Maybe<StoreTiming>>>;
+    /** Hours when the store accepts new orders. This may differ from operational timing as stores might stop accepting orders before closing time to ensure fulfillment. Example: [{ weekday: "monday", open: true, opening: { hour: 11, minute: 0 }, closing: { hour: 20, minute: 30 } }] */
+    order_acceptance_timing?: Maybe<Array<Maybe<StoreTiming>>>;
+};
+/** Different types of stores available. */
 export declare enum StoreType {
     Hard = "hard",
     Soft = "soft"
 }
-/** Strategy details for the assigned store. */
+/** Stored payment methods, including saved cards and UPI IDs. */
+export type StoredPaymentDetails = {
+    __typename?: 'StoredPaymentDetails';
+    /** aggregator name */
+    aggregator_name?: Maybe<Scalars['String']['output']>;
+    /** Brand of the card (e.g., Visa, MasterCard). */
+    card_brand?: Maybe<CardBrand>;
+    /** Image representing the card brand. */
+    card_brand_image?: Maybe<Scalars['String']['output']>;
+    /** Unique fingerprint of the card for identification. */
+    card_fingerprint?: Maybe<Scalars['String']['output']>;
+    /** Unique identifier for the card saved at aggregators end. */
+    card_id?: Maybe<Scalars['String']['output']>;
+    /** International Securities Identification Number for the card. */
+    card_isin?: Maybe<Scalars['String']['output']>;
+    /** Issuing bank or institution of the card. */
+    card_issuer?: Maybe<Scalars['String']['output']>;
+    /** Name printed on the card. */
+    card_name?: Maybe<Scalars['String']['output']>;
+    /** Card number displayed in its masked format. */
+    card_number?: Maybe<Scalars['String']['output']>;
+    /** Reference identifier for the card. */
+    card_reference?: Maybe<Scalars['String']['output']>;
+    /** Encrypted token representing the card. */
+    card_token?: Maybe<Scalars['String']['output']>;
+    /** Type of the card (e.g., debit, credit). */
+    card_type?: Maybe<Scalars['String']['output']>;
+    /** Indicates compliance with tokenization guidelines. */
+    compliant_with_tokenisation_guidelines?: Maybe<Scalars['Boolean']['output']>;
+    /** Length of the CVV (Card Verification Value) for the card. */
+    cvv_length?: Maybe<Scalars['Int']['output']>;
+    /** Indicates whether the card can be used without a CVV. */
+    cvv_less?: Maybe<Scalars['Boolean']['output']>;
+    /** Display name for the card in the user interface. */
+    display_name?: Maybe<Scalars['String']['output']>;
+    /** Card's expiration month. */
+    exp_month?: Maybe<Scalars['Int']['output']>;
+    /** Card's expiration year. */
+    exp_year?: Maybe<Scalars['Int']['output']>;
+    /** Indicates whether the card is expired. */
+    expired?: Maybe<Scalars['Boolean']['output']>;
+    /** Payment Mode Logo. */
+    logo_url?: Maybe<Logo>;
+    /** Payment methods meta such as Country code associated with the payment instrument. */
+    meta?: Maybe<Scalars['JSON']['output']>;
+    /** The name of the customer associated with the saved payment instrument, such as the cardholder or UPI account holder. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** User-defined name for the card. */
+    nickname?: Maybe<Scalars['String']['output']>;
+    /** The Virtual Payment Address (VPA) associated with the saved UPI ID for processing UPI transactions */
+    vpa?: Maybe<Scalars['String']['output']>;
+};
+/** Strategy-based store assignment and fulfillment details. */
 export type StrategyWiseListing = {
     __typename?: 'StrategyWiseListing';
-    /** Distance between bullfight location and customer location in kilometers. . */
+    /** Distance between fulfillment location and customer location in kilometers, e.g. 5, 15, 25. */
     distance?: Maybe<Scalars['Int']['output']>;
-    /** Pincode mapped based on strategy. */
+    /**
+     * PIN code mapped for this fulfillment strategy, e.g. 400001, 110001.
+     * @deprecated pincode is deprecated. Use postal_code instead.
+     */
     pincode?: Maybe<Scalars['Int']['output']>;
-    /** The quantity available for assigned store. */
+    /** Postal code for strategy-based assignment, e.g. '400001', '10001'. */
+    postal_code?: Maybe<Scalars['String']['output']>;
+    /** Available inventory quantity at the assigned store location. */
     quantity?: Maybe<Scalars['Int']['output']>;
-    /** Turn around Time to deliver the product with this strategy. */
+    /** Turnaround time to deliver the product using this strategy (in hours), e.g. 24, 48, 72. */
     tat?: Maybe<Scalars['Int']['output']>;
 };
 /** Stripe config detail schema. */
@@ -10403,7 +15109,10 @@ export type StripeAggregatorConfig = {
     pin?: Maybe<Scalars['String']['output']>;
     /** SDK details. */
     sdk?: Maybe<Scalars['Boolean']['output']>;
-    /** Masked payment gateway api secret. */
+    /**
+     * Masked payment gateway api secret.
+     * @deprecated This is deprecated and will be removed in a future release.
+     */
     secret?: Maybe<Scalars['String']['output']>;
     /** Registered User id. */
     user_id?: Maybe<Scalars['String']['output']>;
@@ -10428,12 +15137,6 @@ export type SubmitCustomFormResponse = {
     /** Ticket created on form submission. */
     ticket?: Maybe<SupportTicket>;
 };
-/** Response object containing a success message to confirm the successful completion of an operation. */
-export type SuccessMessageResponse = {
-    __typename?: 'SuccessMessageResponse';
-    /** Success message shown to the user (in a string format). */
-    message?: Maybe<Scalars['String']['output']>;
-};
 /** Schema to get details about Support entities like custom form and support ticket. */
 export type Support = {
     __typename?: 'Support';
@@ -10453,23 +15156,38 @@ export type SupportTicketArgs = {
 /** Object containing support contact related details. */
 export type SupportInformation = {
     __typename?: 'SupportInformation';
-    /** Application ID - Identifier for a Sales channel. */
+    /**
+     * Application ID - Identifier for a Sales channel. For example, '622ad5f0a5c59f33cc15ae16'.
+     * @deprecated This field is obsolete.
+     */
     application?: Maybe<Scalars['String']['output']>;
     /** Details regarding the customer support contact details. */
     contact?: Maybe<ContactSchema>;
-    /** Whether support contact details are created or not. */
+    /**
+     * Whether support contact details are created or not. For example, true or false.
+     * @deprecated This field is obsolete.
+     */
     created?: Maybe<Scalars['Boolean']['output']>;
-    /** Timestamp which represent the time when data was created. */
+    /**
+     * Timestamp which represent the time when data was created. For example, '2024-01-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '622ad5f0a5c59f33cc15ae16'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Timestamp which represent when was the last time when data was updated. */
+    /**
+     * Timestamp which represent when was the last time when data was updated. For example, '2024-01-20T14:45:00Z'.
+     * @deprecated This field is obsolete.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
 /** Ticket created on form submission. */
 export type SupportTicket = {
     __typename?: 'SupportTicket';
-    /** Custom json relevant to the ticket. */
+    /**
+     * Custom json relevant to the ticket.
+     * @deprecated This field is obsolete.
+     */
     _custom_json?: Maybe<Scalars['JSON']['output']>;
     /** Unique identifier for the ticket. */
     _id?: Maybe<Scalars['String']['output']>;
@@ -10481,21 +15199,36 @@ export type SupportTicket = {
     content?: Maybe<TicketContent>;
     /** Details of company and application related to the ticket. */
     context?: Maybe<TicketContext>;
-    /** Time when the ticket was created. */
+    /** Time when the ticket was created. This will be an ISO string. Example: '2024-03-27T14:35:00Z' */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** User details of ticket creator. */
+    /**
+     * User details of ticket creator.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<Scalars['JSON']['output']>;
     /** Time of creation of the history event. */
     created_on?: Maybe<CreatedOn>;
-    /** Integration type and its details of the ticket. */
+    /**
+     * Integration type and its details of the ticket.
+     * @deprecated This field is obsolete.
+     */
     integration?: Maybe<Scalars['JSON']['output']>;
-    /** If feedback submission is pending for the ticket. */
+    /**
+     * If feedback submission is pending for the ticket.
+     * @deprecated This field is obsolete.
+     */
     is_feedback_pending?: Maybe<Scalars['Boolean']['output']>;
     /** Denotes the priority of ticket. */
     priority?: Maybe<Priority>;
-    /** Details of company and application related to the ticket. */
+    /**
+     * Details of company and application related to the ticket.
+     * @deprecated This field is obsolete.
+     */
     response_id?: Maybe<Scalars['String']['output']>;
-    /** Denotes if the ticket was created at company or application level. */
+    /**
+     * Denotes if the ticket was created at company or application level.
+     * @deprecated This field is obsolete.
+     */
     source?: Maybe<TicketSourceEnum>;
     /** Denotes in what state is the ticket. */
     status?: Maybe<Status>;
@@ -10503,9 +15236,18 @@ export type SupportTicket = {
     sub_category?: Maybe<Scalars['String']['output']>;
     /** Tags relevant to ticket. */
     tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-    /** Time when the ticket was last updated. */
+    /** Time when the ticket was last updated. This will be an ISO string. Example: '2024-03-27T14:35:00Z' */
     updated_at?: Maybe<Scalars['String']['output']>;
 };
+/** List of payment methods supported by the merchant. */
+export type SupportedMethodDetails = {
+    __typename?: 'SupportedMethodDetails';
+    /** URL of the logo representing the supported payment method. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** Name of the supported payment method enabled by the merchant (e.g., Visa, GPay). */
+    name?: Maybe<Scalars['String']['output']>;
+};
+/** Position options for tag placement. */
 export declare enum TagPositionEnum {
     BodyBottom = "body_bottom",
     BodyTop = "body_top",
@@ -10516,37 +15258,44 @@ export type TagSchema = {
     __typename?: 'TagSchema';
     /** Custom JSON object for specific use cases. */
     attributes?: Maybe<Scalars['JSON']['output']>;
-    /** Content of tag. */
+    /** Defines the frameworks where tags are compatible, supporting ReactJS and Vue2 */
+    compatible_engines?: Maybe<Array<Maybe<CompatibleEngine>>>;
+    /** Content of tag. For example, '<script>console.log("Hello");</script>' or CSS styles. */
     content?: Maybe<Scalars['String']['output']>;
-    /** Unique identifier of an entry. */
+    /** Unique identifier of an entry. For example, '66868055215df804b3eb4434'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Name of the html tag. */
+    /** Name of the html tag. For example, 'google-analytics' or 'facebook-pixel'. */
     name?: Maybe<Scalars['String']['output']>;
-    /** List of all the page where tag is to be added. */
+    /** List of all the page where tag is to be added. For example, {"page_slug": "home", "page_name": "Home"}. */
     pages?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-    /** Position where Tag is so to be placed. */
-    position?: Maybe<TagPositionEnum>;
-    /** Details regarding the extension which has added/created the tag. */
+    /** Position where Tag is so to be placed. For example, 'head', 'body', or 'footer'. */
+    position?: Maybe<Scalars['String']['output']>;
+    /**
+     * Details regarding the extension which has added/created the tag.
+     * @deprecated This field is obsolete.
+     */
     source?: Maybe<TagSource>;
     /** Whether js/css is external or inline. */
     sub_type?: Maybe<TagSubType>;
     /** Whether Tag is JS or CSS. */
     type?: Maybe<TagType>;
-    /** URL at which css or js might be hosted. */
+    /** URL at which css or js might be hosted. For example, 'https://cdn.example.com/script.js'. */
     url?: Maybe<Scalars['String']['output']>;
 };
 /** Data related to Third party injectable html tags. */
 export type TagSource = {
     __typename?: 'TagSource';
-    /** Identifier of an extension. */
+    /** Identifier of an extension. For example, '66868055215df804b3eb4434'. */
     id?: Maybe<Scalars['String']['output']>;
-    /** Type of creator of tag. */
+    /** Type of creator of tag. For example, 'extension' or 'custom'. */
     type?: Maybe<Scalars['String']['output']>;
 };
+/** Subtypes of tags for categorization. */
 export declare enum TagSubType {
     External = "external",
     Inline = "inline"
 }
+/** Types of tags available in the system. */
 export declare enum TagType {
     Css = "css",
     Js = "js"
@@ -10554,8 +15303,20 @@ export declare enum TagType {
 /** List of labels or batches attached to a product in cart. */
 export type Tags = {
     __typename?: 'Tags';
-    /** Tags is a lable or batch that is attached to a product in cart. */
+    /** Label(s) attached to a product in cart. Example: { seasonal: 'winter' } */
     tags?: Maybe<Scalars['JSON']['output']>;
+};
+/** Represents a detailed breakdown of a specific tax component applied to a transaction or item. This includes the type of tax, the rate at which it is applied, the calculated tax amount, and the base amount on which the tax is computed. */
+export type TaxComponent = {
+    __typename?: 'TaxComponent';
+    /** The name or type of the tax component (e.g., GST, VAT, Service Tax). This helps in identifying the specific tax being applied to the transaction or item. */
+    name?: Maybe<Scalars['String']['output']>;
+    /** The percentage rate at which the tax is applied to the taxable amount. Typically represented as a decimal (e.g., 0.18 for 18% tax). */
+    rate?: Maybe<Scalars['Float']['output']>;
+    /** The total monetary value of the tax calculated for this component. This is derived by applying the tax rate to the taxable amount. For example, `tax_amount` can be set to 2499.5. */
+    tax_amount?: Maybe<Scalars['Float']['output']>;
+    /** The base amount on which the tax is calculated, excluding the tax itself. This represents the value of goods or services before tax is applied. For example, `taxable_amount` can be set to 2499.5. */
+    taxable_amount?: Maybe<Scalars['Float']['output']>;
 };
 /** Schema for theme-specific details to fetch. */
 export type Theme = {
@@ -10568,8 +15329,16 @@ export type Theme = {
     theme_pages?: Maybe<Array<Maybe<AvailablePage>>>;
 };
 /** Schema for theme-specific details to fetch. */
+export type ThemePreview_ThemeArgs = {
+    filters?: InputMaybe<Scalars['Boolean']['input']>;
+};
+/** Schema for theme-specific details to fetch. */
 export type ThemeTheme_Page_DetailArgs = {
+    company?: InputMaybe<Scalars['Int']['input']>;
+    filters?: InputMaybe<Scalars['Boolean']['input']>;
     pageValue: Scalars['String']['input'];
+    sectionPreviewHash?: InputMaybe<Scalars['String']['input']>;
+    urlParams?: InputMaybe<Scalars['String']['input']>;
 };
 /** The response body containing the theme details. */
 export type ThemeDetail = {
@@ -10600,6 +15369,8 @@ export type ThemeDetail = {
     meta?: Maybe<ThemeMeta>;
     /** The name of the theme. */
     name?: Maybe<Scalars['String']['output']>;
+    /** Archived zip containing complete theme code. */
+    src?: Maybe<Scalars['String']['output']>;
     /** The styles associated with the theme. */
     styles?: Maybe<Scalars['JSON']['output']>;
     /** An array of tags associated with the theme. */
@@ -10659,6 +15430,7 @@ export type ThemePayment = {
     /** Whether the theme is paid or not. */
     is_paid?: Maybe<Scalars['Boolean']['output']>;
 };
+/** Types of themes available. */
 export declare enum ThemeTypeEnum {
     React = "react",
     Vue2 = "vue2"
@@ -10682,6 +15454,7 @@ export type TicketAssetInput = {
     /** To be used for details. */
     value: Scalars['String']['input'];
 };
+/** Types of assets that can be attached to tickets. */
 export declare enum TicketAssetTypeEnum {
     Brand = "brand",
     Collection = "collection",
@@ -10698,9 +15471,15 @@ export type TicketCategory = {
     __typename?: 'TicketCategory';
     /** Category display value identifier. */
     display?: Maybe<Scalars['String']['output']>;
-    /** Support category array list details. */
+    /**
+     * Support category array list details.
+     * @deprecated This field is obsolete.
+     */
     feedback_form?: Maybe<FeedbackForm>;
-    /** Group id of category related data. */
+    /**
+     * Group id of category related data.
+     * @deprecated This field is obsolete.
+     */
     group_id?: Maybe<Scalars['Float']['output']>;
     /** Category key value identifier. */
     key?: Maybe<Scalars['String']['output']>;
@@ -10734,6 +15513,7 @@ export type TicketContext = {
     /** Company ID related to the ticket. */
     company_id: Scalars['String']['output'];
 };
+/** Sources from which tickets can be created. */
 export declare enum TicketSourceEnum {
     PlatformPanel = "platform_panel",
     SalesChannel = "sales_channel"
@@ -10749,44 +15529,50 @@ export type Time = {
 /** Schema for time stamp data. */
 export type TimeStampData = {
     __typename?: 'TimeStampData';
-    /** The maximum timestamp value. */
+    /** The maximum timestamp value. For example, `max` can be set to 'value'. */
     max?: Maybe<Scalars['String']['output']>;
-    /** The minimum timestamp value. */
+    /** The minimum timestamp value. For example, `min` can be set to 'value'. */
     min?: Maybe<Scalars['String']['output']>;
 };
-/** Represents various tokens used for integrating different services within the application. */
+/** Represents various tokens used for integrating different services within the sales channel. */
 export type TokenDetails = {
     __typename?: 'TokenDetails';
-    /** Firebase integration details. */
-    firebase?: Maybe<Firebase>;
-    /** Freshchat integration details. */
-    freshchat?: Maybe<Freshchat>;
-    /** Fynd Rewards integration details. */
-    fynd_rewards?: Maybe<FyndRewards>;
-    /** Google Map integration details. */
-    google_map?: Maybe<GoogleMap>;
-    /** Google Tag Manager integration details. */
-    gtm?: Maybe<Gtm>;
-    /** Moengage integration details. */
-    moengage?: Maybe<Moengage>;
-    /** SafetyNet integration details. */
-    safetynet?: Maybe<Safetynet>;
-    /** Segment integration details. */
-    segment?: Maybe<Segment>;
+    /** Firebase integration configuration and credentials. */
+    firebase: Firebase;
+    /** Freshchat integration configuration and credentials. */
+    freshchat: Freshchat;
+    /** Fynd Rewards integration configuration and credentials. */
+    fynd_rewards: FyndRewards;
+    /** Google Maps integration configuration and credentials. */
+    google_map: GoogleMap;
+    /** Google Tag Manager integration configuration and credentials. */
+    gtm: Gtm;
+    /** MoEngage integration configuration and credentials. */
+    moengage: Moengage;
+    /** SafetyNet integration configuration and credentials. */
+    safetynet: Safetynet;
+    /** Segment integration configuration and credentials. */
+    segment: Segment;
 };
 /** Describes the request structure to login or register using a token. */
 export type TokenRequestBodySchemaInput = {
-    /** Unique token. */
-    token?: InputMaybe<Scalars['String']['input']>;
+    /** Authentication/verification token. */
+    token: Scalars['String']['input'];
 };
-/** List of tokens associated with the sales channel. */
+/** Schema for tokens associated with the sales channel. */
 export type TokenSchema = {
     __typename?: 'TokenSchema';
-    /** ISO 8601 timestamp of when token created. */
+    /**
+     * Timestamp when token was created, e.g. '2023-10-15T10:30:00Z'.
+     * @deprecated This field is obsolete.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
-    /** User details. */
+    /**
+     * Details of the user who created the token.
+     * @deprecated This field is obsolete.
+     */
     created_by?: Maybe<Scalars['JSON']['output']>;
-    /** Token string. */
+    /** The token string value. */
     token?: Maybe<Scalars['String']['output']>;
 };
 /** Due Amount Details. */
@@ -10802,45 +15588,58 @@ export type TotalDueAmount = {
 /** Schema for individual shipment track. */
 export type Track = {
     __typename?: 'Track';
-    /** The name of the account handling the shipment. */
+    /** The name of the account handling the shipment. For example, `account_name` can be set to 'Sample Name'. */
     account_name?: Maybe<Scalars['String']['output']>;
-    /** The Air Waybill (AWB) number for the shipment. */
+    /** The Air Waybill (AWB) number for the shipment. For example, `awb` can be set to 'value'. */
     awb?: Maybe<Scalars['String']['output']>;
-    /** The last known location of the shipment. */
+    /** The last known location of the shipment. For example, `last_location_recieved_at` can be set to 'value'. */
     last_location_recieved_at?: Maybe<Scalars['String']['output']>;
-    /** The reason or additional information about the shipment. */
+    /** A field to store additional metadata related to the courier partner's operations or the shipment. For example, `meta` can be set to { key: 'value' }. */
+    meta?: Maybe<Scalars['JSON']['output']>;
+    /** The reason or additional information about the shipment. For example, `reason` can be set to 'Customer requested cancellation'. */
     reason?: Maybe<Scalars['String']['output']>;
-    /** The type of shipment. */
+    /** The type of shipment. For example, `shipment_type` can be set to 'value'. */
     shipment_type?: Maybe<Scalars['String']['output']>;
-    /** The current status of the shipment. */
+    /** The current status of the shipment. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
-    /** The date and time when the shipment was last updated. */
+    /** The date and time when the shipment was last updated. For example, `updated_at` can be set to '2024-11-01T10:00:00Z'. */
     updated_at?: Maybe<Scalars['String']['output']>;
-    /** The timestamp of the last update. */
+    /** The timestamp of the last update. For example, `updated_time` can be set to '2024-11-01T10:00:00Z'. */
     updated_time?: Maybe<Scalars['String']['output']>;
 };
 /** Shipment tracking details. */
 export type TrackShipment = {
     __typename?: 'TrackShipment';
-    /** A array containing tracking details. */
+    /** A array containing tracking details. For example, `results` can be set to [a Track object]. */
     results?: Maybe<Array<Maybe<Track>>>;
 };
 /** Schema for tracking details. */
 export type TrackingDetails = {
     __typename?: 'TrackingDetails';
-    /** Timestamp when this status was created. */
+    /**
+     * Timestamp when this status was created. For example, `created_ts` can be set to 'value'.
+     * @deprecated This field is obsolete.
+     */
     created_ts?: Maybe<Scalars['String']['output']>;
-    /** Indicates whether the tracking event is the current or active status. */
+    /** Indicates whether the tracking event is the current or active status. For example, `is_current` can be set to true. */
     is_current?: Maybe<Scalars['Boolean']['output']>;
-    /** Indicates whether the tracking event has passed or occurred. */
+    /** Indicates whether the tracking event has passed or occurred. For example, `is_passed` can be set to true. */
     is_passed?: Maybe<Scalars['Boolean']['output']>;
-    /** The status of the tracking event. */
+    /** The status of the tracking event. For example, `status` can be set to 'processing'. */
     status?: Maybe<Scalars['String']['output']>;
-    /** The time associated with the tracking event. */
+    /** The time associated with the tracking event. For example, `time` can be set to '2024-11-01T10:00:00Z'. */
     time?: Maybe<Scalars['String']['output']>;
-    /** Nested tracking details. */
+    /** Nested tracking details. For example, `tracking_details` can be set to [a NestedTrackingDetails object]. */
     tracking_details?: Maybe<Array<Maybe<NestedTrackingDetails>>>;
-    /** Current value or state of the process. */
+    /** Current value or state of the process. For example, `value` can be set to '999.0'. */
+    value?: Maybe<Scalars['String']['output']>;
+};
+/** Trader information and identification details. */
+export type Trader = {
+    __typename?: 'Trader';
+    /** Unique key identifier for the trader, e.g. 'trader_id', 'license_no'. */
+    key?: Maybe<Scalars['String']['output']>;
+    /** Trader value or name, e.g. 'ABC Trading Co.', 'TRD123456'. */
     value?: Maybe<Scalars['String']['output']>;
 };
 /** Transfer Items Details. */
@@ -10865,6 +15664,20 @@ export type TransferMode = {
     /** Beneficiary Mode Items. */
     items?: Maybe<Array<Maybe<TransferItem>>>;
 };
+/**
+ * Schema used to capture comments or notes related to status transitions or data update actions on a shipment.
+ * It helps track the context and reason behind each change in the system.
+ */
+export type TransitionCommentsInput = {
+    /**
+     * A detailed explanation of the action or change, including any important metadata such as AWB number, partner name, or identifiers.
+     * For example, "The Expressbees delivery partner is assigned to the shipment. AWB number: 132134131222, extension_id: 3dsa31230912039890210".
+     */
+    message?: InputMaybe<Scalars['String']['input']>;
+    /** A short, meaningful title summarizing the context of the transition. For example, 'Assigned Delivery Partner' */
+    title?: InputMaybe<Scalars['String']['input']>;
+};
+/** General type classifications. */
 export declare enum Type {
     Permanent = "permanent",
     Temporary = "temporary"
@@ -10872,14 +15685,17 @@ export declare enum Type {
 /** Urls for umd javascript assets. */
 export type UmdJs = {
     __typename?: 'UmdJs';
+    /** A string representing the url or link to the UmdJs module. */
+    link?: Maybe<Scalars['String']['output']>;
     /** An array of strings representing urls or links. */
     links?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
+/** Units of measurement for various quantities. */
 export declare enum Unit {
+    L = "L",
     Cm = "cm",
     G = "g",
     Kg = "kg",
-    L = "l",
     M = "m",
     Ml = "ml",
     Nos = "nos",
@@ -10888,75 +15704,97 @@ export declare enum Unit {
 /** Update address response details, includes address id, updated flag and success flag. */
 export type UpdateAddressResponse = {
     __typename?: 'UpdateAddressResponse';
-    /** ID of an address. */
+    /** Unique id associated with address. Example: 101 */
+    address_id?: Maybe<Scalars['Int']['output']>;
+    /** ID of an address. Example: 'addr_001' */
     id?: Maybe<Scalars['String']['output']>;
-    /** Default address flag if no address selected then this should be the default address selected. */
+    /** Whether this is the default address. Example: true */
     is_default_address?: Maybe<Scalars['Boolean']['output']>;
-    /** Updated flag for update address operation if the address updated or not. */
+    /**
+     * Whether the address was updated. Example: true
+     * @deprecated This field is obsolete
+     */
     is_updated?: Maybe<Scalars['Boolean']['output']>;
-    /** Success flag of update address response. */
+    /** Success flag of update address response. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
+};
+/** Request to update cart breakup-level settings. */
+export type UpdateCartBreakupRequestInput = {
+    /** Apply store credits on the cart. Example: true */
+    store_credit: Scalars['Boolean']['input'];
 };
 /** Update cart detail response schema denotes cart data and message of the update cart API response. */
 export type UpdateCartDetailResponse = {
     __typename?: 'UpdateCartDetailResponse';
     /** Get cart detail API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc. */
-    cart?: Maybe<CartDetailResponse>;
-    /** Message of update cart API response. */
+    cart?: Maybe<Cart>;
+    /** List of items involved. Example: [{ item_id: 123, size: 'M', store_id: 1, success: true }] */
+    items?: Maybe<Array<Maybe<CartItemInfo>>>;
+    /** Message of update cart API response. Example: 'Cart updated successfully' */
     message?: Maybe<Scalars['String']['output']>;
-    /** True if all items are added successfully. False if partially added or not added. */
+    /** Per-article result info. Example: { 'ART123': { success: true, message: 'Updated' } } */
+    result?: Maybe<Scalars['JSON']['output']>;
+    /** True if all items are added successfully. Example: true */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Update cart payment mode request schema to update payment mode by which the payment to be done to process the order, includes cart id, payment identifier, address id, merchant code, aggregator name and payment mode. */
+/** Update payment mode and related details for checkout (address, merchant code, aggregator, etc.). */
 export type UpdateCartPaymentRequestInput = {
-    /** Address id of the user address selected to deliver the shipment. */
+    /** Address ID selected for delivery. Example: 'addr_001' */
     address_id?: InputMaybe<Scalars['String']['input']>;
-    /** Aggregator name of the payment gateway. */
+    /** Payment aggregator (e.g., Fynd, Razorpay, Juspay). Example: 'Razorpay' */
     aggregator_name?: InputMaybe<Scalars['String']['input']>;
-    /** Cart id of the user cart for which the update cart payment operation performed. */
+    /** Cart ID. Example: '5bb521cfdc83215e1889b346' */
     id?: InputMaybe<Scalars['String']['input']>;
-    /** Merchant code of the payment mode selected to do the payment. */
+    /** Merchant code (e.g., ICICI, AXIS). Example: 'ICICI' */
     merchant_code?: InputMaybe<Scalars['String']['input']>;
-    /** Payment identifier of the payment mode selected to do the payment. */
+    /** Payment identifier from gateway. Example: 'pay_abc123' */
     payment_identifier?: InputMaybe<Scalars['String']['input']>;
-    /** Payment mode of the payment selected to do the payment. */
+    /** Payment mode (e.g., COD, CARD, NB). Example: 'CARD' */
     payment_mode?: InputMaybe<Scalars['String']['input']>;
 };
-/** Update cart request data that involves items in cart and operation to be performed for items specified. */
+/** Request to update cart items and the operation to perform. */
 export type UpdateCartRequestInput = {
-    /** List items data that needs to be updated in cart. */
+    /** Free gift items to update. Example: [{ promotion_id: 'PROMO1', item_id: 'SKU1', item_size: 'L' }] */
+    free_gift_items?: InputMaybe<Array<InputMaybe<FreeGiftItem>>>;
+    /** Operation for free gift items (add/remove). Example: add */
+    free_gift_items_operation?: InputMaybe<FreeGiftItemsOperation>;
+    /** List of items to update. Example: [{ identifiers: { identifier: 'abc' }, item_id: 123, item_size: 'M', quantity: 1 }] */
     items?: InputMaybe<Array<InputMaybe<UpdateProductCartInput>>>;
-    /** Field to determine if item to be removed from cart or it needs to be updated. */
+    /** Operation on items (update_item/remove_item). Example: update_item */
     operation: Operation;
 };
 /** Describes the request structure to update the password. */
 export type UpdatePasswordRequestSchemaInput = {
     /** New password. */
-    new_password?: InputMaybe<Scalars['String']['input']>;
-    /** Old password. */
-    old_password?: InputMaybe<Scalars['String']['input']>;
+    new_password: Scalars['String']['input'];
+    /** Current password. */
+    old_password: Scalars['String']['input'];
 };
-/** Update cart product request schema details which includes artidcle id, custom json, extra meta, identifiers, item id, item size, item index, meta, parent item identifiers and quantity. */
+/** Update cart product details including article id, custom JSON, extra meta, identifiers, item id/size/index, meta, parent identifiers, quantity, and pickup options. */
 export type UpdateProductCartInput = {
-    /** Field to update custom json of the product in cart. */
+    /** Custom JSON at line-item level. Example: { gift_wrap: true } */
     _custom_json?: InputMaybe<Scalars['JSON']['input']>;
-    /** Article id of the product in cart. */
+    /** Article ID of the item. Example: '5fdc737e3c05146138192f79' */
     article_id?: InputMaybe<Scalars['String']['input']>;
-    /** Field to update extra meta of the product in cart. */
+    /** Extra metadata. Example: { color: 'Red' } */
     extra_meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Product identifiers uniquely generated by cart to uniquely identify the product in cart. */
+    /** If true, forces a separate line item. Example: true */
+    force_new_line_item?: InputMaybe<Scalars['Boolean']['input']>;
+    /** Fulfillment method slug. Example: 'home-delivery' or 'store-pickup' */
+    fulfillment_option_slug?: InputMaybe<Scalars['String']['input']>;
+    /** Cart-generated item identifier. */
     identifiers: CartProductIdentiferInput;
-    /** Item id of the product that needs to be updated. */
+    /** Product item ID. Example: 987654 */
     item_id?: InputMaybe<Scalars['Int']['input']>;
-    /** Item index determines on which index the product falls to be updated. */
+    /** Index of the item line to update. Example: 0 */
     item_index?: InputMaybe<Scalars['Int']['input']>;
-    /** Field to update the size of the product in cart. */
+    /** Size of the product. Example: 'M' */
     item_size?: InputMaybe<Scalars['String']['input']>;
-    /** Field to update meta of the item in cart. */
+    /** Line-item metadata. Example: { source: 'cart-page' } */
     meta?: InputMaybe<Scalars['JSON']['input']>;
-    /** Field to update parent product of the item in cart. */
+    /** Parent item identifiers. Example: { parent_item_id: 111 } */
     parent_item_identifiers?: InputMaybe<Scalars['JSON']['input']>;
-    /** Field to update the quantity of the item in cart. */
+    /** Quantity to set. Example: 3 */
     quantity?: InputMaybe<Scalars['Int']['input']>;
 };
 /** Update Refund Transfer Request. */
@@ -10974,20 +15812,54 @@ export type UpdateRefundTransferModeResponse = {
 };
 /** Schema for update shipment status request. */
 export type UpdateShipmentStatusRequestInput = {
-    /** Indicates whether the transition should be forced. */
-    force_transition?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Indicates whether the status should be locked after the transition. */
+    /** Indicates whether the shipment should be locked after the transition. */
     lock_after_transition?: InputMaybe<Scalars['Boolean']['input']>;
-    /** An array containing different status details. */
-    statuses?: InputMaybe<Array<InputMaybe<StatuesRequestInput>>>;
-    /** Indicates whether the task is active or required. */
+    /** An array containing status transitions for shipments. Example: [{ status: 'bag_confirmed', shipments: [...] }]. */
+    statuses?: InputMaybe<Array<InputMaybe<StatusesRequestInput>>>;
+    /** Indicates whether to run the status update as a background task, allowing other processes to continue without waiting for this operation to complete. */
     task?: InputMaybe<Scalars['Boolean']['input']>;
-    /** Indicates whether the status should be unlocked before the transition. */
+    /** Indicates whether the shipment should be unlocked before the transition. */
     unlock_before_transition?: InputMaybe<Scalars['Boolean']['input']>;
 };
-/** Describes the request structure to update the user attribute. */
+/** Describes the request structure to update the user attributes. */
 export type UpdateUserAttributesRequestSchemaInput = {
+    /** User attributes to update (key-value JSON). */
     attributes?: InputMaybe<Scalars['JSON']['input']>;
+};
+/** Represents a UPI beneficiary account stored in the system. */
+export type UpiBeneficiary = {
+    __typename?: 'UpiBeneficiary';
+    /** Full name of the UPI account holder. */
+    customer_name: Scalars['String']['output'];
+    /** Human-readable display name for this UPI account type. */
+    display_name: Scalars['String']['output'];
+    /** Unique ID assigned to the beneficiary. */
+    id: Scalars['String']['output'];
+    /** Whether this beneficiary account is active. */
+    is_active: Scalars['Boolean']['output'];
+    /** Whether this UPI account has been verified. */
+    is_verified: Scalars['Boolean']['output'];
+    /** Optional logo URL of the UPI. */
+    logo?: Maybe<Scalars['String']['output']>;
+    /** Transfer mode for this beneficiary. Always 'upi'. */
+    transfer_mode: Scalars['String']['output'];
+    /** Virtual Payment Address (UPI ID) of the beneficiary. */
+    vpa_address: Scalars['String']['output'];
+};
+/** Schema representing a file upload signed URL. */
+export type Upload = {
+    __typename?: 'Upload';
+    /** The time in seconds until the upload URL expires. Default is 1800 seconds (30 minutes). After expiry, the URL becomes invalid and a new one must be requested. The client must complete the upload before this time. Example: 1800. */
+    expiry?: Maybe<Scalars['Int']['output']>;
+    /** A pre-signed URL that allows direct upload to Google Cloud Storage (GCS). This URL is time-limited and includes authentication signature. Use this URL with PUT method to upload the file directly to GCS without going through the API server. Example: "https://storage.googleapis.com/bucket/path?signature=...". */
+    url?: Maybe<Scalars['String']['output']>;
+};
+/** Details about the upload URL and its expiration */
+export type UploadDetailsInput = {
+    /** Expiration timestamp for the upload URL */
+    expiry: Scalars['Int']['input'];
+    /** The pre-signed URL for file upload */
+    url: Scalars['String']['input'];
 };
 /** Schema for url component of short link which contains original link to be shortened, the hash of URL and the shortened URL. */
 export type UrlInfo = {
@@ -11002,24 +15874,80 @@ export type UrlInfo = {
 /** Get user details like logged-in, active sessions, logout etc. */
 export type User = {
     __typename?: 'User';
-    /** Retrieve all active sessions of a user. */
+    /** Retrieve all active sessions of the currently logged-in user. Returns a list of all active login sessions across different devices and platforms. */
     active_sessions?: Maybe<SessionList>;
     /** Check if a user has set an account password. */
     has_password?: Maybe<HasPassword>;
-    /** Retrieve information about the currently logged-in user. */
+    /** Retrieve detailed information about the currently logged-in user including profile data, contact information, and account status. */
     logged_in_user?: Maybe<UserDetail>;
-    /** Logout currently logged-in user. */
+    /** Logout the currently logged-in user and terminate their session. */
     logout?: Maybe<Logout>;
 };
+/** Enum for OTP send and resend actions. */
 export declare enum UserAction {
+    /** Resend an OTP to the user. */
     Resend = "resend",
+    /** Send a new OTP to the user. */
     Send = "send"
+}
+/** Schema representing validation details */
+export type UserAttributeDefinitionValidation = {
+    __typename?: 'UserAttributeDefinitionValidation';
+    /** Type of validation (e.g., min, max, regex). */
+    type?: Maybe<ValidationType>;
+    /** Value used in the validation logic. */
+    value?: Maybe<Scalars['String']['output']>;
+};
+/** Enum representing allowed registration types for user attributes. */
+export declare enum UserAttributeRegistrationType {
+    /** The attribute is required during registration. */
+    Mandatory = "mandatory",
+    /** The attribute is optional during registration. */
+    Optional = "optional"
 }
 /** Contains user attributes Details */
 export type UserAttributes = {
     __typename?: 'UserAttributes';
     /** Describes the structure of user attribute. */
     attributes?: Maybe<Scalars['JSON']['output']>;
+};
+/** Schema representing list of attributes definition details */
+export type UserAttributesDefinition = {
+    __typename?: 'UserAttributesDefinition';
+    /** List of user attribute definitions that match the filters. */
+    items: Array<UserAttributesDefinitionData>;
+    /** Pagination metadata for the result set. */
+    page: PageInfo;
+};
+/** Schema representing definition details of an attribute */
+export type UserAttributesDefinitionData = {
+    __typename?: 'UserAttributesDefinitionData';
+    /** Whether the attribute is editable by customers. */
+    customer_editable?: Maybe<Scalars['Boolean']['output']>;
+    /** A description of the attribute. */
+    description?: Maybe<Scalars['String']['output']>;
+    /** Optional icon representing the attribute. */
+    icon?: Maybe<Scalars['String']['output']>;
+    /** The unique identifier for the attribute definition. */
+    id: Scalars['String']['output'];
+    /** Whether the attribute supports multiple values. */
+    is_multi_value?: Maybe<Scalars['Boolean']['output']>;
+    /** The display name of the attribute. */
+    name: Scalars['String']['output'];
+    /** Ordering channels where this attribute is applicable. */
+    ordering_channels?: Maybe<Array<OrderingChannel>>;
+    /** The order in which the attribute is pinned. */
+    pin_order?: Maybe<Scalars['Int']['output']>;
+    /** Indicates if the attribute is pinned. */
+    pinned?: Maybe<Scalars['Boolean']['output']>;
+    /** Registration behavior for this attribute. */
+    registration?: Maybe<AttributeRegistrationProperties>;
+    /** The attribute's unique key used internally. */
+    slug: Scalars['String']['output'];
+    /** The data type of the attribute. */
+    type: AttributeType;
+    /** List of validation rules applied to the attribute. */
+    validations?: Maybe<Array<UserAttributeDefinitionValidation>>;
 };
 /** Balance Details. */
 export type UserBalance = {
@@ -11031,6 +15959,12 @@ export type UserBalance = {
     /** Payment amount. */
     value?: Maybe<Scalars['Float']['output']>;
 };
+/** Schema representing user consent information */
+export type UserConsent = {
+    __typename?: 'UserConsent';
+    /** Privacy policy consent details */
+    privacy_policy?: Maybe<PrivacyPolicyConsent>;
+};
 /** Customer Credit Summary Response. */
 export type UserCredit = {
     __typename?: 'UserCredit';
@@ -11038,6 +15972,16 @@ export type UserCredit = {
     data?: Maybe<UserCreditSummary>;
     /** Payment confirmation updated or not. */
     success: Scalars['Boolean']['output'];
+};
+/** Credit Balance Schema. */
+export type UserCreditInfo = {
+    __typename?: 'UserCreditInfo';
+    /** The monetary value, which can represent available balance, redeemed balance, or hold amount, depending on the context. */
+    amount: Scalars['Float']['output'];
+    /** The currency code (e.g., INR, USD). */
+    currency: Scalars['String']['output'];
+    /** A unique identifier for the payment transaction. */
+    uid?: Maybe<Scalars['String']['output']>;
 };
 /** Credit limit. */
 export type UserCreditLimit = {
@@ -11086,19 +16030,34 @@ export type UserCreditSummary = {
 /** Describes the user details structure. */
 export type UserDetail = {
     __typename?: 'UserDetail';
-    /** Type of user (user, programmatic (created by system)). */
+    /**
+     * Type of user (user, programmatic (created by system)).
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     account_type?: Maybe<Scalars['String']['output']>;
-    /** Is the user active. */
+    /**
+     * Is the user active.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     active?: Maybe<Scalars['Boolean']['output']>;
-    /** Application id of the user. */
+    /**
+     * Application id of the user.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     application_id?: Maybe<Scalars['String']['output']>;
-    /** Date and time of user creation. */
+    /**
+     * Date and time of user creation.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     created_at?: Maybe<Scalars['String']['output']>;
     /** Date of birth of the user. */
     dob?: Maybe<Scalars['String']['output']>;
     /** List of email addresses of the user. */
     emails?: Maybe<Array<Maybe<Email>>>;
-    /** Unique id referencing any user external documents (jio). */
+    /**
+     * Unique id referencing any user external documents.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     external_id?: Maybe<Scalars['String']['output']>;
     /** First name of the user. */
     first_name?: Maybe<Scalars['String']['output']>;
@@ -11108,32 +16067,44 @@ export type UserDetail = {
     id?: Maybe<Scalars['String']['output']>;
     /** Last name of the user. */
     last_name?: Maybe<Scalars['String']['output']>;
-    /** Metadata of the user, used to store details about the user. */
+    /**
+     * Metadata of the user, used to store details about the user.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     meta?: Maybe<Scalars['JSON']['output']>;
     /** List of phone numbers of the user. */
     phone_numbers?: Maybe<Array<Maybe<PhoneNumber>>>;
     /** URL of the profile picture of the user. */
     profile_pic_url?: Maybe<Scalars['String']['output']>;
-    /** Unique id referencing any user external documents. */
+    /**
+     * Unique id referencing any user external documents.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     rr_id?: Maybe<Scalars['String']['output']>;
-    /** Date and time of user update. */
+    /**
+     * Date and time of user update.
+     * @deprecated This parameter is obsolete and will be removed in a future release.
+     */
     updated_at?: Maybe<Scalars['String']['output']>;
     /** Unique id of the user. */
     user_id?: Maybe<Scalars['String']['output']>;
     /** Unique username of the user. */
     username?: Maybe<Scalars['String']['output']>;
 };
-/** Detailed information about a user. */
+/** User information and profile details. */
 export type UserDetails = {
     __typename?: 'UserDetails';
-    /** The contact details of the user. */
+    /** Contact information like email or phone number, e.g. 'user@example.com', '+919876543210'. */
     contact?: Maybe<Scalars['String']['output']>;
-    /** A flag indicating whether the user is a super user. */
+    /** Indicates whether the user has administrative or super user privileges. */
     super_user?: Maybe<Scalars['Boolean']['output']>;
-    /** The user ID of the user. */
+    /** Unique identifier for the user account, e.g. 'usr_123456789'. */
     user_id: Scalars['String']['output'];
-    /** The username of the user. */
-    username: Scalars['String']['output'];
+    /**
+     * Display username or handle, e.g. 'john.doe', 'admin_user'.
+     * @deprecated This field is obsolete.
+     */
+    username?: Maybe<Scalars['String']['output']>;
 };
 /** Object representing a user's email information, including its active status, whether it's the primary email, verification status, and the email address itself. */
 export type UserEmail = {
@@ -11156,17 +16127,17 @@ export type UserExists = {
 /** Schema for user info. */
 export type UserInfo = {
     __typename?: 'UserInfo';
-    /** Email address of the user. */
+    /** Email address of the user. For example, 'user@example.com'. */
     email?: Maybe<Scalars['String']['output']>;
-    /** First name of the user. */
+    /** First name of the user. For example, 'John'. */
     first_name?: Maybe<Scalars['String']['output']>;
-    /** Gender of the user. */
+    /** Gender of the user. For example, 'male'. */
     gender?: Maybe<Scalars['String']['output']>;
-    /** Last name of the user. */
+    /** Last name of the user. For example, 'Doe'. */
     last_name?: Maybe<Scalars['String']['output']>;
-    /** Mobile number of the user. */
+    /** Mobile number of the user. For example, '9876543210'. */
     mobile?: Maybe<Scalars['String']['output']>;
-    /** Full name of the user (including first and last names). */
+    /** Full name of the user (including first and last names). For example, 'John Doe'. */
     name?: Maybe<Scalars['String']['output']>;
 };
 /** A variant of a font, containing properties related to specific styles or weights of the font. */
@@ -11283,6 +16254,8 @@ export type ValidateVpaRequestInput = {
 /** Validate VPA Response. */
 export type ValidateVpaResponse = {
     __typename?: 'ValidateVPAResponse';
+    /** Customer name for VPA */
+    customer_name?: Maybe<Scalars['String']['output']>;
     /** Validate UPI. */
     data?: Maybe<ValidateUpi>;
     /** Response is successful or not. */
@@ -11291,17 +16264,26 @@ export type ValidateVpaResponse = {
 /** Defines validation rules for user addresses. */
 export type ValidationConfig = {
     __typename?: 'ValidationConfig';
-    /** The maximum number of addresses a user can have. */
-    address_max_limit?: Maybe<Scalars['Int']['output']>;
-    /** The total number of addresses saved by a user. */
+    /** Maximum number of addresses a user can have. Example: 10 */
+    address_max_limit?: Maybe<Scalars['Float']['output']>;
+    /** Total number of addresses saved by the user. Example: 3 */
     user_address_count?: Maybe<Scalars['Int']['output']>;
 };
-/** Describes the request structure to verify OTP for forgot email. */
+/** Defines the type of validation rule applied to an attribute's value. */
+export declare enum ValidationType {
+    /** Maximum allowed value (numeric, date, or string length). */
+    Max = "max",
+    /** Minimum allowed value (numeric, date, or string length). */
+    Min = "min",
+    /** Pattern matching using regular expression. */
+    Regex = "regex"
+}
+/** Describes the request structure to verify OTP for the 'forgot email' flow. */
 export type VerifyEmailForgotOtpRequestSchemaInput = {
-    /** Email id of user. */
-    email?: InputMaybe<Scalars['String']['input']>;
-    /** OTP for verification. */
-    otp?: InputMaybe<Scalars['String']['input']>;
+    /** Email address of the user. */
+    email: Scalars['String']['input'];
+    /** One-time password to verify. */
+    otp: Scalars['String']['input'];
 };
 /** Schema representing the response received upon successfully verifying an email OTP. */
 export type VerifyEmailOtpSuccess = {
@@ -11311,15 +16293,15 @@ export type VerifyEmailOtpSuccess = {
     /** Whether the email verification link was successful. */
     verify_email_link?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to verify OTP. */
+/** Describes the request structure to verify OTP sent to an email address. This API validates the OTP and completes the email verification process. */
 export type VerifyEmailOtpRequestSchemaInput = {
-    /** Action to verify the send or resent OTP. */
-    action?: InputMaybe<Scalars['String']['input']>;
-    /** Email of a user to verify OTP. */
-    email?: InputMaybe<Scalars['String']['input']>;
-    /** OTP for verification. */
-    otp?: InputMaybe<Scalars['String']['input']>;
-    /** Unique temporary registration of the user. */
+    /** Action context for verification. Allowed values: verify, register, login. */
+    action: Scalars['String']['input'];
+    /** Email address to verify. */
+    email: Scalars['String']['input'];
+    /** One-time password to verify. */
+    otp: Scalars['String']['input'];
+    /** Temporary registration token for the user. */
     register_token?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the response received upon successful email verification. */
@@ -11336,11 +16318,11 @@ export type VerifyForgotOtpSuccess = {
     /** Whether the OTP verification was successful. */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
-/** Describes the request structure to verify OTP for forgot mobile number. */
+/** Describes the request structure to verify OTP for the 'forgot mobile' flow. */
 export type VerifyMobileForgotOtpRequestSchemaInput = {
-    /** OTP for verification. */
+    /** One-time password received for the 'forgot mobile' flow. */
     otp?: InputMaybe<Scalars['String']['input']>;
-    /** Unique request id for the OTP. */
+    /** Unique request ID associated with the OTP. */
     request_id?: InputMaybe<Scalars['String']['input']>;
 };
 /** Schema representing the response received upon successfully verifying a mobile OTP. */
@@ -11353,30 +16335,32 @@ export type VerifyMobileOtpSuccess = {
 };
 /** Schema for verify otp. */
 export type VerifyOtpInput = {
-    /** The OTP code provided by the user for verification. */
+    /** The OTP code provided by the user for verification. For example, '123456' or '987654'. */
     otp_code?: InputMaybe<Scalars['String']['input']>;
-    /** Unique identifier for the request. */
+    /** Unique identifier for the request. For example, '63c1fd1baf6c6925304395cb'. */
     request_id?: InputMaybe<Scalars['String']['input']>;
 };
-/** Describes the request structure to verify OTP. */
+/** Describes the request structure to verify OTP sent to a mobile number via SMS. This API validates the OTP and completes the verification process. */
 export type VerifyOtpRequestSchemaInput = {
-    /** OTP for verification. */
-    otp?: InputMaybe<Scalars['String']['input']>;
-    /** Unique temporary registration of the user. */
+    /** One-time password to verify. */
+    otp: Scalars['String']['input'];
+    /** Temporary registration token for the user. */
     register_token?: InputMaybe<Scalars['String']['input']>;
-    /** Unique request id for the OTP sent to mobile number. */
-    request_id?: InputMaybe<Scalars['String']['input']>;
+    /** Unique request ID associated with the OTP sent to the mobile number. */
+    request_id: Scalars['String']['input'];
 };
 /** Schema for verifying otp response. */
 export type VerifyOtpResponse = {
     __typename?: 'VerifyOtpResponse';
-    /** Indicates whether the request was successful. */
+    /** Error message indicating if the verification data is expired or if the request is malformed, helping to diagnose and address issues with the verification process. For example, 'OTP verified successfully' or 'Invalid OTP'. */
+    message?: Maybe<Scalars['String']['output']>;
+    /** Indicates whether the request was successful. For example, true or false. */
     success?: Maybe<Scalars['Boolean']['output']>;
 };
 /** Schema representing the response received upon successful OTP verification. */
 export type VerifyOtpSuccess = {
     __typename?: 'VerifyOtpSuccess';
-    /** A token used for registration purposes. */
+    /** A token used for registration purposes will be sent when user is not registered. */
     register_token?: Maybe<Scalars['String']['output']>;
     /** Describes the user details structure. */
     user?: Maybe<UserDetail>;
@@ -11448,8 +16432,19 @@ export type WebRedirectInput = {
     /** Type of fallback used to redirect users to the app store or a web page if the app is not installed when they click the link. */
     type?: InputMaybe<WebRedirectType>;
 };
+/** Types of web redirects available. */
 export declare enum WebRedirectType {
     Web = "web"
+}
+/** Days of the week. */
+export declare enum Weekday {
+    Friday = "friday",
+    Monday = "monday",
+    Saturday = "saturday",
+    Sunday = "sunday",
+    Thursday = "thursday",
+    Tuesday = "tuesday",
+    Wednesday = "wednesday"
 }
 /** Represents the weight details of a product, including the unit of measurement and shipping weight. */
 export type Weight = {
@@ -11464,14 +16459,23 @@ export type Weight = {
 /** The schema for the communication channel for whatsapp channel which includes the response indicating the user's preference and the display name of the communication channel. */
 export type WhatsappCommunication = {
     __typename?: 'WhatsappCommunication';
-    /** Alphanumeric identification code for the users country. */
+    /** Alphanumeric identification code for the user's country. Example: "91". */
     country_code?: Maybe<Scalars['String']['output']>;
     /** Name of the channel of communication the user has agreed to receive messages through. */
     display_name?: Maybe<Scalars['String']['output']>;
-    /** Phone number of the user that the user has accepted to receive communication through WhatsApp. */
+    /** Phone number of the user that the user has accepted to receive communication through WhatsApp. Only present if user has provided phone number. Example: "9869821300". */
     phone_number?: Maybe<Scalars['String']['output']>;
-    /** The user's choice to opt in or opt out of receiving communications. */
+    /** The user's choice to opt in or opt out of receiving communications. Values: "yes" (opted in), "no" (opted out), or "noaction" (no preference set). Example: "noaction". */
     response?: Maybe<Scalars['String']['output']>;
+};
+/** Get Beneficiary Request Schema. */
+export type GetRefundBeneficiaryInput = {
+    /** filter response based on order_id or shipment_id */
+    filterBy?: InputMaybe<Scalars['String']['input']>;
+    /** Unique ID of the order */
+    orderId?: InputMaybe<Scalars['String']['input']>;
+    /** Unique ID of the shipment */
+    shipmentId?: InputMaybe<Scalars['String']['input']>;
 };
 /** An object of section preset. */
 export type SectionPreset = {
@@ -11479,8 +16483,10 @@ export type SectionPreset = {
     /** An array of blocks included in the section preset. */
     blocks?: Maybe<Array<Maybe<Block>>>;
 };
+/** Template names available in the system. */
 export declare enum TemplateNameEnum {
     CheckoutForm = "checkout_form",
     DefaultDisplay = "default_display",
+    Plp = "plp",
     StoreOsForm = "store_os_form"
 }

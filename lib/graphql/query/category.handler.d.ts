@@ -1,3 +1,3 @@
 import type { ThunkActionDispatch } from "redux-thunk";
-import { CategoryItem5 } from "../../types/graphql";
-export declare function categoryHandler(category: CategoryItem5, dispatch: ThunkActionDispatch<any>, options?: any): void;
+import { Category } from "../../types/graphql";
+export declare function categoryHandler(category: Category, dispatch: ThunkActionDispatch<any>, options?: any): void;

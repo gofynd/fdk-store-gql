@@ -5,4 +5,6 @@ export declare class PaymentModule {
     checkoutPayment(payload: any): any;
     getSupportedUpiIntentApps(payload: any): any;
     validateCardDetails(payload: any): any;
+    createSplitOrder(payload: any): any;
+    paySplit(payload: any): any;
 }
