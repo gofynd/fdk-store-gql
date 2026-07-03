@@ -151,6 +151,10 @@ jobs:
       NODE_ENV=development npm install
       npm run build
 
+      # Capture release notes from CHANGELOG.md before any push; a missing/empty
+      # section exits non-zero and (via set -e) fails the job here.
+      RELEASE_BODY="$(node scripts/extract-changelog.js CHANGELOG.md "$TAG_NAME")"
+
       git add -A
       git commit -m "[Auto Generated]" || echo "No changes to commit"
 
@@ -159,16 +163,24 @@ jobs:
       git tag "$TAG_NAME" || echo "Tag already exists locally"
       git -c http.extraheader="$AUTH_HEADER" push origin "$TAG_NAME"
 
-      # Create GitHub release using installation token
-      RELEASE_TITLE="Release_${TAG_NAME}"
-      POST_DATA=$(printf '{
-        "tag_name": "%s",
-        "target_commitish": "%s",
-        "name": "%s",
-        "body": "%s",
-        "draft": false,
-        "prerelease": %s
-      }' "$TAG_NAME" "$BRANCH_NAME" "$RELEASE_TITLE" "$RELEASE_TITLE" "$IS_PRERELEASE")
+      # Create GitHub release. Build the JSON with JSON.stringify so the
+      # markdown body is safely escaped.
+      POST_DATA="$(
+        TAG_NAME="$TAG_NAME" \
+        BRANCH_NAME="$BRANCH_NAME" \
+        IS_PRERELEASE="$IS_PRERELEASE" \
+        RELEASE_BODY="$RELEASE_BODY" \
+        node -e '
+          process.stdout.write(JSON.stringify({
+            tag_name: process.env.TAG_NAME,
+            target_commitish: process.env.BRANCH_NAME,
+            name: "Release_" + process.env.TAG_NAME,
+            body: process.env.RELEASE_BODY,
+            draft: false,
+            prerelease: process.env.IS_PRERELEASE === "true",
+          }));
+        '
+      )"
 
       curl -sS -X POST \
         -H "Authorization: token ${INSTALL_TOKEN}" \

@@ -82,3 +82,34 @@ function Home({ fpi }) {
 ## API Guide
 
 Check [docs](docs/API.md) for full API guide.
+
+## Releasing
+
+Each release tag publishes the matching section from [`CHANGELOG.md`](CHANGELOG.md)
+as its GitHub Release notes. The tag name (minus the `v`) must match a section
+heading:
+
+| Tag | Section published |
+| --- | --- |
+| `v3.1.0` | `## [3.1.0]` |
+| `v3.1.0-beta.1` | `## [3.1.0-beta.1]` |
+
+### Steps
+
+1. Add a section to `CHANGELOG.md` matching the version you're about to tag, with
+   its notes:
+
+   ```markdown
+   ## [3.1.0-beta.1] - 2026-07-03
+   ### Added
+   - What changed in this release
+   ```
+
+2. Commit and push it.
+3. Create the tag (e.g. `v3.1.0-beta.1`) from the **Azure DevOps interface**.
+
+That's it. Every tag — beta or stable — needs its own section, so each beta shows
+its own notes.
+
+**If the section is missing or empty**, the pipeline fails before publishing
+anything. Add the section, push, and create the tag again.
