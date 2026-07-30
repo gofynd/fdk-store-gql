@@ -14,6 +14,10 @@ See the "Releasing" section in the README for the workflow.
 
 ## [Unreleased]
 
+## [3.0.79-beta.1] - 2026-07-30
+### Added
+- Payment extensions can now return a `handled: true` flag from a checkout or payment mutation to signal they have fully taken over the payment, so the storefront steps aside cleanly instead of treating it as a failure.
+
 ## [3.0.78] - 2026-07-09
 ### Added
 - Support for split payments allowing a single order to be paid across multiple payment methods.

@@ -4,6 +4,10 @@ export type GQLModifierResult = {
     requestParam?: Record<string, any>;
     response?: any;
     sellerDetails?: any;
+    /**
+     * Set by an extension modifier to signal "I have fully taken over this"
+    **/
+    handled?: boolean;
 };
 type ModifierFn = (req: any) => Promise<GQLModifierResult>;
 interface UIModifierRegistry {
