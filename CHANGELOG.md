@@ -14,6 +14,10 @@ See the "Releasing" section in the README for the workflow.
 
 ## [Unreleased]
 
+## [3.0.80-beta.1] - 2026-09-28
+### Added
+- `getSupportedUpiIntentApps` and `transaction` (via `checkoutPayment` and `paySplit`) now accept an optional `webview_intent` flag. When a theme passes `webview_intent: true`, Razorpay is initialised with the matching option so that UPI intent app discovery and deep-link routing work correctly inside a native WebView shell. Themes that do not pass the flag are unaffected.
+
 ## [3.0.79] - 2026-08-04
 ### Added
 - Support for order tags.

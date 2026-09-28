@@ -35,7 +35,7 @@ export default class RazorpayPayment {
         token?: undefined;
     };
     validateCardDetails(inputType: string, options: any, callback: any): void;
-    getSupportedUpiIntentApps(): Promise<unknown>;
+    getSupportedUpiIntentApps(webviewIntent?: boolean): Promise<unknown>;
     transaction(obj: any, consent: {
         checkedBoxValue: any;
         paymentdata: {
@@ -43,6 +43,6 @@ export default class RazorpayPayment {
                 card_number: any;
             };
         };
-    }): Promise<unknown>;
+    }, webviewIntent?: boolean): Promise<unknown>;
     injectScript(): Promise<void>;
 }
