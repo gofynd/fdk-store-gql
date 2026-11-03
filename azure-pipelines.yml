@@ -80,7 +80,7 @@ jobs:
       # ---- Generate GitHub App JWT (RS256) ----
       export GITHUB_APP_PEM_PATH="$(githubAppKey.secureFilePath)"
 
-      node <<'NODE'
+      JWT="$(node <<'NODE'
       const fs = require('fs');
       const crypto = require('crypto');
 
@@ -113,10 +113,9 @@ jobs:
       const signature = sign.sign(privateKey);
       const jwt = `${unsigned}.${b64url(signature)}`;
 
-      fs.writeFileSync('github_app_jwt.txt', jwt);
+      process.stdout.write(jwt);
       NODE
-
-      JWT="$(cat github_app_jwt.txt)"
+      )"
 
       # ---- Exchange JWT for Installation Access Token ----
       INSTALL_TOKEN="$(

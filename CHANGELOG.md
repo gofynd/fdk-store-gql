@@ -14,9 +14,9 @@ See the "Releasing" section in the README for the workflow.
 
 ## [Unreleased]
 
-## [3.0.80-beta.1] - 2026-09-28
-### Added
-- `getSupportedUpiIntentApps` and `transaction` (via `checkoutPayment` and `paySplit`) now accept an optional `webview_intent` flag. When a theme passes `webview_intent: true`, Razorpay is initialised with the matching option so that UPI intent app discovery and deep-link routing work correctly inside a native WebView shell. Themes that do not pass the flag are unaffected.
+## [3.0.80-beta.2] - 2026-11-03
+### Security
+- Release pipeline keeps the GitHub App token in memory instead of writing it to a file, so it is no longer copied into the public mirror on release.
 
 ## [3.0.79] - 2026-08-04
 ### Added
